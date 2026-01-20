@@ -1,0 +1,7 @@
+{
+  "name": "alnilam-360",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
