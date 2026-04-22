@@ -1,0 +1,90 @@
+<div class="gauge-card bg-dark-primary border border-dark-border rounded-xl p-3 sm:p-4 md:p-5 h-full">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-3 sm:mb-4">
+    <div>
+      <h3 class="text-base sm:text-lg font-semibold text-white">Cumplimiento SST</h3>
+      <p class="text-xs sm:text-sm text-dark-text">{{ description }}</p>
+    </div>
+    <button class="p-1.5 rounded-lg hover:bg-dark-accent text-dark-text hidden sm:block">
+      <ion-icon name="ellipsis-vertical" class="text-lg"></ion-icon>
+    </button>
+  </div>
+
+  <!-- Gauge -->
+  <div class="gauge-container flex flex-col items-center justify-center py-3 sm:py-4 md:py-6">
+    <div class="gauge-wrapper relative">
+      <svg class="gauge-svg w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 transform -rotate-90" viewBox="0 0 100 100">
+        <!-- Background Arc -->
+        <circle
+          class="gauge-bg"
+          cx="50"
+          cy="50"
+          r="40"
+          fill="none"
+          stroke="#313442"
+          stroke-width="8"
+          stroke-linecap="round"
+          stroke-dasharray="188.4"
+          stroke-dashoffset="0"
+          transform="rotate(135, 50, 50)">
+        </circle>
+        <!-- Progress Arc -->
+        <circle
+          class="gauge-progress"
+          cx="50"
+          cy="50"
+          r="40"
+          fill="none"
+          [attr.stroke]="getGaugeColor()"
+          stroke-width="8"
+          stroke-linecap="round"
+          stroke-dasharray="188.4"
+          [attr.stroke-dashoffset]="188.4 - (188.4 * percentage / 100 * 0.75)"
+          transform="rotate(135, 50, 50)">
+        </circle>
+      </svg>
+      
+      <!-- Center Text -->
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <span class="text-2xl sm:text-3xl md:text-4xl font-bold" [ngClass]="getStatusColor()">{{ percentage }}%</span>
+        <span class="text-[10px] sm:text-xs text-dark-text mt-1">de {{ target }}% meta</span>
+      </div>
+    </div>
+
+    <!-- Status Badge -->
+    <div class="mt-3 sm:mt-4 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium"
+      [ngClass]="{
+        'bg-green-500/20 text-green-400': percentage >= target,
+        'bg-blue-500/20 text-blue-400': percentage >= target * 0.8 && percentage < target,
+        'bg-yellow-500/20 text-yellow-400': percentage >= target * 0.6 && percentage < target * 0.8,
+        'bg-red-500/20 text-red-400': percentage < target * 0.6
+      }">
+      <span *ngIf="percentage >= target">Meta alcanzada</span>
+      <span *ngIf="percentage >= target * 0.8 && percentage < target">En buen camino</span>
+      <span *ngIf="percentage >= target * 0.6 && percentage < target * 0.8">Requiere atención</span>
+      <span *ngIf="percentage < target * 0.6">Crítico</span>
+    </div>
+  </div>
+
+  <!-- Details -->
+  <div class="details-section border-t border-dark-border pt-3 sm:pt-4 mt-3 sm:mt-4">
+    <div class="grid grid-cols-3 gap-2 sm:gap-4">
+      <div *ngFor="let detail of details" class="text-center">
+        <p class="text-[10px] sm:text-xs text-dark-text mb-0.5 sm:mb-1">{{ detail.label }}</p>
+        <div class="flex items-center justify-center gap-0.5 sm:gap-1">
+          <span class="text-sm sm:text-base md:text-lg font-semibold text-white">{{ detail.value }}</span>
+          <ion-icon 
+            *ngIf="detail.trend === 'up'"
+            name="trending-up-outline" 
+            class="text-green-400 text-sm">
+          </ion-icon>
+          <ion-icon 
+            *ngIf="detail.trend === 'down'"
+            name="trending-down-outline" 
+            class="text-red-400 text-sm">
+          </ion-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

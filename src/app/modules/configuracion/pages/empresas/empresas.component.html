@@ -1,0 +1,546 @@
+<div class="empresas-container">
+  <!-- Delete Error Alert -->
+  <div *ngIf="showDeleteError"
+    class="mb-4 flex items-center gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg animate-fadeIn">
+    <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0"></ion-icon>
+    <p class="text-sm text-red-300 flex-1">{{ deleteErrorMessage }}</p>
+    <button (click)="dismissDeleteError()" class="p-1 text-red-400 hover:text-red-300 transition-colors">
+      <ion-icon name="close-outline" class="text-lg"></ion-icon>
+    </button>
+  </div>
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+    <div>
+      <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">Empresas y Sedes</h2>
+      <p class="text-xs text-dark-text mt-0.5">Gestión de empresas y sus sedes asociadas</p>
+    </div>
+    <button (click)="openModal()"
+      class="flex items-center gap-2 px-3 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
+      <ion-icon name="add-outline" class="text-lg"></ion-icon>
+      <span>Agregar Empresa</span>
+    </button>
+  </div>
+
+  <!-- PrimeNG Table Section -->
+  <div class="table-wrapper">
+    <p-table #dt [value]="empresas" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 25]"
+      [loading]="loading"
+      [globalFilterFields]="['nombre', 'nit', 'representante_legal.nombre', 'departamento', 'municipio', 'email']"
+      [tableStyle]="{ 'min-width': '60rem' }" dataKey="id" [rowHover]="true" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} empresas"
+      styleClass="p-datatable-sm p-datatable-gridlines">
+
+      <ng-template pTemplate="caption">
+        <div class="flex items-center justify-between gap-3">
+          <div class="relative flex-1 max-w-md">
+            <ion-icon name="search-outline"
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></ion-icon>
+            <input type="text" (input)="onGlobalFilter($event)" placeholder="Buscar por nombre, NIT, representante..."
+              class="w-full pl-9 pr-3 py-2 text-sm bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200">
+          </div>
+          <span class="text-xs text-dark-text">{{ empresas.length }} empresas registradas</span>
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 5rem" class="text-center">Acciones</th>
+          <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre"></p-sortIcon></th>
+          <th pSortableColumn="departamento">Departamento <p-sortIcon field="departamento"></p-sortIcon></th>
+          <th pSortableColumn="municipio">Municipio <p-sortIcon field="municipio"></p-sortIcon></th>
+          <th>Actividad Económica</th>
+          <th>Representante Legal</th>
+          <th>Teléfono</th>
+          <th>Email</th>
+          <th class="text-center">Trabajadores</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-empresa>
+        <tr>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              <button (click)="editEmpresa(empresa)" title="Editar empresa"
+                class="p-1 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
+                <ion-icon name="create-outline" class="text-base"></ion-icon>
+              </button>
+              <button (click)="openSedesModal(empresa)" title="Gestionar sedes"
+                class="p-1 rounded text-dark-text hover:text-brand-success hover:bg-dark-accent transition-all duration-200">
+                <ion-icon name="business-outline" class="text-base"></ion-icon>
+              </button>
+              <button (click)="deleteEmpresa(empresa)" title="Eliminar empresa"
+                class="p-1 rounded text-dark-text hover:text-red-500 hover:bg-dark-accent transition-all duration-200">
+                <ion-icon name="trash-outline" class="text-base"></ion-icon>
+              </button>
+            </div>
+          </td>
+          <td>
+            <div class="flex flex-col">
+              <span class="text-xs font-medium text-[rgb(var(--color-heading))]">{{ empresa.nombre }}</span>
+              <span class="text-[10px] text-dark-text">NIT: {{ empresa.nit }}</span>
+            </div>
+          </td>
+          <td><span class="text-xs text-[rgb(var(--color-heading))]">{{ empresa.departamento }}</span></td>
+          <td><span class="text-xs text-[rgb(var(--color-heading))]">{{ empresa.municipio }}</span></td>
+          <td><span class="text-[10px] text-dark-text line-clamp-2" [title]="empresa.actividad_economica">{{
+              empresa.actividad_economica }}</span></td>
+          <td><span class="text-xs text-[rgb(var(--color-heading))]">{{ empresa.representante_legal?.nombre }}</span>
+          </td>
+          <td><span class="text-xs text-[rgb(var(--color-heading))]">{{ empresa.telefono }}</span></td>
+          <td><span class="text-[10px] text-dark-text">{{ empresa.email }}</span></td>
+          <td class="text-center">
+            <span
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand-primary/20 text-brand-primary">
+              {{ getTotalTrabajadores(empresa) }}
+            </span>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="text-center py-8">
+            <div class="flex flex-col items-center gap-2">
+              <ion-icon name="business-outline" class="text-3xl text-dark-text"></ion-icon>
+              <p class="text-xs text-dark-text">No se encontraron empresas</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- Modal Registro/Edición de Empresa -->
+<div *ngIf="showModal"
+  class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+  (click)="closeModal()">
+  <div class="relative w-full max-w-4xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">
+        {{ selectedEmpresa ? 'Editar Empresa' : 'Nueva Empresa' }}
+      </h3>
+      <button (click)="closeModal()"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+
+    <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <form class="space-y-5">
+
+        <!-- Información General -->
+        <div class="form-section">
+          <h4
+            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+            <ion-icon name="information-circle-outline" class="text-base text-brand-primary"></ion-icon>
+            Información General
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">NIT</label>
+              <input type="text" [(ngModel)]="formEmpresa.nit" name="nit" placeholder="Ej: 900123456-1"
+                class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Nombre</label>
+              <input type="text" [(ngModel)]="formEmpresa.nombre" name="nombre" placeholder="Nombre de la empresa"
+                class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Departamento</label>
+              <select [ngModel]="selectedDepartamentoEmpresa" (ngModelChange)="onDepartamentoEmpresaChange($event)"
+                name="departamento" class="form-input">
+                <option value="">Seleccione...</option>
+                <option *ngFor="let dep of departamentos" [value]="dep.id">{{ dep.nombre }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Municipio</label>
+              <select [ngModel]="formEmpresa.municipio" (ngModelChange)="onMunicipioEmpresaChange($event)"
+                name="municipio" class="form-input" [disabled]="!selectedDepartamentoEmpresa">
+                <option value="">{{ selectedDepartamentoEmpresa ? 'Seleccione...' : 'Seleccione departamento primero' }}
+                </option>
+                <option *ngFor="let mun of municipiosEmpresa" [value]="mun.nombre">{{ mun.nombre }}</option>
+              </select>
+            </div>
+            <div class="form-group md:col-span-2">
+              <label class="block text-xs font-medium text-dark-text mb-1">Actividad Económica (Decreto 1607)</label>
+              <input type="text" [(ngModel)]="formEmpresa.actividad_economica" name="actividad_economica"
+                placeholder="Ej: 4111 - Construcción de edificios" class="form-input">
+            </div>
+            <div class="form-group md:col-span-2">
+              <label class="block text-xs font-medium text-dark-text mb-1">Dirección</label>
+              <input type="text" [(ngModel)]="formEmpresa.direccion" name="direccion" placeholder="Dirección completa"
+                class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Teléfono</label>
+              <input type="tel" [(ngModel)]="formEmpresa.telefono" name="telefono" placeholder="Ej: 3001234567"
+                class="form-input">
+            </div>
+            <div class="form-group md:col-span-3">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" [(ngModel)]="formEmpresa.asegurado" name="asegurado" class="form-checkbox">
+                <span class="text-sm text-[rgb(var(--color-heading))]">¿Se encuentra asegurado?</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Representante Legal -->
+        <div class="form-section">
+          <h4
+            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+            <ion-icon name="person-outline" class="text-base text-brand-primary"></ion-icon>
+            Representante Legal
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Nombre</label>
+              <input type="text" [(ngModel)]="formEmpresa.representante_legal!.nombre" name="rep_nombre"
+                placeholder="Nombre completo" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Email</label>
+              <input type="email" [(ngModel)]="formEmpresa.representante_legal!.email" name="rep_email"
+                placeholder="correo@ejemplo.com" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Teléfono</label>
+              <input type="tel" [(ngModel)]="formEmpresa.representante_legal!.telefono" name="rep_telefono"
+                placeholder="Ej: 3001234567" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Encargado SG-SST -->
+        <div class="form-section">
+          <h4
+            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+            <ion-icon name="shield-checkmark-outline" class="text-base text-brand-primary"></ion-icon>
+            Encargado Sistema de Gestión de Seguridad y Salud en el Trabajo
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Nombre</label>
+              <input type="text" [(ngModel)]="formEmpresa.encargado_sst!.nombre" name="sst_nombre"
+                placeholder="Nombre completo" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Email</label>
+              <input type="email" [(ngModel)]="formEmpresa.encargado_sst!.email" name="sst_email"
+                placeholder="correo@ejemplo.com" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">Teléfono</label>
+              <input type="tel" [(ngModel)]="formEmpresa.encargado_sst!.telefono" name="sst_telefono"
+                placeholder="Ej: 3001234567" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Trabajadores -->
+        <div class="form-section">
+          <h4
+            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+            <ion-icon name="people-outline" class="text-base text-brand-primary"></ion-icon>
+            Información de los Trabajadores
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Directos</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.directos" name="t_directos"
+                class="form-input" (ngModelChange)="recalcularNumeroEmpleados()"></div>
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Hombres</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.directos_hombres" name="t_directos_h"
+                class="form-input"></div>
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Mujeres</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.directos_mujeres" name="t_directos_m"
+                class="form-input"></div>
+            <div class="hidden lg:block"></div>
+            <div class="form-group"><label
+                class="block text-xs font-medium text-dark-text mb-1">Aprendices</label><input type="number" min="0"
+                [(ngModel)]="formEmpresa.trabajadores!.aprendices" name="t_aprendices" class="form-input"
+                (ngModelChange)="recalcularNumeroEmpleados()"></div>
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Hombres</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.aprendices_hombres" name="t_aprendices_h"
+                class="form-input"></div>
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Mujeres</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.aprendices_mujeres" name="t_aprendices_m"
+                class="form-input"></div>
+            <div class="hidden lg:block"></div>
+            <div class="form-group"><label
+                class="block text-xs font-medium text-dark-text mb-1">Contratistas</label><input type="number" min="0"
+                [(ngModel)]="formEmpresa.trabajadores!.contratistas" name="t_contratistas" class="form-input"
+                (ngModelChange)="recalcularNumeroEmpleados()"></div>
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Hombres</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.contratistas_hombres" name="t_contratistas_h"
+                class="form-input"></div>
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Mujeres</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.contratistas_mujeres" name="t_contratistas_m"
+                class="form-input"></div>
+            <div class="hidden lg:block"></div>
+            <div class="form-group"><label
+                class="block text-xs font-medium text-dark-text mb-1">Brigadistas</label><input type="number" min="0"
+                [(ngModel)]="formEmpresa.trabajadores!.brigadistas" name="t_brigadistas" class="form-input"></div>
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Hombres</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.brigadistas_hombres" name="t_brigadistas_h"
+                class="form-input"></div>
+            <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Mujeres</label><input
+                type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.brigadistas_mujeres" name="t_brigadistas_m"
+                class="form-input"></div>
+          </div>
+        </div>
+
+        <!-- Clasificación Res. 0312 (SGSST) -->
+        <div class="form-section">
+          <h4
+            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+            <ion-icon name="clipboard-outline" class="text-base text-brand-primary"></ion-icon>
+            Clasificación Res. 0312 de 2019 (SGSST)
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">
+                N.º de empleados
+              </label>
+              <input type="number" min="0" [(ngModel)]="formEmpresa.numero_empleados" name="numero_empleados"
+                class="form-input" readonly>
+            </div>
+            <div class="form-group">
+              <label class="block text-xs font-medium text-dark-text mb-1">
+                Nivel de riesgo <span class="text-red-400">*</span>
+              </label>
+              <select [(ngModel)]="formEmpresa.nivel_riesgo" name="nivel_riesgo" class="form-input">
+                <option [ngValue]="null">Seleccione...</option>
+                <option value="I">I (Mínimo)</option>
+                <option value="II">II (Bajo)</option>
+                <option value="III">III (Medio)</option>
+                <option value="IV">IV (Alto)</option>
+                <option value="V">V (Máximo)</option>
+              </select>
+            </div>
+            <div class="form-group md:col-span-2 lg:col-span-1 flex items-end">
+              <div
+                class="w-full flex items-start gap-2 px-3 py-2 bg-brand-primary/10 border border-brand-primary/30 rounded-lg">
+                <ion-icon name="information-circle-outline"
+                  class="text-brand-primary text-base flex-shrink-0 mt-0.5"></ion-icon>
+                <p class="text-[11px] text-[rgb(var(--color-heading))] leading-snug">
+                  {{ getTipoEvaluacionHint() }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-section">
+          <h4
+            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+            <ion-icon name="document-text-outline" class="text-base text-brand-primary"></ion-icon>
+            Descripción de la Organización
+          </h4>
+          <div class="form-group">
+            <label class="block text-xs font-medium text-dark-text mb-1">Descripción</label>
+            <textarea rows="4" [(ngModel)]="formEmpresa.descripcion" name="descripcion"
+              placeholder="Describa brevemente la actividad principal de la organización..."
+              class="form-input resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Horarios -->
+        <div class="form-section">
+          <h4
+            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+            <ion-icon name="time-outline" class="text-base text-brand-primary"></ion-icon>
+            Organización del Tiempo de Trabajo
+          </h4>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="formEmpresa.horarios!.manana" name="h_manana" class="form-checkbox">
+              <span class="text-sm text-[rgb(var(--color-heading))]">Mañana</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="formEmpresa.horarios!.tarde" name="h_tarde" class="form-checkbox">
+              <span class="text-sm text-[rgb(var(--color-heading))]">Tarde</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="formEmpresa.horarios!.noche" name="h_noche" class="form-checkbox">
+              <span class="text-sm text-[rgb(var(--color-heading))]">Noche</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="formEmpresa.horarios!.continuo" name="h_continuo"
+                class="form-checkbox">
+              <span class="text-sm text-[rgb(var(--color-heading))]">Continuo 8-6</span>
+            </label>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+      <button (click)="closeModal()"
+        class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        Cancelar
+      </button>
+      <button (click)="saveEmpresa()"
+        class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
+        {{ selectedEmpresa ? 'Guardar Cambios' : 'Crear Empresa' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Gestión de Sedes -->
+<div *ngIf="showSedesModal"
+  class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+  (click)="closeSedesModal()">
+  <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <div>
+        <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Gestión de Sedes</h3>
+        <p class="text-xs text-dark-text mt-0.5">{{ selectedEmpresa?.nombre }}</p>
+      </div>
+      <button (click)="closeSedesModal()"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+
+    <div class="px-4 py-4">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-xs text-dark-text">Sedes asociadas a esta empresa</p>
+        <button (click)="openSedeFormModal()"
+          class="flex items-center gap-2 px-3 py-1.5 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg transition-all duration-200">
+          <ion-icon name="add-outline" class="text-sm"></ion-icon>
+          <span>Agregar Sede</span>
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <div *ngFor="let sede of sedes"
+          class="flex items-center justify-between p-3 bg-dark-primary border border-dark-border rounded-lg hover:border-brand-primary/50 transition-all duration-200">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-[rgb(var(--color-heading))]">{{ sede.nombre }}</p>
+            <p class="text-[10px] text-dark-text mt-0.5">{{ sede.direccion }}, {{ sede.municipio }} - {{
+              sede.departamento }}</p>
+            <p class="text-[10px] text-dark-text mt-0.5">{{ sede.persona_encargada }} • {{ sede.telefono }}</p>
+          </div>
+          <div class="flex items-center gap-1 ml-2">
+            <button (click)="openSedeFormModal(sede)" title="Editar sede"
+              class="p-1.5 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
+              <ion-icon name="create-outline" class="text-base"></ion-icon>
+            </button>
+            <button (click)="deleteSede(sede.id!)" title="Eliminar sede"
+              class="p-1.5 rounded text-dark-text hover:text-red-500 hover:bg-dark-accent transition-all duration-200">
+              <ion-icon name="trash-outline" class="text-base"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="sedes.length === 0"
+          class="flex flex-col items-center justify-center py-6 text-center border border-dashed border-dark-border rounded-lg">
+          <ion-icon name="business-outline" class="text-2xl text-dark-text mb-2"></ion-icon>
+          <p class="text-xs text-dark-text">No hay sedes registradas</p>
+          <p class="text-[10px] text-dark-text/60 mt-1">Haga clic en "Agregar Sede" para crear una nueva</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+      <button (click)="closeSedesModal()"
+        class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Formulario de Sede -->
+<div *ngIf="showSedeFormModal"
+  class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+  (click)="closeSedeFormModal()">
+  <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">
+        {{ selectedSede ? 'Editar Sede' : 'Nueva Sede' }}
+      </h3>
+      <button (click)="closeSedeFormModal()"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+
+    <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <form class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="form-group md:col-span-2">
+            <label class="block text-xs font-medium text-dark-text mb-1">Nombre de la Sede</label>
+            <input type="text" [(ngModel)]="formSede.nombre" name="sede_nombre"
+              placeholder="Ej: Sede Principal, Sucursal Norte..." class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="block text-xs font-medium text-dark-text mb-1">Departamento</label>
+            <select [ngModel]="selectedDepartamentoSede" (ngModelChange)="onDepartamentoSedeChange($event)"
+              name="sede_departamento" class="form-input">
+              <option value="">Seleccione...</option>
+              <option *ngFor="let dep of departamentos" [value]="dep.id">{{ dep.nombre }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="block text-xs font-medium text-dark-text mb-1">Municipio</label>
+            <select [ngModel]="formSede.municipio" (ngModelChange)="onMunicipioSedeChange($event)" name="sede_municipio"
+              class="form-input" [disabled]="!selectedDepartamentoSede">
+              <option value="">{{ selectedDepartamentoSede ? 'Seleccione...' : 'Seleccione departamento primero' }}
+              </option>
+              <option *ngFor="let mun of municipiosSede" [value]="mun.nombre">{{ mun.nombre }}</option>
+            </select>
+          </div>
+          <div class="form-group md:col-span-2">
+            <label class="block text-xs font-medium text-dark-text mb-1">Dirección</label>
+            <input type="text" [(ngModel)]="formSede.direccion" name="sede_direccion"
+              placeholder="Dirección completa de la sede" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="block text-xs font-medium text-dark-text mb-1">Persona Encargada</label>
+            <input type="text" [(ngModel)]="formSede.persona_encargada" name="sede_persona"
+              placeholder="Nombre del encargado" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="block text-xs font-medium text-dark-text mb-1">Correo</label>
+            <input type="email" [(ngModel)]="formSede.correo" name="sede_correo" placeholder="correo@ejemplo.com"
+              class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="block text-xs font-medium text-dark-text mb-1">Teléfono</label>
+            <input type="tel" [(ngModel)]="formSede.telefono" name="sede_telefono" placeholder="Ej: 3001234567"
+              class="form-input">
+          </div>
+          <div class="form-group md:col-span-2">
+            <label class="block text-xs font-medium text-dark-text mb-1">Descripción (Opcional)</label>
+            <textarea rows="3" [(ngModel)]="formSede.descripcion" name="sede_descripcion"
+              placeholder="Descripción adicional de la sede..." class="form-input resize-none"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+      <button (click)="closeSedeFormModal()"
+        class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        Cancelar
+      </button>
+      <button (click)="saveSede()"
+        class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
+        {{ selectedSede ? 'Guardar Cambios' : 'Crear Sede' }}
+      </button>
+    </div>
+  </div>
+</div>

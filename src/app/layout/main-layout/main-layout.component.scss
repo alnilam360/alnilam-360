@@ -1,0 +1,32 @@
+.app-layout {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--color-dark-primary)) 0%,
+    rgb(var(--color-dark-secondary)) 100%
+  );
+}
+
+.main-content {
+  height: calc(100vh - 3.5rem);
+  
+  @media (min-width: 768px) {
+    height: calc(100vh - 4rem);
+  }
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}

@@ -1,0 +1,208 @@
+<div class="roles-container">
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">Configuración de Roles</h2>
+            <p class="text-xs text-dark-text mt-0.5">Administre los roles y permisos de acceso a los módulos</p>
+        </div>
+        <button (click)="openModal()"
+            class="flex items-center gap-2 px-3 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
+            <ion-icon name="shield-checkmark-outline" class="text-lg"></ion-icon>
+            <span>Nuevo Rol</span>
+        </button>
+    </div>
+
+    <!-- PrimeNG Table -->
+    <div class="table-wrapper">
+        <p-table #dt [value]="roles" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 25]"
+            [loading]="loading" [globalFilterFields]="['nombre', 'descripcion']" [tableStyle]="{ 'min-width': '40rem' }"
+            dataKey="id" [rowHover]="true" [showCurrentPageReport]="true"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} roles"
+            styleClass="p-datatable-sm p-datatable-gridlines">
+
+            <!-- Caption / Search -->
+            <ng-template pTemplate="caption">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="relative flex-1 max-w-md">
+                        <ion-icon name="search-outline"
+                            class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></ion-icon>
+                        <input type="text" (input)="onGlobalFilter($event)"
+                            placeholder="Buscar por nombre o descripción..."
+                            class="w-full pl-9 pr-3 py-2 text-sm bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200">
+                    </div>
+                    <span class="text-xs text-dark-text">{{ roles.length }} roles registrados</span>
+                </div>
+            </ng-template>
+
+            <!-- Header -->
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 5rem" class="text-center">Acciones</th>
+                    <th pSortableColumn="nombre">
+                        Nombre <p-sortIcon field="nombre"></p-sortIcon>
+                    </th>
+                    <th>Descripción</th>
+                    <th>Empresa</th>
+                    <th class="text-center">Módulos</th>
+                </tr>
+            </ng-template>
+
+            <!-- Body -->
+            <ng-template pTemplate="body" let-rol>
+                <tr>
+                    <td class="text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button (click)="openModal(rol)" title="Editar rol"
+                                class="p-1 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
+                                <ion-icon name="create-outline" class="text-base"></ion-icon>
+                            </button>
+                            <button (click)="deleteRol(rol.id)" title="Eliminar rol"
+                                class="p-1 rounded text-dark-text hover:text-red-500 hover:bg-dark-accent transition-all duration-200">
+                                <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                <ion-icon name="shield-checkmark-outline" class="text-sm text-purple-400"></ion-icon>
+                            </div>
+                            <span class="text-xs font-medium text-[rgb(var(--color-heading))]">{{ rol.nombre }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-xs text-dark-text">{{ rol.descripcion || '—' }}</span>
+                    </td>
+                    <td>
+                        <span class="text-xs text-[rgb(var(--color-heading))]">{{ getEmpresaNombre(rol) }}</span>
+                    </td>
+                    <td class="text-center">
+                        <p-tag [value]="'Configurado'" severity="info"></p-tag>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <!-- Empty Message -->
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5" class="text-center py-8">
+                        <div class="flex flex-col items-center gap-2">
+                            <ion-icon name="shield-outline" class="text-3xl text-dark-text"></ion-icon>
+                            <p class="text-xs text-dark-text">No se encontraron roles</p>
+                            <p class="text-xs text-dark-text">Cree un rol para comenzar a asignar permisos</p>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Modal Crear/Editar Rol -->
+<div *ngIf="showModal"
+    class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+    (click)="closeModal()">
+    <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+        (click)="$event.stopPropagation()">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+            <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">
+                {{ selectedRol ? 'Editar Rol' : 'Nuevo Rol' }}
+            </h3>
+            <button (click)="closeModal()"
+                class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+            <form class="space-y-5">
+
+                <!-- Sección: Información del Rol -->
+                <div class="form-section">
+                    <h4
+                        class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+                        <ion-icon name="shield-outline" class="text-base text-brand-primary"></ion-icon>
+                        Información del Rol
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="form-group">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Nombre del Rol *</label>
+                            <input type="text" [(ngModel)]="formRol.nombre" name="nombre"
+                                placeholder="Ej: Administrador, Coordinador SST..." class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Empresa *</label>
+                            <select [(ngModel)]="formRol.empresa_id" name="empresa_id" class="form-input">
+                                <option value="">Seleccione una empresa...</option>
+                                <option *ngFor="let emp of empresas" [value]="emp.id">{{ emp.nombre }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group md:col-span-2">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Descripción</label>
+                            <textarea [(ngModel)]="formRol.descripcion" name="descripcion" rows="2"
+                                placeholder="Descripción breve del rol y sus responsabilidades..."
+                                class="form-input resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Permisos de Módulos -->
+                <div class="form-section">
+                    <div class="flex items-center justify-between mb-3 pb-1.5 border-b border-dark-border">
+                        <h4 class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))]">
+                            <ion-icon name="key-outline" class="text-base text-brand-primary"></ion-icon>
+                            Permisos de Acceso a Módulos
+                        </h4>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" [checked]="allSelected" [indeterminate]="someSelected"
+                                (change)="toggleSelectAll($any($event.target).checked)" class="form-checkbox">
+                            <span class="text-xs text-dark-text">Seleccionar todos</span>
+                        </label>
+                    </div>
+
+                    <p class="text-xs text-dark-text mb-3">
+                        Seleccione los módulos del menú a los que este rol tendrá acceso:
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label *ngFor="let modulo of modulosPermisos"
+                            class="flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer"
+                            [class.border-brand-primary]="modulo.puede_ver"
+                            [class.bg-brand-primary/5]="modulo.puede_ver" [class.border-dark-border]="!modulo.puede_ver"
+                            [class.bg-dark-primary]="!modulo.puede_ver"
+                            [class.hover:border-brand-primary/50]="!modulo.puede_ver">
+                            <input type="checkbox" [(ngModel)]="modulo.puede_ver" [name]="'modulo_' + modulo.id"
+                                class="form-checkbox">
+                            <div class="flex items-center gap-2 flex-1">
+                                <ion-icon [name]="modulo.icon" class="text-lg"
+                                    [class.text-brand-primary]="modulo.puede_ver"
+                                    [class.text-dark-text]="!modulo.puede_ver"></ion-icon>
+                                <span class="text-sm" [class.text-white]="modulo.puede_ver"
+                                    [class.text-dark-text]="!modulo.puede_ver">
+                                    {{ modulo.label }}
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+            <button (click)="closeModal()"
+                class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+                Cancelar
+            </button>
+            <button (click)="saveRol()"
+                class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
+                {{ selectedRol ? 'Guardar Cambios' : 'Crear Rol' }}
+            </button>
+        </div>
+    </div>
+</div>

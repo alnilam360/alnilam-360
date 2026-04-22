@@ -1,0 +1,265 @@
+<div class="iperc-form">
+    <div *ngIf="loading" class="flex items-center justify-center py-16">
+        <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    </div>
+
+    <ng-container *ngIf="!loading">
+        <!-- Error -->
+        <div *ngIf="errorMsg"
+            class="mb-4 flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
+            <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+            <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
+            <button (click)="errorMsg = null" class="p-1.5 text-red-400 hover:text-red-300 rounded-lg transition">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-5">
+            <button (click)="cancelar()"
+                class="p-2 rounded-xl text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent border border-transparent hover:border-dark-border transition-all">
+                <ion-icon name="arrow-back-outline" class="text-lg"></ion-icon>
+            </button>
+            <div>
+                <h2 class="text-lg font-bold text-[rgb(var(--color-heading))]">
+                    {{ modoEdicion ? 'Editar Riesgo' : 'Nuevo Riesgo IPERC' }}
+                </h2>
+                <p class="text-xs text-dark-text">GTC 45 · Paso {{ pasoActivo + 1 }} de {{ pasos.length }}</p>
+            </div>
+        </div>
+
+        <!-- Stepper indicator -->
+        <div class="stepper-bar flex items-center gap-1.5 mb-6 px-1">
+            <div *ngFor="let paso of pasos; let i = index" class="flex items-center gap-1.5 flex-1">
+                <button (click)="irPaso(i)"
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 w-full justify-center"
+                    [ngClass]="{
+                        'bg-brand-primary text-white shadow-md shadow-brand-primary/25': pasoActivo === i,
+                        'bg-dark-secondary text-dark-text border border-dark-border hover:border-brand-primary/30': pasoActivo !== i && pasoValido(i),
+                        'bg-dark-secondary text-dark-text/50 border border-dark-border': pasoActivo !== i && !pasoValido(i)
+                    }">
+                    <span class="hidden sm:inline">{{ paso }}</span>
+                    <span class="sm:hidden">{{ i + 1 }}</span>
+                </button>
+                <div *ngIf="i < pasos.length - 1" class="w-3 h-px bg-dark-border flex-shrink-0"></div>
+            </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()">
+            <!-- ===== PASO 0: CONTEXTO ===== -->
+            <div *ngIf="pasoActivo === 0" class="step-panel space-y-4">
+                <div class="campo-auxiliar">
+                    <ion-icon name="layers-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Proceso *</span>
+                        <input type="text" formControlName="proceso" class="campo-input"
+                            placeholder="Ej: Producción, Mantenimiento, Administrativo...">
+                    </div>
+                </div>
+                <div class="campo-auxiliar">
+                    <ion-icon name="location-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Zona / Lugar</span>
+                        <input type="text" formControlName="zona_lugar" class="campo-input"
+                            placeholder="Ej: Planta 1, Oficina central, Taller...">
+                    </div>
+                </div>
+                <div class="campo-auxiliar">
+                    <ion-icon name="construct-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Actividad *</span>
+                        <input type="text" formControlName="actividad" class="campo-input"
+                            placeholder="Ej: Soldadura, Digitación, Transporte de carga...">
+                    </div>
+                </div>
+                <div class="campo-auxiliar">
+                    <ion-icon name="repeat-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">¿Es actividad rutinaria?</span>
+                        <div class="flex gap-3 mt-1">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" [value]="true" formControlName="es_rutinaria"
+                                    class="accent-brand-primary">
+                                <span class="text-sm text-[rgb(var(--color-heading))]">Sí</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" [value]="false" formControlName="es_rutinaria"
+                                    class="accent-brand-primary">
+                                <span class="text-sm text-[rgb(var(--color-heading))]">No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PASO 1: PELIGRO ===== -->
+            <div *ngIf="pasoActivo === 1" class="step-panel space-y-4">
+                <div class="campo-auxiliar">
+                    <ion-icon name="warning-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Peligro identificado *</span>
+                        <select formControlName="peligro_id" class="campo-input"
+                            (ngModelChange)="onPeligroSeleccionado($event)">
+                            <option [ngValue]="null">— Seleccione un peligro —</option>
+                            <optgroup *ngFor="let grupo of peligrosAgrupados" [label]="grupo.clasificacion">
+                                <option *ngFor="let p of grupo.items" [ngValue]="p.id">
+                                    {{ p.descripcion }}
+                                </option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="campo-auxiliar">
+                    <ion-icon name="medkit-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Efectos posibles</span>
+                        <textarea rows="3" formControlName="efectos_posibles" class="campo-input"
+                            placeholder="Efectos sobre la salud derivados del peligro identificado..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PASO 2: CONTROLES ===== -->
+            <div *ngIf="pasoActivo === 2" class="step-panel space-y-4">
+                <p class="text-xs text-dark-text mb-2">Describa los controles existentes para mitigar el peligro:</p>
+                <div class="campo-auxiliar">
+                    <ion-icon name="shield-checkmark-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Control en la Fuente</span>
+                        <textarea rows="2" formControlName="control_fuente" class="campo-input"
+                            placeholder="Ej: Guardas de protección, ventilación localizada..."></textarea>
+                    </div>
+                </div>
+                <div class="campo-auxiliar">
+                    <ion-icon name="swap-horizontal-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Control en el Medio</span>
+                        <textarea rows="2" formControlName="control_medio" class="campo-input"
+                            placeholder="Ej: Aislamiento acústico, señalización, barreras..."></textarea>
+                    </div>
+                </div>
+                <div class="campo-auxiliar">
+                    <ion-icon name="person-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Control en el Individuo (EPP)</span>
+                        <textarea rows="2" formControlName="control_individuo" class="campo-input"
+                            placeholder="Ej: Protección auditiva, guantes, casco, arnés..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PASO 3: EVALUACIÓN ===== -->
+            <div *ngIf="pasoActivo === 3" class="step-panel space-y-4">
+                <!-- ND -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="speedometer-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Nivel de Deficiencia (ND)</span>
+                        <select formControlName="nivel_deficiencia" class="campo-input">
+                            <option *ngFor="let o of opcionesND" [ngValue]="o.valor">
+                                {{ o.etiqueta }} — {{ o.descripcion | slice:0:100 }}...
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <!-- NE -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="time-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Nivel de Exposición (NE)</span>
+                        <select formControlName="nivel_exposicion" class="campo-input">
+                            <option *ngFor="let o of opcionesNE" [ngValue]="o.valor">
+                                {{ o.etiqueta }} — {{ o.descripcion | slice:0:100 }}...
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <!-- NC -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="flash-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Nivel de Consecuencia (NC)</span>
+                        <select formControlName="nivel_consecuencia" class="campo-input">
+                            <option *ngFor="let o of opcionesNC" [ngValue]="o.valor">
+                                {{ o.etiqueta }} — {{ o.descripcion }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ======== Panel de resultados en tiempo real ======== -->
+                <div class="mt-5 p-4 bg-dark-primary border border-dark-border rounded-xl space-y-3">
+                    <p class="text-[10px] uppercase tracking-wider text-dark-text font-bold mb-3">
+                        <ion-icon name="calculator-outline" class="mr-1"></ion-icon> Resultado GTC 45
+                    </p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- NP -->
+                        <div class="p-3 bg-dark-secondary rounded-lg border border-dark-border">
+                            <p class="text-[10px] text-dark-text font-semibold uppercase">NP (ND×NE)</p>
+                            <p class="text-xl font-bold text-[rgb(var(--color-heading))]">{{ np }}</p>
+                            <p class="text-[10px] text-dark-text mt-0.5">{{ interpretacionNp }}</p>
+                        </div>
+                        <!-- NR -->
+                        <div class="p-3 bg-dark-secondary rounded-lg border border-dark-border">
+                            <p class="text-[10px] text-dark-text font-semibold uppercase">NR (NP×NC)</p>
+                            <p class="text-xl font-bold text-[rgb(var(--color-heading))]">{{ nr }}</p>
+                        </div>
+                    </div>
+                    <!-- Nivel de intervención y aceptabilidad -->
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1 p-3 rounded-lg border text-center" [ngClass]="semaforoClasses()">
+                            <p class="text-[10px] font-semibold uppercase mb-1">Nivel de Intervención</p>
+                            <p class="text-3xl font-black">{{ nivelIntervencion || '—' }}</p>
+                        </div>
+                        <div class="flex-1 p-3 rounded-lg border text-center" [ngClass]="semaforoClasses()">
+                            <p class="text-[10px] font-semibold uppercase mb-1">Aceptabilidad</p>
+                            <p class="text-sm font-bold mt-1">{{ aceptabilidad || '—' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medidas de intervención -->
+                <div class="campo-auxiliar mt-4">
+                    <ion-icon name="bulb-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Medidas de intervención propuestas</span>
+                        <textarea rows="3" formControlName="medidas_intervencion" class="campo-input"
+                            placeholder="Acciones de control adicionales para reducir el nivel de riesgo..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== Navigation buttons ===== -->
+            <div class="flex items-center justify-between mt-6 pt-4 border-t border-dark-border">
+                <button *ngIf="pasoActivo > 0" type="button" (click)="anterior()"
+                    class="flex items-center gap-2 px-4 py-2 text-sm rounded-xl border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all">
+                    <ion-icon name="arrow-back-outline"></ion-icon>
+                    Anterior
+                </button>
+                <div *ngIf="pasoActivo === 0"></div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" (click)="cancelar()"
+                        class="px-4 py-2 text-sm rounded-xl border border-dark-border text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all">
+                        Cancelar
+                    </button>
+
+                    <button *ngIf="pasoActivo < pasos.length - 1" type="button" (click)="siguiente()"
+                        [disabled]="!pasoValido(pasoActivo)"
+                        class="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all shadow-lg shadow-brand-primary/25 disabled:opacity-40 disabled:cursor-not-allowed">
+                        Siguiente
+                        <ion-icon name="arrow-forward-outline"></ion-icon>
+                    </button>
+
+                    <button *ngIf="pasoActivo === pasos.length - 1" type="submit" [disabled]="saving || !form.valid"
+                        class="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all shadow-lg shadow-brand-primary/25 disabled:opacity-40">
+                        <ion-spinner *ngIf="saving" name="crescent"
+                            style="--color:white;width:14px;height:14px;"></ion-spinner>
+                        <ion-icon *ngIf="!saving" name="checkmark-outline"></ion-icon>
+                        {{ saving ? 'Guardando...' : (modoEdicion ? 'Actualizar' : 'Guardar') }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </ng-container>
+</div>

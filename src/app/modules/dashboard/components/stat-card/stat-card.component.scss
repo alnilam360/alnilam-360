@@ -1,0 +1,16 @@
+.stat-card {
+  background: linear-gradient(
+    145deg,
+    rgb(var(--color-dark-primary)) 0%,
+    rgb(var(--color-dark-secondary)) 100%
+  );
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.icon-wrapper {
+  backdrop-filter: blur(8px);
+}

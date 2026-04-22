@@ -1,0 +1,186 @@
+<div class="login-container min-h-screen flex">
+  <!-- Left Side - Branding -->
+  <div class="hidden lg:flex lg:w-1/2 xl:w-[55%] bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-primary relative overflow-y-auto">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5 pointer-events-none">
+      <div class="absolute top-20 left-20 w-72 h-72 bg-brand-primary rounded-full blur-3xl"></div>
+      <div class="absolute bottom-20 right-20 w-96 h-96 bg-blue-600 rounded-full blur-3xl"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-primary/30 rounded-full blur-3xl"></div>
+    </div>
+    
+    <!-- Grid Pattern Overlay -->
+    <div class="absolute inset-0 opacity-[0.02] pointer-events-none" style="background-image: linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px); background-size: 50px 50px;"></div>
+    
+    <!-- Content -->
+    <div class="relative z-10 flex flex-col justify-center items-center w-full px-5 xl:px-10 py-8">
+      <!-- Logo Area - Prominent -->
+      <div class="mb-8 xl:mb-10">
+        <div class="w-28 h-28 xl:w-36 xl:h-36 rounded-2xl bg-dark-accent/50 backdrop-blur-sm border border-dark-border flex items-center justify-center mb-5 mx-auto shadow-2xl hover:scale-105 transition-transform duration-300 overflow-hidden">
+          <img src="assets/icon/alnilam.png" alt="ALNILAM 360" class="w-24 h-24 xl:w-28 xl:h-28 object-contain">
+        </div>
+        <h1 class="text-2xl xl:text-3xl font-bold text-white text-center">ALNILAM 360</h1>
+        <p class="text-dark-text text-center mt-2 text-sm">Sistema de Gestión SST</p>
+      </div>
+      
+      <!-- Features Column -->
+      <div class="flex flex-col gap-3 w-full max-w-sm">
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-accent/30 backdrop-blur-sm border border-dark-border/50 hover:border-blue-500/50 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+            <ion-icon name="analytics-outline" class="text-lg text-blue-400"></ion-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-white font-semibold text-sm truncate">Monitoreo en Tiempo Real</h3>
+            <p class="text-dark-text text-xs truncate">Visualiza indicadores y métricas al instante</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-accent/30 backdrop-blur-sm border border-dark-border/50 hover:border-green-500/50 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-green-500/15 flex items-center justify-center flex-shrink-0">
+            <ion-icon name="checkmark-circle-outline" class="text-lg text-green-400"></ion-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-white font-semibold text-sm truncate">Gestión de Cumplimiento</h3>
+            <p class="text-dark-text text-xs truncate">Controla el cumplimiento normativo</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-accent/30 backdrop-blur-sm border border-dark-border/50 hover:border-purple-500/50 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center flex-shrink-0">
+            <ion-icon name="document-text-outline" class="text-lg text-purple-400"></ion-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-white font-semibold text-sm truncate">Documentación Digital</h3>
+            <p class="text-dark-text text-xs truncate">Gestiona todos tus documentos en un solo lugar</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Right Side - Login Form -->
+  <div class="w-full lg:w-1/2 xl:w-[45%] flex items-center justify-center bg-dark-secondary p-6 sm:p-8 md:p-12">
+    <div class="w-full max-w-md">
+      <!-- Mobile Logo -->
+      <div class="lg:hidden text-center mb-10">
+        <div class="w-20 h-20 rounded-2xl bg-dark-primary border border-dark-border flex items-center justify-center mb-4 mx-auto shadow-xl">
+          <!-- Placeholder for custom logo -->
+          <img src="assets/icon/alnilam.png" alt="ALNILAM 360" class="w-24 h-24 xl:w-28 xl:h-28 object-contain">
+        </div>
+        <h1 class="text-2xl font-bold text-white">ALNILAM 360</h1>
+        <p class="text-dark-text text-sm mt-1">Sistema de Gestión SST</p>
+      </div>
+      
+      <!-- Welcome Text -->
+      <div class="mb-8">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">Bienvenido</h2>
+        <p class="text-dark-text">Ingresa tus credenciales para acceder al sistema</p>
+      </div>
+      
+      <!-- Error Message -->
+      <div 
+        *ngIf="errorMessage"
+        class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3">
+        <ion-icon name="alert-circle" class="text-xl text-red-400 flex-shrink-0"></ion-icon>
+        <p class="text-red-400 text-sm">{{ errorMessage }}</p>
+      </div>
+      
+      <!-- Login Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
+        <!-- Email Field -->
+        <div class="form-group">
+          <label class="block text-sm font-medium text-dark-text mb-2">Correo Electrónico</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <ion-icon name="mail-outline" class="text-xl text-dark-text"></ion-icon>
+            </div>
+            <input 
+              type="email"
+              formControlName="email"
+              placeholder="correo@empresa.com"
+              class="w-full bg-dark-primary border border-dark-border rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-dark-text/50 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200"
+              [class.border-red-500]="email?.invalid && email?.touched"
+              [class.focus:border-red-500]="email?.invalid && email?.touched"
+              [class.focus:ring-red-500]="email?.invalid && email?.touched">
+          </div>
+          <p *ngIf="email?.invalid && email?.touched" class="mt-2 text-sm text-red-400 flex items-center gap-1">
+            <ion-icon name="information-circle-outline" class="text-base"></ion-icon>
+            <span *ngIf="email?.errors?.['required']">El correo es requerido</span>
+            <span *ngIf="email?.errors?.['email']">Ingresa un correo válido</span>
+          </p>
+        </div>
+        
+        <!-- Password Field -->
+        <div class="form-group">
+          <label class="block text-sm font-medium text-dark-text mb-2">Contraseña</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <ion-icon name="lock-closed-outline" class="text-xl text-dark-text"></ion-icon>
+            </div>
+            <input 
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              class="w-full bg-dark-primary border border-dark-border rounded-xl py-3.5 pl-12 pr-12 text-white placeholder-dark-text/50 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200"
+              [class.border-red-500]="password?.invalid && password?.touched"
+              [class.focus:border-red-500]="password?.invalid && password?.touched"
+              [class.focus:ring-red-500]="password?.invalid && password?.touched">
+            <button 
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute inset-y-0 right-0 pr-4 flex items-center text-dark-text hover:text-white transition-colors">
+              <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" class="text-xl"></ion-icon>
+            </button>
+          </div>
+          <p *ngIf="password?.invalid && password?.touched" class="mt-2 text-sm text-red-400 flex items-center gap-1">
+            <ion-icon name="information-circle-outline" class="text-base"></ion-icon>
+            <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
+            <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
+          </p>
+        </div>
+        
+        <!-- Remember Me & Forgot Password -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <input 
+              type="checkbox"
+              formControlName="rememberMe"
+              class="w-4 h-4 rounded border-dark-border bg-dark-primary text-brand-primary focus:ring-brand-primary focus:ring-offset-0 cursor-pointer">
+            <span class="text-sm text-dark-text group-hover:text-white transition-colors">Recordarme</span>
+          </label>
+          <a class="text-sm text-brand-primary hover:text-blue-400 transition-colors cursor-pointer">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+        
+        <!-- Submit Button -->
+        <button 
+          type="submit"
+          [disabled]="isLoading"
+          class="w-full bg-gradient-to-r from-brand-primary to-blue-600 hover:from-blue-600 hover:to-brand-primary text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/25">
+          <span *ngIf="!isLoading">Iniciar Sesión</span>
+          <span *ngIf="isLoading" class="flex items-center gap-2">
+            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Ingresando...
+          </span>
+          <ion-icon *ngIf="!isLoading" name="arrow-forward" class="text-xl"></ion-icon>
+        </button>
+      </form>
+      
+      <!-- Footer -->
+      <div class="mt-10 pt-6 border-t border-dark-border">
+        <p class="text-center text-dark-text text-sm">
+          ¿Necesitas ayuda? 
+          <a class="text-brand-primary hover:text-blue-400 transition-colors cursor-pointer">Contacta al administrador</a>
+        </p>
+      </div>
+      
+      <!-- Version -->
+      <p class="text-center text-dark-text/50 text-xs mt-6">
+        ALNILAM 360 v1.0.0 &copy; 2026
+      </p>
+    </div>
+  </div>
+</div>

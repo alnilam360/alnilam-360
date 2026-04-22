@@ -1,0 +1,26 @@
+.gauge-card {
+  background: linear-gradient(
+    145deg,
+    rgb(var(--color-dark-primary)) 0%,
+    rgb(var(--color-dark-secondary)) 100%
+  );
+}
+
+.gauge-progress {
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.gauge-svg {
+  animation: gaugeAppear 0.5s ease-out;
+}
+
+@keyframes gaugeAppear {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-90deg) scale(1);
+  }
+}

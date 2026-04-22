@@ -1,0 +1,152 @@
+<!-- Mobile Overlay -->
+<div 
+  *ngIf="isMobile && isOpen"
+  (click)="closeMobileSidebar()"
+  class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300">
+</div>
+
+<!-- Sidebar -->
+<aside 
+  class="sidebar fixed top-0 left-0 h-screen bg-dark-primary border-r border-dark-border z-50 flex flex-col transition-all duration-300"
+  [class.w-64]="!isCollapsed || isMobile"
+  [class.w-20]="isCollapsed && !isMobile"
+  [class.-translate-x-full]="isMobile && !isOpen"
+  [class.translate-x-0]="!isMobile || isOpen">
+  
+  <!-- Logo Section -->
+  <div class="h-14 md:h-16 flex items-center justify-between px-4 border-b border-dark-border flex-shrink-0">
+    <div class="flex items-center gap-3 overflow-hidden">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+        <img src="assets/icon/alnilam.png" alt="ALNILAM 360" class="w-32 h-32 xl:w-36 xl:h-36 object-contain">
+      </div>
+      <span 
+        *ngIf="!isCollapsed || isMobile"
+        class="font-bold text-lg whitespace-nowrap text-[rgb(var(--color-heading))]">
+        ALNILAM 360
+      </span>
+    </div>
+    
+    <!-- Close button (mobile only) -->
+    <button 
+      *ngIf="isMobile"
+      (click)="closeMobileSidebar()"
+      class="p-2 rounded-lg text-dark-text hover-theme-text hover-theme-bg transition-all duration-200">
+      <ion-icon name="close-outline" class="text-xl"></ion-icon>
+    </button>
+  </div>
+
+  <!-- Menu Items -->
+  <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 custom-scrollbar">
+    <ul class="space-y-1">
+      <ng-container *ngFor="let item of menuItems; trackBy: trackByFn">
+        <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: item, level: 0 }"></ng-container>
+      </ng-container>
+    </ul>
+  </nav>
+
+  <!-- Footer -->
+  <div class="p-4 border-t border-dark-border flex-shrink-0">
+    <div 
+      *ngIf="!isCollapsed || isMobile"
+      class="flex items-center gap-3 px-2">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+        <span class="text-white text-xs font-semibold">v1</span>
+      </div>
+      <div class="overflow-hidden">
+        <p class="text-xs text-dark-text truncate">Sistema SG-SST</p>
+        <p class="text-xs text-dark-text/60 truncate">Res. 0312 de 2019</p>
+      </div>
+    </div>
+    <div 
+      *ngIf="isCollapsed && !isMobile"
+      class="flex justify-center">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+        <span class="text-white text-xs font-semibold">v1</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Menu Item Template (Recursive) -->
+<ng-template #menuItemTemplate let-item let-level="level">
+  <li>
+    <!-- Item with route (no children) -->
+    <a 
+      *ngIf="item.route && (!item.children || item.children.length === 0)"
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+      class="menu-item flex items-center gap-2 px-3 rounded-lg text-sm hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
+      [attr.title]="item.label"
+      [attr.aria-label]="item.label"
+      [attr.data-level]="level"
+      [class.pl-5]="level === 1"
+      [class.pl-8]="level === 2"
+      [class.pl-10]="level >= 3"
+      [class.text-xs]="level >= 1">
+      <ion-icon 
+        *ngIf="item.icon && (level === 0 || !isCollapsed || isMobile)"
+        [name]="item.icon" 
+        class="text-base flex-shrink-0 transition-colors duration-200"
+        [class.text-lg]="level === 0">
+      </ion-icon>
+      <span 
+        *ngIf="!isCollapsed || isMobile"
+        class="flex-1 truncate">
+        {{ item.label }}
+      </span>
+      <span 
+        *ngIf="item.badge && (!isCollapsed || isMobile)"
+        class="px-2 py-0.5 text-xs rounded-full font-medium"
+        [class.bg-brand-primary]="item.badgeColor === 'primary' || !item.badgeColor"
+        [class.bg-brand-success]="item.badgeColor === 'success'"
+        [class.bg-brand-warning]="item.badgeColor === 'warning'"
+        [class.bg-brand-danger]="item.badgeColor === 'danger'"
+        [class.text-white]="true">
+        {{ item.badge }}
+      </span>
+    </a>
+
+    <!-- Item with children (expandable) -->
+    <div *ngIf="item.children && item.children.length > 0">
+      <button 
+        (click)="toggleExpand(item, $event)"
+        class="menu-item w-full flex items-center gap-2 px-3 rounded-lg text-sm hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
+        [attr.data-level]="level"
+        [attr.title]="item.label"
+        [attr.aria-label]="item.label"
+        [class.pl-5]="level === 1"
+        [class.pl-8]="level === 2"
+        [class.pl-10]="level >= 3"
+        [class.text-xs]="level >= 1"
+        [class.has-active]="hasActiveChild(item)">
+        <ion-icon 
+          *ngIf="item.icon && (level === 0 || !isCollapsed || isMobile)"
+          [name]="item.icon" 
+          class="text-base flex-shrink-0 transition-colors duration-200"
+          [class.text-lg]="level === 0"
+          [class.text-brand-primary]="hasActiveChild(item)">
+        </ion-icon>
+        <span 
+          *ngIf="!isCollapsed || isMobile"
+          class="flex-1 truncate text-left">
+          {{ item.label }}
+        </span>
+        <ion-icon 
+          *ngIf="!isCollapsed || isMobile"
+          [name]="isExpanded(item) ? 'chevron-down-outline' : 'chevron-forward-outline'" 
+          class="text-sm flex-shrink-0 transition-transform duration-200">
+        </ion-icon>
+      </button>
+
+      <!-- Submenu -->
+      <ul 
+        *ngIf="isExpanded(item) && (!isCollapsed || isMobile)"
+        class="submenu mt-1 space-y-1 overflow-hidden">
+        <ng-container *ngFor="let child of item.children; trackBy: trackByFn">
+          <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: level + 1 }"></ng-container>
+        </ng-container>
+      </ul>
+    </div>
+  </li>
+</ng-template>

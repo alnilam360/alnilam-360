@@ -1,0 +1,252 @@
+.roles-container {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// ==================== PrimeNG Table Dark Theme ====================
+.table-wrapper {
+    ::ng-deep {
+        .p-datatable {
+            background: rgb(var(--color-dark-secondary));
+            border: 1px solid rgb(var(--color-dark-border));
+            border-radius: 0.75rem;
+            overflow: hidden;
+
+            .p-datatable-header {
+                background: rgb(var(--color-dark-secondary));
+                border-bottom: 1px solid rgb(var(--color-dark-border));
+                padding: 0.75rem 1rem;
+            }
+
+            .p-datatable-thead>tr>th {
+                background: rgb(var(--color-dark-accent));
+                color: rgb(var(--color-dark-text));
+                border-bottom: 1px solid rgb(var(--color-dark-border));
+                border-right: none;
+                font-size: 0.625rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 0.625rem 0.75rem;
+
+                .p-sortable-column-icon {
+                    color: rgb(var(--color-dark-text));
+                    width: 0.75rem;
+                    height: 0.75rem;
+                }
+
+                &.p-highlight {
+                    background: rgb(var(--color-dark-accent));
+                    color: var(--brand-primary, #3b82f6);
+
+                    .p-sortable-column-icon {
+                        color: var(--brand-primary, #3b82f6);
+                    }
+                }
+
+                &:hover {
+                    background: rgba(var(--color-dark-accent), 0.8);
+                }
+            }
+
+            .p-datatable-tbody>tr {
+                background: rgb(var(--color-dark-secondary));
+                color: rgb(var(--color-heading));
+                transition: background 0.2s ease;
+
+                >td {
+                    border-bottom: 1px solid rgb(var(--color-dark-border));
+                    border-right: none;
+                    padding: 0.5rem 0.75rem;
+                    font-size: 0.75rem;
+                }
+
+                &:hover {
+                    background: rgba(var(--color-dark-accent), 0.5) !important;
+                }
+
+                &.p-highlight {
+                    background: rgba(59, 130, 246, 0.1);
+                    color: rgb(var(--color-heading));
+                }
+            }
+
+            // Paginator
+            .p-paginator {
+                background: rgb(var(--color-dark-secondary));
+                border-top: 1px solid rgb(var(--color-dark-border));
+                padding: 0.5rem 1rem;
+                border-radius: 0;
+
+                .p-paginator-page,
+                .p-paginator-first,
+                .p-paginator-prev,
+                .p-paginator-next,
+                .p-paginator-last {
+                    color: rgb(var(--color-dark-text));
+                    min-width: 2rem;
+                    height: 2rem;
+                    font-size: 0.75rem;
+                    border: none;
+                    border-radius: 0.375rem;
+
+                    &:hover {
+                        background: rgb(var(--color-dark-accent));
+                        color: rgb(var(--color-heading));
+                    }
+
+                    &.p-highlight {
+                        background: rgba(59, 130, 246, 0.2);
+                        color: #3b82f6;
+                    }
+                }
+
+                .p-paginator-current {
+                    color: rgb(var(--color-dark-text));
+                    font-size: 0.75rem;
+                }
+
+                .p-paginator-rpp-options {
+                    background: rgb(var(--color-dark-primary));
+                    border: 1px solid rgb(var(--color-dark-border));
+                    color: rgb(var(--color-heading));
+                    font-size: 0.75rem;
+                    border-radius: 0.375rem;
+                }
+            }
+
+            // Loading
+            .p-datatable-loading-overlay {
+                background: rgba(var(--color-dark-primary), 0.7);
+            }
+
+            .p-datatable-loading-icon {
+                color: #3b82f6;
+            }
+
+            .p-sortable-column {
+                cursor: pointer;
+
+                &:focus {
+                    box-shadow: none;
+                }
+            }
+        }
+
+        // Tag styles
+        .p-tag {
+            font-size: 0.625rem;
+            padding: 0.15rem 0.5rem;
+            font-weight: 600;
+        }
+    }
+}
+
+// ==================== Form Styles ====================
+.form-input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    background-color: rgb(var(--color-dark-primary));
+    border: 1px solid rgb(var(--color-dark-border));
+    border-radius: 0.5rem;
+    color: rgb(var(--color-heading));
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+
+    &::placeholder {
+        color: rgb(var(--color-dark-text));
+    }
+
+    &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    &:hover:not(:focus) {
+        border-color: rgb(var(--color-dark-text) / 0.5);
+    }
+}
+
+select.form-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a0a3b5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+textarea.form-input {
+    resize: none;
+}
+
+.form-checkbox {
+    appearance: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid rgb(var(--color-dark-border));
+    border-radius: 0.25rem;
+    background-color: rgb(var(--color-dark-primary));
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    &:checked {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 1px;
+            width: 5px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    }
+
+    &:hover:not(:checked) {
+        border-color: #3b82f6;
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+}
+
+.custom-scrollbar {
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgb(var(--color-dark-border));
+        border-radius: 3px;
+
+        &:hover {
+            background: rgb(var(--color-dark-text));
+        }
+    }
+}

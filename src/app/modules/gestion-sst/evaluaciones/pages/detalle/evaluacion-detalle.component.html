@@ -1,0 +1,302 @@
+<div class="evaluacion-detalle">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-16">
+    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!loading && evaluacion">
+
+    <!-- Top bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+      <div class="flex items-center gap-3">
+        <button (click)="volver()" title="Volver"
+          class="p-2 rounded-xl text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent border border-transparent hover:border-dark-border transition-all duration-200">
+          <ion-icon name="arrow-back-outline" class="text-lg"></ion-icon>
+        </button>
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">
+            Evaluación Res. 0312 · {{ evaluacion.tipo_evaluacion }} estándares
+          </h2>
+          <p class="text-xs text-dark-text mt-0.5">
+            Fecha: {{ evaluacion.fecha_evaluacion }} ·
+            <span [ngClass]="evaluacion.estado === 'Finalizado' ? 'text-emerald-400' : 'text-amber-400'">
+              {{ evaluacion.estado }}
+            </span>
+            <span *ngIf="evaluacion.estado === 'Finalizado'"> · Puntaje: <b>{{ evaluacion.puntaje_total | number:'1.0-2' }}%</b></span>
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button *ngIf="!isReadOnly()" (click)="guardarTodo()" [disabled]="saving"
+          class="flex items-center gap-2 px-4 py-2 bg-dark-secondary hover:bg-dark-accent border border-dark-border text-[rgb(var(--color-heading))] text-sm rounded-xl transition-all duration-200 disabled:opacity-50 shadow-sm">
+          <ion-spinner *ngIf="saving" name="crescent" style="width:14px;height:14px;"></ion-spinner>
+          <ion-icon *ngIf="!saving" name="save-outline" class="text-base"></ion-icon>
+          <span>Guardar borrador</span>
+        </button>
+        <button *ngIf="!isReadOnly()" (click)="finalizar()" [disabled]="finalizando"
+          class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm rounded-xl font-medium transition-all duration-200 shadow-lg shadow-emerald-600/25 disabled:opacity-50">
+          <ion-spinner *ngIf="finalizando" name="crescent" style="--color: white; width:14px; height:14px;"></ion-spinner>
+          <ion-icon *ngIf="!finalizando" name="checkmark-done-outline" class="text-base"></ion-icon>
+          <span>Finalizar evaluación</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div *ngIf="errorMsg"
+      class="mb-4 flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
+      <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+      <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
+      <button (click)="errorMsg = null" class="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+    <div *ngIf="successMsg"
+      class="mb-4 flex items-start gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+      <ion-icon name="checkmark-circle-outline" class="text-emerald-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+      <p class="text-sm text-emerald-300 flex-1">{{ successMsg }}</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="form">
+      <div formArrayName="items" class="space-y-4">
+
+        <!-- Acordeón por ciclo PHVA -->
+        <div *ngFor="let g of grupos"
+          class="bg-dark-secondary border border-dark-border rounded-2xl overflow-hidden shadow-sm">
+
+          <!-- Header del ciclo -->
+          <button type="button" (click)="toggleGrupo(g)"
+            class="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-dark-primary/30 transition-all duration-200 text-left">
+            <div class="flex items-center justify-center w-9 h-9 rounded-xl" [ngClass]="g.color" style="background: currentColor; opacity: 0.12;">
+              <ion-icon [name]="g.icon" class="text-xl" [ngClass]="g.color"></ion-icon>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-[rgb(var(--color-heading))]">Ciclo: {{ g.ciclo }}</p>
+              <p class="text-[11px] text-dark-text">
+                {{ progresoGrupo(g).completos }} / {{ progresoGrupo(g).total }} estándares calificados
+              </p>
+            </div>
+            <div class="progress-track w-28 h-1.5 bg-dark-primary rounded-full">
+              <div class="h-full bg-brand-primary rounded-full transition-all duration-500 ease-out"
+                [style.width.%]="progresoGrupo(g).total ? (progresoGrupo(g).completos / progresoGrupo(g).total) * 100 : 0">
+              </div>
+            </div>
+            <ion-icon [name]="g.expanded ? 'chevron-up-outline' : 'chevron-down-outline'"
+              class="text-base text-dark-text ml-1"></ion-icon>
+          </button>
+
+          <!-- Body del ciclo -->
+          <div *ngIf="g.expanded" class="border-t border-dark-border">
+            <div *ngFor="let i of g.indices; let last = last" [formGroupName]="i"
+              class="estandar-card"
+              [class.calificado]="items.at(i).get('calificacion')?.value === 'Cumple Totalmente'"
+              [class.no-cumple]="items.at(i).get('calificacion')?.value === 'No Cumple'"
+              [class.no-aplica]="items.at(i).get('calificacion')?.value === 'No Aplica'"
+              [class.border-b]="!last"
+              [class.border-dark-border]="!last">
+
+              <div class="flex items-start gap-3">
+                <div class="flex-1 min-w-0">
+
+                  <!-- Header del estándar -->
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold
+                      bg-brand-primary/15 text-brand-primary border border-brand-primary/25">
+                      {{ estandarPorIndice(i)?.item }}
+                    </span>
+                    <span class="inline-flex items-center gap-1 text-[10px] text-dark-text">
+                      <ion-icon name="analytics-outline" class="text-xs"></ion-icon>
+                      Peso: {{ estandarPorIndice(i)?.peso | number:'1.0-2' }}%
+                    </span>
+                  </div>
+
+                  <!-- Descripción -->
+                  <p class="text-[13px] text-[rgb(var(--color-heading))] leading-relaxed mb-1.5 font-medium">
+                    {{ estandarPorIndice(i)?.descripcion_estandar }}
+                  </p>
+                  <p *ngIf="estandarPorIndice(i)?.marco_legal"
+                    class="text-[10px] text-dark-text mb-4 flex items-center gap-1">
+                    <ion-icon name="book-outline" class="text-xs flex-shrink-0"></ion-icon>
+                    {{ estandarPorIndice(i)?.marco_legal }}
+                  </p>
+
+                  <!-- ═══ Calificación ═══ -->
+                  <div class="mb-4">
+                    <label class="block text-[10px] font-semibold uppercase tracking-wider text-dark-text mb-2">
+                      Calificación <span class="text-red-400">*</span>
+                    </label>
+                    <div class="flex gap-2">
+                      <label class="cal-option cal-cumple" [class.opacity-50]="isReadOnly()">
+                        <input type="radio" value="Cumple Totalmente" formControlName="calificacion">
+                        <div class="cal-label">
+                          <ion-icon name="checkmark-circle-outline"></ion-icon>
+                          Cumple Totalmente
+                        </div>
+                      </label>
+                      <label class="cal-option cal-no-cumple" [class.opacity-50]="isReadOnly()">
+                        <input type="radio" value="No Cumple" formControlName="calificacion">
+                        <div class="cal-label">
+                          <ion-icon name="close-circle-outline"></ion-icon>
+                          No Cumple
+                        </div>
+                      </label>
+                      <label class="cal-option cal-no-aplica" [class.opacity-50]="isReadOnly()">
+                        <input type="radio" value="No Aplica" formControlName="calificacion">
+                        <div class="cal-label">
+                          <ion-icon name="remove-circle-outline"></ion-icon>
+                          No Aplica
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- ═══ Justificación No Aplica ═══ -->
+                  <div *ngIf="items.at(i).get('calificacion')?.value === 'No Aplica'" class="mb-4">
+                    <div class="campo-auxiliar" style="border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05);">
+                      <ion-icon name="warning-outline" class="campo-icon" style="color: #fbbf24;"></ion-icon>
+                      <div class="campo-body">
+                        <span class="campo-label" style="color: #fbbf24;">Justificación "No Aplica" *</span>
+                        <textarea rows="2" formControlName="justificacion_no_aplica"
+                          class="campo-input"
+                          placeholder="Explique por qué este estándar no aplica a la empresa..."></textarea>
+                      </div>
+                    </div>
+                    <p *ngIf="items.at(i).get('justificacion_no_aplica')?.invalid && items.at(i).get('justificacion_no_aplica')?.touched"
+                      class="text-[10px] text-red-400 mt-1.5 ml-7 flex items-center gap-1">
+                      <ion-icon name="alert-outline" class="text-xs"></ion-icon>
+                      La justificación es obligatoria (mínimo 5 caracteres).
+                    </p>
+                  </div>
+
+                  <!-- ═══ Evidencia + Observaciones ═══ -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Evidencia URL -->
+                    <div class="campo-auxiliar">
+                      <ion-icon name="link-outline" class="campo-icon"></ion-icon>
+                      <div class="campo-body">
+                        <span class="campo-label">Evidencia (URL)</span>
+                        <input type="url" formControlName="evidencia_url"
+                          class="campo-input"
+                          placeholder="https://drive.google.com/documento...">
+                      </div>
+                    </div>
+
+                    <!-- Observaciones -->
+                    <div class="campo-auxiliar">
+                      <ion-icon name="chatbox-ellipses-outline" class="campo-icon"></ion-icon>
+                      <div class="campo-body">
+                        <span class="campo-label">Observaciones</span>
+                        <textarea rows="1" formControlName="observaciones"
+                          class="campo-input"
+                          placeholder="Notas del auditor (opcional)..."></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Botón Info -->
+                <button type="button" (click)="abrirInfo(i)" title="Ver modo de verificación"
+                  class="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl text-dark-text hover:text-brand-primary hover:bg-brand-primary/10 border border-transparent hover:border-brand-primary/25 transition-all duration-200 mt-0.5">
+                  <ion-icon name="information-circle-outline" class="text-xl"></ion-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Acción de guardado por ciclo -->
+            <div *ngIf="!isReadOnly()"
+              class="flex items-center justify-end gap-3 px-5 py-3 bg-dark-primary/30 border-t border-dark-border">
+              <p class="text-[11px] text-dark-text mr-auto flex items-center gap-1.5">
+                <ion-icon name="sync-outline" class="text-sm"></ion-icon>
+                Autoguardado parcial: guarde los cambios del ciclo "{{ g.ciclo }}" sin afectar los demás.
+              </p>
+              <button type="button" (click)="guardarGrupo(g)" [disabled]="g.saving"
+                class="flex items-center gap-2 px-4 py-2 text-xs rounded-xl border border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10 font-medium transition-all duration-200 disabled:opacity-50">
+                <ion-spinner *ngIf="g.saving" name="crescent" style="width:12px;height:12px;"></ion-spinner>
+                <ion-icon *ngIf="!g.saving" name="save-outline" class="text-sm"></ion-icon>
+                <span>Guardar ciclo {{ g.ciclo }}</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </form>
+
+  </ng-container>
+</div>
+
+<!-- Side-panel (Offcanvas) modo_verificacion -->
+<div *ngIf="showInfoPanel" class="fixed inset-0 z-50 flex info-panel-overlay" (click)="cerrarInfo()">
+  <div class="flex-1 bg-black/50 backdrop-blur-sm"></div>
+  <aside class="info-panel w-full max-w-md bg-dark-secondary border-l border-dark-border shadow-2xl overflow-y-auto"
+    (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-dark-border bg-dark-primary/30">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-brand-primary/15 flex items-center justify-center">
+          <ion-icon name="information-circle-outline" class="text-brand-primary text-lg"></ion-icon>
+        </div>
+        <h3 class="text-sm font-bold text-[rgb(var(--color-heading))]">Criterios de verificación</h3>
+      </div>
+      <button (click)="cerrarInfo()"
+        class="p-2 rounded-xl text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent border border-transparent hover:border-dark-border transition-all duration-200">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div *ngIf="infoEstandar" class="px-5 py-5 space-y-5">
+      <!-- Item + Ciclo -->
+      <div class="flex gap-4">
+        <div class="flex-1">
+          <p class="text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-1">Ítem</p>
+          <p class="text-base font-mono font-bold text-brand-primary">{{ infoEstandar.item }}</p>
+        </div>
+        <div class="flex-1">
+          <p class="text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-1">Ciclo PHVA</p>
+          <p class="text-sm text-[rgb(var(--color-heading))] font-medium">{{ infoEstandar.ciclo_phva }}</p>
+        </div>
+      </div>
+
+      <!-- Estándar -->
+      <div>
+        <p class="text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-1.5">Estándar</p>
+        <p class="text-sm text-[rgb(var(--color-heading))] leading-relaxed">{{ infoEstandar.descripcion_estandar }}</p>
+      </div>
+
+      <!-- Marco legal -->
+      <div *ngIf="infoEstandar.marco_legal"
+        class="flex items-start gap-2.5 p-3.5 bg-dark-primary/50 border border-dark-border rounded-xl">
+        <ion-icon name="book-outline" class="text-dark-text text-base mt-0.5 flex-shrink-0"></ion-icon>
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-0.5">Marco legal</p>
+          <p class="text-xs text-[rgb(var(--color-heading))] leading-relaxed">{{ infoEstandar.marco_legal }}</p>
+        </div>
+      </div>
+
+      <!-- Modo de verificación -->
+      <div class="p-4 bg-brand-primary/8 border border-brand-primary/25 rounded-xl">
+        <div class="flex items-center gap-2 mb-2.5">
+          <ion-icon name="shield-checkmark-outline" class="text-brand-primary text-lg"></ion-icon>
+          <p class="text-[10px] uppercase tracking-wider text-brand-primary font-bold">Modo de verificación</p>
+        </div>
+        <p class="text-[13px] text-[rgb(var(--color-heading))] leading-relaxed">
+          {{ infoEstandar.modo_verificacion || 'Sin guía específica definida.' }}
+        </p>
+      </div>
+
+      <!-- Peso -->
+      <div class="flex items-center gap-3 p-3.5 bg-dark-primary/50 border border-dark-border rounded-xl">
+        <ion-icon name="analytics-outline" class="text-brand-primary text-lg"></ion-icon>
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-0.5">Peso del estándar</p>
+          <p class="text-lg font-bold text-[rgb(var(--color-heading))]">{{ infoEstandar.peso | number:'1.0-2' }}%</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>

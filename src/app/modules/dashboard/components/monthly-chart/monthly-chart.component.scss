@@ -1,0 +1,25 @@
+.chart-card {
+  background: linear-gradient(145deg, #1a1c23 0%, #1e2028 100%);
+}
+
+.inspection-bar,
+.incident-bar {
+  min-height: 4px;
+  animation: growUp 0.8s ease-out;
+}
+
+@keyframes growUp {
+  from {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  to {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+}
+
+.bar-group:hover .inspection-bar,
+.bar-group:hover .incident-bar {
+  filter: brightness(1.1);
+}

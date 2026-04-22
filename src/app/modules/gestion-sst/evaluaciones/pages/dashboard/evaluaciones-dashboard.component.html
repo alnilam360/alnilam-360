@@ -1,0 +1,194 @@
+<div class="evaluaciones-dashboard">
+
+  <!-- Loading inicial (resolviendo rol) -->
+  <div *ngIf="inicializando" class="flex items-center justify-center py-16">
+    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!inicializando">
+
+    <!-- Error banner -->
+    <div *ngIf="errorMsg" class="mb-4 flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+      <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+      <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
+      <button (click)="errorMsg = null" class="p-1 text-red-400 hover:text-red-300">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+      <div>
+        <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">
+          Evaluaciones Res. 0312
+        </h2>
+        <p class="text-xs text-dark-text mt-0.5">
+          Sistema de Gestión de Seguridad y Salud en el Trabajo · Resolución 0312 de 2019
+          <span *ngIf="!esAdmin && empresa"> · {{ empresa.nombre }}</span>
+        </p>
+      </div>
+      <button (click)="abrirConfirmNueva()" [disabled]="!empresa || !resolucion"
+        class="flex items-center gap-2 px-3 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25 disabled:opacity-40 disabled:cursor-not-allowed">
+        <ion-icon name="add-outline" class="text-lg"></ion-icon>
+        <span>Nueva Evaluación Anual</span>
+      </button>
+    </div>
+
+    <!-- Selector de empresa (solo administradores) -->
+    <div *ngIf="esAdmin" class="mb-4 p-3 bg-brand-primary/5 border border-brand-primary/30 rounded-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <ion-icon name="business-outline" class="text-brand-primary text-lg"></ion-icon>
+          <label class="text-xs font-semibold text-[rgb(var(--color-heading))]">
+            Empresa:
+          </label>
+        </div>
+        <select [ngModel]="empresaSeleccionadaId" (ngModelChange)="onSeleccionEmpresa($event)"
+          class="flex-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+          <option [ngValue]="null">— Seleccione una empresa —</option>
+          <option *ngFor="let e of empresasDisponibles" [ngValue]="e.id">
+            {{ e.nombre }}<span *ngIf="e.nit"> · NIT {{ e.nit }}</span>
+          </option>
+        </select>
+      </div>
+      <p class="text-[11px] text-dark-text mt-2">
+        Como administrador, puede aplicar evaluaciones a cualquier empresa del sistema.
+      </p>
+    </div>
+
+    <!-- Estado: admin sin empresa seleccionada -->
+    <div *ngIf="esAdmin && !empresaSeleccionadaId && !loading"
+      class="p-10 bg-dark-secondary border border-dashed border-dark-border rounded-xl text-center">
+      <ion-icon name="business-outline" class="text-4xl text-dark-text mb-2"></ion-icon>
+      <p class="text-sm text-[rgb(var(--color-heading))] font-medium">
+        Seleccione una empresa para comenzar
+      </p>
+      <p class="text-[11px] text-dark-text mt-1">
+        Elija en el selector superior la empresa sobre la que desea trabajar.
+      </p>
+    </div>
+
+    <!-- Loading de datos (después de seleccionar) -->
+    <div *ngIf="loading && !inicializando" class="flex items-center justify-center py-10">
+      <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    </div>
+
+    <!-- Info del universo aplicable -->
+    <ng-container *ngIf="!loading && resolucion as r">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+        <div class="col-span-1 p-4 bg-dark-secondary border border-dark-border rounded-xl">
+          <p class="text-[10px] uppercase tracking-wide text-dark-text mb-1">Universo aplicable</p>
+          <div class="flex items-baseline gap-2">
+            <span class="text-3xl font-bold text-brand-primary">{{ r.tipo }}</span>
+            <span class="text-xs text-dark-text">estándares</span>
+          </div>
+        </div>
+        <div class="col-span-1 p-4 bg-dark-secondary border border-dark-border rounded-xl">
+          <p class="text-[10px] uppercase tracking-wide text-dark-text mb-1">Empleados</p>
+          <p class="text-2xl font-bold text-[rgb(var(--color-heading))]">{{ r.numero_empleados }}</p>
+        </div>
+        <div class="col-span-1 p-4 bg-dark-secondary border border-dark-border rounded-xl">
+          <p class="text-[10px] uppercase tracking-wide text-dark-text mb-1">Nivel de riesgo</p>
+          <p class="text-2xl font-bold text-[rgb(var(--color-heading))]">{{ r.nivel_riesgo || '—' }}</p>
+        </div>
+        <div class="col-span-1 md:col-span-1 p-4 bg-brand-primary/10 border border-brand-primary/30 rounded-xl">
+          <p class="text-[10px] uppercase tracking-wide text-brand-primary mb-1">Sistema experto</p>
+          <p class="text-[11px] text-[rgb(var(--color-heading))] leading-snug">{{ r.motivo }}</p>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Historial -->
+    <div *ngIf="!loading && empresa" class="p-0 bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+        <div>
+          <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))]">Historial de evaluaciones</h3>
+          <p class="text-[11px] text-dark-text">{{ evaluaciones.length }} evaluaciones registradas</p>
+        </div>
+      </div>
+
+      <div *ngIf="evaluaciones.length === 0" class="py-10 text-center">
+        <ion-icon name="clipboard-outline" class="text-4xl text-dark-text mb-2"></ion-icon>
+        <p class="text-xs text-dark-text">No se ha registrado ninguna evaluación aún.</p>
+        <p class="text-[11px] text-dark-text/60 mt-1">Haga clic en "Nueva Evaluación Anual" para comenzar.</p>
+      </div>
+
+      <div *ngIf="evaluaciones.length > 0" class="divide-y divide-dark-border">
+        <div *ngFor="let ev of evaluaciones"
+          class="flex items-center gap-3 px-4 py-3 hover:bg-dark-primary/40 cursor-pointer transition"
+          (click)="abrirEvaluacion(ev)">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+            [ngClass]="badgeTipo(ev.tipo_evaluacion)">
+            {{ ev.tipo_evaluacion }} estándares
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-[rgb(var(--color-heading))] font-medium">
+              {{ ev.fecha_evaluacion }}
+            </p>
+            <p class="text-[11px] text-dark-text">
+              Responsable: {{ ev.creador?.nombre || '—' }}
+              <span *ngIf="ev.observaciones"> · {{ ev.observaciones }}</span>
+            </p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-semibold" [ngClass]="semaforoPuntaje(ev.puntaje_total)">
+              {{ ev.puntaje_total | number:'1.0-2' }}%
+            </p>
+            <p class="text-[10px] text-dark-text">{{ criticoPuntaje(ev.puntaje_total) }}</p>
+          </div>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border"
+            [ngClass]="badgeEstado(ev.estado)">
+            {{ ev.estado }}
+          </span>
+          <button *ngIf="ev.estado === 'Borrador'" (click)="eliminarEvaluacion(ev); $event.stopPropagation()"
+            title="Eliminar borrador"
+            class="p-1 rounded text-dark-text hover:text-red-400 hover:bg-dark-accent transition">
+            <ion-icon name="trash-outline" class="text-base"></ion-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>
+
+<!-- Modal Confirmar Nueva Evaluación -->
+<div *ngIf="showConfirmNueva"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+  (click)="cerrarConfirmNueva()">
+  <div class="w-full max-w-md bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Nueva Evaluación Anual</h3>
+      <button (click)="cerrarConfirmNueva()"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+    <div class="px-4 py-4 space-y-3">
+      <p class="text-sm text-[rgb(var(--color-heading))]">
+        El sistema creará una nueva evaluación en estado <b>Borrador</b> con el universo aplicable a su empresa:
+      </p>
+      <div class="p-3 bg-brand-primary/10 border border-brand-primary/30 rounded-lg">
+        <p class="text-xs text-[rgb(var(--color-heading))]">
+          <b>{{ resolucion?.tipo }} estándares</b> · {{ resolucion?.motivo }}
+        </p>
+      </div>
+      <p class="text-[11px] text-dark-text">
+        Podrá diligenciarla por ciclo PHVA y finalizarla cuando esté completa.
+      </p>
+    </div>
+    <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+      <button (click)="cerrarConfirmNueva()" [disabled]="creandoNueva"
+        class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition disabled:opacity-50">
+        Cancelar
+      </button>
+      <button (click)="confirmarNuevaEvaluacion()" [disabled]="creandoNueva"
+        class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition shadow-lg shadow-brand-primary/25 disabled:opacity-50 flex items-center gap-2">
+        <ion-spinner *ngIf="creandoNueva" name="crescent"
+          style="--color: white; width: 14px; height: 14px;"></ion-spinner>
+        <span>{{ creandoNueva ? 'Creando...' : 'Crear Evaluación' }}</span>
+      </button>
+    </div>
+  </div>
+</div>

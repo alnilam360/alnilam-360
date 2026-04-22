@@ -1,0 +1,325 @@
+<div class="plan-mejora-dashboard">
+
+    <!-- Loading inicial -->
+    <div *ngIf="inicializando" class="flex items-center justify-center py-16">
+        <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    </div>
+
+    <ng-container *ngIf="!inicializando">
+
+        <!-- Alertas -->
+        <div *ngIf="errorMsg"
+            class="mb-4 flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
+            <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+            <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
+            <button (click)="errorMsg = null"
+                class="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+        <div *ngIf="successMsg"
+            class="mb-4 flex items-start gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+            <ion-icon name="checkmark-circle-outline" class="text-emerald-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+            <p class="text-sm text-emerald-300 flex-1">{{ successMsg }}</p>
+        </div>
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+            <div>
+                <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">
+                    Plan de Mejora
+                </h2>
+                <p class="text-xs text-dark-text mt-0.5">
+                    Acciones correctivas y preventivas · Resolución 0312 de 2019
+                    <span *ngIf="!esAdmin && empresa"> · {{ empresa.nombre }}</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Selector admin -->
+        <div *ngIf="esAdmin" class="mb-5 p-3.5 bg-brand-primary/5 border border-brand-primary/30 rounded-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <ion-icon name="business-outline" class="text-brand-primary text-lg"></ion-icon>
+                    <label class="text-xs font-semibold text-[rgb(var(--color-heading))]">Empresa:</label>
+                </div>
+                <select [ngModel]="empresaSeleccionadaId" (ngModelChange)="onSeleccionEmpresa($event)"
+                    class="flex-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+                    <option [ngValue]="null">— Seleccione una empresa —</option>
+                    <option *ngFor="let e of empresasDisponibles" [ngValue]="e.id">
+                        {{ e.nombre }}<span *ngIf="e.nit"> · NIT {{ e.nit }}</span>
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Estado: sin empresa -->
+        <div *ngIf="esAdmin && !empresaSeleccionadaId && !loading"
+            class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
+            <ion-icon name="business-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+            <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Seleccione una empresa</p>
+            <p class="text-[11px] text-dark-text mt-1">Elija en el selector la empresa cuyos hallazgos desea gestionar.
+            </p>
+        </div>
+
+        <!-- Loading datos -->
+        <div *ngIf="loading && !inicializando" class="flex items-center justify-center py-12">
+            <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+        </div>
+
+        <!-- Contenido principal -->
+        <ng-container *ngIf="!loading && empresa">
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                <div *ngFor="let f of filtros" (click)="aplicarFiltro(f.value)"
+                    class="stat-card p-4 bg-dark-secondary border rounded-xl cursor-pointer transition-all duration-200"
+                    [class.border-brand-primary]="filtroActivo === f.value"
+                    [class.border-brand-primary/30]="filtroActivo === f.value"
+                    [class.bg-brand-primary/5]="filtroActivo === f.value"
+                    [class.border-dark-border]="filtroActivo !== f.value"
+                    [class.hover:border-dark-text/30]="filtroActivo !== f.value">
+                    <div class="flex items-center gap-2 mb-2">
+                        <ion-icon [name]="f.icon" [ngClass]="f.color" class="text-lg"></ion-icon>
+                        <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">{{ f.label
+                            }}</span>
+                    </div>
+                    <p class="text-2xl font-bold text-[rgb(var(--color-heading))]">{{ f.count }}</p>
+                </div>
+            </div>
+
+            <!-- Lista vacía -->
+            <div *ngIf="hallazgosFiltrados.length === 0"
+                class="p-12 bg-dark-secondary border border-dark-border rounded-2xl text-center">
+                <ion-icon name="checkmark-done-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+                <p class="text-sm text-[rgb(var(--color-heading))] font-medium">
+                    {{ filtroActivo ? 'No hay hallazgos con estado "' + filtroActivo + '"' : 'No hay hallazgos
+                    registrados' }}
+                </p>
+                <p class="text-[11px] text-dark-text mt-1">
+                    Los hallazgos se generan automáticamente al calificar un estándar como "No Cumple" en una
+                    evaluación.
+                </p>
+            </div>
+
+            <!-- Tarjetas de hallazgos -->
+            <div *ngIf="hallazgosFiltrados.length > 0" class="space-y-3">
+                <div *ngFor="let h of hallazgosFiltrados" (click)="abrirModal(h)"
+                    class="hallazgo-card group p-4 bg-dark-secondary border border-dark-border rounded-xl cursor-pointer hover:border-brand-primary/40 transition-all duration-200">
+                    <div class="flex items-start gap-3">
+                        <!-- Left indicator -->
+                        <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center" [ngClass]="{
+                'bg-amber-500/15': h.estado === 'Pendiente',
+                'bg-blue-500/15': h.estado === 'En Proceso',
+                'bg-emerald-500/15': h.estado === 'Cerrado'
+              }">
+                            <ion-icon [name]="iconEstado(h.estado)" class="text-xl" [ngClass]="{
+                  'text-amber-400': h.estado === 'Pendiente',
+                  'text-blue-400': h.estado === 'En Proceso',
+                  'text-emerald-400': h.estado === 'Cerrado'
+                }"></ion-icon>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span *ngIf="h.estandar_item"
+                                    class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-brand-primary/15 text-brand-primary border border-brand-primary/25">
+                                    {{ h.estandar_item }}
+                                </span>
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+                                    [ngClass]="badgeEstado(h.estado)">
+                                    {{ h.estado }}
+                                </span>
+                            </div>
+                            <p
+                                class="text-[13px] text-[rgb(var(--color-heading))] font-medium leading-snug mb-1.5 line-clamp-2">
+                                {{ h.estandar_descripcion || 'Estándar sin descripción' }}
+                            </p>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-dark-text">
+                                <span *ngIf="h.responsable" class="flex items-center gap-1">
+                                    <ion-icon name="person-outline" class="text-xs"></ion-icon>
+                                    {{ h.responsable?.nombre || '—' }}
+                                </span>
+                                <span *ngIf="h.fecha_cierre_proyectada" class="flex items-center gap-1"
+                                    [class.text-red-400]="fechaVencida(h.fecha_cierre_proyectada) && h.estado !== 'Cerrado'">
+                                    <ion-icon name="calendar-outline" class="text-xs"></ion-icon>
+                                    {{ h.fecha_cierre_proyectada }}
+                                    <ng-container *ngIf="diasRestantes(h.fecha_cierre_proyectada) as dias">
+                                        <span *ngIf="h.estado !== 'Cerrado'" class="ml-0.5">
+                                            ({{ dias >= 0 ? dias + 'd' : 'vencido ' + (-dias) + 'd' }})
+                                        </span>
+                                    </ng-container>
+                                </span>
+                                <span *ngIf="h.presupuesto" class="flex items-center gap-1">
+                                    <ion-icon name="cash-outline" class="text-xs"></ion-icon>
+                                    ${{ h.presupuesto | number:'1.0-0' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <ion-icon name="chevron-forward-outline"
+                            class="text-base text-dark-text group-hover:text-brand-primary transition flex-shrink-0 mt-2"></ion-icon>
+                    </div>
+                </div>
+            </div>
+
+        </ng-container>
+    </ng-container>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: Editar / Cerrar hallazgo                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    (click)="cerrarModal()">
+    <div class="modal-panel w-full max-w-lg max-h-[90vh] bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div
+            class="flex items-center justify-between px-5 py-4 border-b border-dark-border bg-dark-primary/30 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-brand-primary/15 flex items-center justify-center">
+                    <ion-icon name="construct-outline" class="text-brand-primary text-lg"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-[rgb(var(--color-heading))]">Gestionar Hallazgo</h3>
+                    <p *ngIf="hallazgoSeleccionado?.estandar_item" class="text-[10px] text-dark-text">
+                        Estándar {{ hallazgoSeleccionado?.estandar_item }}
+                    </p>
+                </div>
+            </div>
+            <button (click)="cerrarModal()"
+                class="p-2 rounded-xl text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent border border-transparent hover:border-dark-border transition-all duration-200">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <!-- Body scrollable -->
+        <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+
+            <!-- Estándar incumplido (readonly) -->
+            <div class="p-3.5 bg-red-500/8 border border-red-500/20 rounded-xl">
+                <p class="text-[10px] uppercase tracking-wider text-red-400 font-semibold mb-1">Estándar incumplido</p>
+                <p class="text-[13px] text-[rgb(var(--color-heading))] leading-relaxed">
+                    {{ hallazgoSeleccionado?.estandar_descripcion || '—' }}
+                </p>
+            </div>
+
+            <!-- Estado -->
+            <div>
+                <label
+                    class="block text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-2">Estado</label>
+                <div class="flex gap-2">
+                    <label *ngFor="let e of ['Pendiente','En Proceso','Cerrado']" class="flex-1 cursor-pointer">
+                        <input type="radio" [value]="e" [(ngModel)]="modalEstado" name="modalEstado"
+                            class="peer sr-only">
+                        <div
+                            class="px-3 py-2 text-xs text-center rounded-lg border transition-all duration-200
+              border-dark-border text-dark-text
+              peer-checked:border-brand-primary peer-checked:bg-brand-primary/12 peer-checked:text-[rgb(var(--color-heading))] peer-checked:font-semibold">
+                            {{ e }}
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Acción correctiva -->
+            <div class="campo-auxiliar">
+                <ion-icon name="hammer-outline" class="campo-icon"></ion-icon>
+                <div class="campo-body">
+                    <span class="campo-label">Acción preventiva / correctiva</span>
+                    <textarea rows="3" [(ngModel)]="modalAccion" name="modalAccion" class="campo-input"
+                        placeholder="Describa la acción que se implementará para corregir el hallazgo..."></textarea>
+                </div>
+            </div>
+
+            <!-- Responsable -->
+            <div class="campo-auxiliar">
+                <ion-icon name="person-outline" class="campo-icon"></ion-icon>
+                <div class="campo-body">
+                    <span class="campo-label">Responsable</span>
+                    <select [(ngModel)]="modalResponsableId" name="modalResponsableId" class="campo-input">
+                        <option [ngValue]="null">— Sin asignar —</option>
+                        <option *ngFor="let u of usuariosEmpresa" [ngValue]="u.id">
+                            {{ u.nombre }} <span *ngIf="u.cargo"> · {{ u.cargo }}</span>
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Fecha cierre + presupuesto -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="campo-auxiliar">
+                    <ion-icon name="calendar-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Fecha cierre proyectada</span>
+                        <input type="date" [(ngModel)]="modalFechaCierre" name="modalFechaCierre" class="campo-input">
+                    </div>
+                </div>
+                <div class="campo-auxiliar">
+                    <ion-icon name="cash-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Presupuesto (COP)</span>
+                        <input type="number" [(ngModel)]="modalPresupuesto" name="modalPresupuesto" class="campo-input"
+                            placeholder="0" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notas de cierre -->
+            <div class="campo-auxiliar">
+                <ion-icon name="chatbox-ellipses-outline" class="campo-icon"></ion-icon>
+                <div class="campo-body">
+                    <span class="campo-label">Notas de cierre</span>
+                    <textarea rows="2" [(ngModel)]="modalNotasCierre" name="modalNotasCierre" class="campo-input"
+                        placeholder="Observaciones del cierre o seguimiento..."></textarea>
+                </div>
+            </div>
+
+            <!-- Evidencia -->
+            <div>
+                <label class="block text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-2">
+                    Evidencia de cierre
+                </label>
+                <div class="flex items-center gap-3">
+                    <label
+                        class="flex items-center gap-2 px-4 py-2.5 bg-dark-primary border border-dark-border rounded-xl text-xs text-[rgb(var(--color-heading))] hover:border-brand-primary/40 cursor-pointer transition-all duration-200">
+                        <ion-icon name="cloud-upload-outline" class="text-base text-brand-primary"></ion-icon>
+                        <span>{{ uploading ? 'Subiendo...' : 'Seleccionar archivo' }}</span>
+                        <input type="file" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                            class="hidden">
+                    </label>
+                    <span *ngIf="modalEvidenciaUrl" class="flex items-center gap-1.5 text-[11px] text-emerald-400">
+                        <ion-icon name="checkmark-circle" class="text-sm"></ion-icon>
+                        Evidencia cargada
+                    </span>
+                </div>
+                <a *ngIf="modalEvidenciaUrl" [href]="modalEvidenciaUrl" target="_blank"
+                    class="inline-flex items-center gap-1 mt-2 text-[11px] text-brand-primary hover:underline">
+                    <ion-icon name="open-outline" class="text-xs"></ion-icon>
+                    Ver evidencia actual
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div
+            class="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-dark-border bg-dark-primary/30 flex-shrink-0">
+            <button (click)="cerrarModal()" [disabled]="saving"
+                class="px-4 py-2 text-sm rounded-xl border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200 disabled:opacity-50">
+                Cancelar
+            </button>
+            <button (click)="guardarModal()" [disabled]="saving"
+                class="px-5 py-2 text-sm rounded-xl bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25 disabled:opacity-50 flex items-center gap-2">
+                <ion-spinner *ngIf="saving" name="crescent"
+                    style="--color: white; width: 14px; height: 14px;"></ion-spinner>
+                <span>{{ saving ? 'Guardando...' : 'Guardar cambios' }}</span>
+            </button>
+        </div>
+    </div>
+</div>

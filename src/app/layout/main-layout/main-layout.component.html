@@ -1,0 +1,17 @@
+<div class="app-layout h-screen bg-dark-secondary font-sans flex flex-col overflow-hidden">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+  
+  <!-- Header -->
+  <app-header></app-header>
+  
+  <!-- Main Content -->
+  <main 
+    class="main-content flex-1 pt-14 md:pt-16 transition-all duration-300 overflow-y-auto overflow-x-hidden"
+    [class.ml-0]="isMobile"
+    [style.margin-left]="isMobile ? '0' : (isCollapsed ? '5rem' : '16rem')">
+    <div class="p-3 sm:p-4 md:p-6 pb-20 md:pb-6">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

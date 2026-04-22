@@ -1,0 +1,91 @@
+.iperc-dashboard {
+    padding: 1rem;
+    animation: fadeInUp 0.35s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card {
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+.risk-card {
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.campo-auxiliar {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    background: rgba(var(--color-dark-primary), 0.5);
+    border: 1px solid rgb(var(--color-dark-border));
+    border-radius: 0.5rem;
+    transition: border-color 0.2s ease;
+
+    &:focus-within {
+        border-color: var(--brand-primary, #3b82f6);
+        background: rgba(var(--color-dark-primary), 0.8);
+    }
+
+    .campo-icon {
+        flex-shrink: 0;
+        font-size: 1rem;
+        color: rgb(var(--color-dark-text));
+        margin-top: 0.125rem;
+        transition: color 0.2s ease;
+    }
+
+    &:focus-within .campo-icon {
+        color: var(--brand-primary, #3b82f6);
+    }
+
+    .campo-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .campo-input {
+        width: 100%;
+        padding: 0;
+        background: transparent;
+        border: none;
+        color: rgb(var(--color-heading));
+        font-size: 0.8125rem;
+        line-height: 1.5;
+        outline: none;
+
+        &::placeholder {
+            color: rgba(var(--color-dark-text), 0.5);
+            font-size: 0.75rem;
+        }
+    }
+}

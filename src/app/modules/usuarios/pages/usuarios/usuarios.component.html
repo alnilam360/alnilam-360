@@ -1,0 +1,233 @@
+<div class="usuarios-container">
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">Gestión de Usuarios</h2>
+            <p class="text-xs text-dark-text mt-0.5">Administración de usuarios y asignación a empresas</p>
+        </div>
+        <button (click)="openModal()"
+            class="flex items-center gap-2 px-3 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
+            <ion-icon name="person-add-outline" class="text-lg"></ion-icon>
+            <span>Agregar Usuario</span>
+        </button>
+    </div>
+
+    <!-- PrimeNG Table Section -->
+    <div class="table-wrapper">
+        <p-table #dt [value]="usuarios" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 25]"
+            [loading]="loading" [globalFilterFields]="['nombre', 'email', 'rol', 'cargo']"
+            [tableStyle]="{ 'min-width': '50rem' }" dataKey="id" [rowHover]="true" [showCurrentPageReport]="true"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} usuarios"
+            styleClass="p-datatable-sm p-datatable-gridlines">
+
+            <!-- Caption / Search -->
+            <ng-template pTemplate="caption">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="relative flex-1 max-w-md">
+                        <ion-icon name="search-outline"
+                            class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></ion-icon>
+                        <input type="text" (input)="onGlobalFilter($event)"
+                            placeholder="Buscar por nombre, email, rol..."
+                            class="w-full pl-9 pr-3 py-2 text-sm bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200">
+                    </div>
+                    <span class="text-xs text-dark-text">{{ usuarios.length }} usuarios registrados</span>
+                </div>
+            </ng-template>
+
+            <!-- Header -->
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 5rem" class="text-center">Acciones</th>
+                    <th pSortableColumn="nombre">
+                        Nombre <p-sortIcon field="nombre"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="email">
+                        Email <p-sortIcon field="email"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="rol">
+                        Rol <p-sortIcon field="rol"></p-sortIcon>
+                    </th>
+                    <th>Empresa</th>
+                    <th pSortableColumn="cargo">
+                        Cargo <p-sortIcon field="cargo"></p-sortIcon>
+                    </th>
+                    <th>Teléfono</th>
+                    <th class="text-center" pSortableColumn="estado">
+                        Estado <p-sortIcon field="estado"></p-sortIcon>
+                    </th>
+                </tr>
+            </ng-template>
+
+            <!-- Body -->
+            <ng-template pTemplate="body" let-usuario>
+                <tr>
+                    <td class="text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button (click)="editUsuario(usuario)" title="Editar usuario"
+                                class="p-1 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
+                                <ion-icon name="create-outline" class="text-base"></ion-icon>
+                            </button>
+                            <button (click)="toggleEstado(usuario)"
+                                [title]="usuario.estado ? 'Desactivar usuario' : 'Activar usuario'"
+                                class="p-1 rounded text-dark-text hover:bg-dark-accent transition-all duration-200"
+                                [class.hover:text-red-500]="usuario.estado"
+                                [class.hover:text-green-500]="!usuario.estado">
+                                <ion-icon [name]="usuario.estado ? 'toggle-outline' : 'toggle-outline'"
+                                    class="text-base"></ion-icon>
+                            </button>
+                            <button (click)="deleteUsuario(usuario.id)" title="Eliminar usuario"
+                                class="p-1 rounded text-dark-text hover:text-red-500 hover:bg-dark-accent transition-all duration-200">
+                                <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-7 h-7 rounded-full bg-brand-primary/20 flex items-center justify-center flex-shrink-0">
+                                <span class="text-[10px] font-bold text-brand-primary uppercase">{{
+                                    usuario.nombre?.charAt(0) }}{{ usuario.nombre?.split(' ')[1]?.charAt(0) || ''
+                                    }}</span>
+                            </div>
+                            <span class="text-xs font-medium text-[rgb(var(--color-heading))]">{{ usuario.nombre
+                                }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-[10px] text-dark-text">{{ usuario.email }}</span>
+                    </td>
+                    <td>
+                        <p-tag [value]="getRolNombre(usuario)" [severity]="getRolSeverity(usuario)"></p-tag>
+                    </td>
+                    <td>
+                        <span class="text-xs text-[rgb(var(--color-heading))]">{{ getEmpresaNombre(usuario) }}</span>
+                    </td>
+                    <td>
+                        <span class="text-xs text-dark-text">{{ usuario.cargo }}</span>
+                    </td>
+                    <td>
+                        <span class="text-xs text-[rgb(var(--color-heading))]">{{ usuario.telefono }}</span>
+                    </td>
+                    <td class="text-center">
+                        <p-tag [value]="usuario.estado ? 'Activo' : 'Inactivo'"
+                            [severity]="getEstadoSeverity(usuario.estado)"></p-tag>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <!-- Empty Message -->
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="8" class="text-center py-8">
+                        <div class="flex flex-col items-center gap-2">
+                            <ion-icon name="people-outline" class="text-3xl text-dark-text"></ion-icon>
+                            <p class="text-xs text-dark-text">No se encontraron usuarios</p>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Modal Registro/Edición de Usuario -->
+<div *ngIf="showModal"
+    class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+    (click)="closeModal()">
+    <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+        (click)="$event.stopPropagation()">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+            <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">
+                {{ selectedUsuario ? 'Editar Usuario' : 'Nuevo Usuario' }}
+            </h3>
+            <button (click)="closeModal()"
+                class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+            <form class="space-y-5">
+
+                <!-- Sección: Información Personal -->
+                <div class="form-section">
+                    <h4
+                        class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+                        <ion-icon name="person-outline" class="text-base text-brand-primary"></ion-icon>
+                        Información Personal
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="form-group md:col-span-2">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Nombre Completo</label>
+                            <input type="text" [(ngModel)]="formUsuario.nombre" name="nombre"
+                                placeholder="Nombre y apellidos" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Email</label>
+                            <input type="email" [(ngModel)]="formUsuario.email" name="email"
+                                placeholder="correo@ejemplo.com" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Teléfono</label>
+                            <input type="tel" [(ngModel)]="formUsuario.telefono" name="telefono"
+                                placeholder="Ej: 3001234567" class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Asignación -->
+                <div class="form-section">
+                    <h4
+                        class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
+                        <ion-icon name="business-outline" class="text-base text-brand-primary"></ion-icon>
+                        Asignación y Rol
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="form-group">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Empresa</label>
+                            <select [(ngModel)]="formUsuario.empresa_id" name="empresa_id" class="form-input">
+                                <option value="">Seleccione una empresa...</option>
+                                <option *ngFor="let emp of empresas" [value]="emp.id">{{ emp.nombre }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Rol</label>
+                            <select [(ngModel)]="formUsuario.rol_id" name="rol_id" class="form-input">
+                                <option value="">Seleccione un rol...</option>
+                                <option *ngFor="let r of rolesFiltrados" [value]="r.id">{{ r.nombre }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-medium text-dark-text mb-1">Cargo</label>
+                            <input type="text" [(ngModel)]="formUsuario.cargo" name="cargo"
+                                placeholder="Ej: Gerente, Coordinador..." class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="flex items-center gap-3 cursor-pointer mt-5">
+                                <input type="checkbox" [(ngModel)]="formUsuario.estado" name="estado"
+                                    class="form-checkbox">
+                                <span class="text-sm text-[rgb(var(--color-heading))]">Usuario Activo</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+            <button (click)="closeModal()"
+                class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+                Cancelar
+            </button>
+            <button (click)="saveUsuario()"
+                class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
+                {{ selectedUsuario ? 'Guardar Cambios' : 'Crear Usuario' }}
+            </button>
+        </div>
+    </div>
+</div>
