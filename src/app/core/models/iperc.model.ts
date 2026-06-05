@@ -37,14 +37,20 @@ export interface MatrizIperc {
     zona_lugar?: string | null;
     actividad: string;
     es_rutinaria: boolean;
+    tareas?: string | null;
+    cargo?: string | null;
     // Peligro
     peligro_id?: string | null;
     peligro_descripcion?: string | null;
     efectos_posibles?: string | null;
-    // Controles
+    // Controles existentes
     control_fuente?: string | null;
     control_medio?: string | null;
     control_individuo?: string | null;
+    // Criterios para establecer controles
+    expuestos_directos?: number;
+    contratistas?: number;
+    requisitos_legales?: boolean;
     // Evaluación
     nivel_deficiencia: NivelDeficiencia;
     nivel_exposicion: NivelExposicion;
@@ -56,8 +62,13 @@ export interface MatrizIperc {
     interpretacion_np?: string | null;
     nivel_intervencion?: NivelIntervencion | null;
     aceptabilidad?: Aceptabilidad | null;
-    // Medidas
+    // Medidas de intervención (jerarquía de controles)
     medidas_intervencion?: string | null;
+    eliminacion?: string | null;
+    sustitucion?: string | null;
+    controles_ingenieria?: string | null;
+    controles_administrativos?: string | null;
+    epp?: string | null;
     // Metadata
     creado_por?: string | null;
     created_at?: string;

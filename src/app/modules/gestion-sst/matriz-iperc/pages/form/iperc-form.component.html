@@ -29,19 +29,19 @@
         </div>
 
         <!-- Stepper indicator -->
-        <div class="stepper-bar flex items-center gap-1.5 mb-6 px-1">
-            <div *ngFor="let paso of pasos; let i = index" class="flex items-center gap-1.5 flex-1">
+        <div class="stepper-bar flex items-center gap-1 mb-6 px-1">
+            <div *ngFor="let paso of pasos; let i = index" class="flex items-center gap-1 flex-1">
                 <button (click)="irPaso(i)"
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 w-full justify-center"
+                    class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-200 w-full justify-center"
                     [ngClass]="{
                         'bg-brand-primary text-white shadow-md shadow-brand-primary/25': pasoActivo === i,
                         'bg-dark-secondary text-dark-text border border-dark-border hover:border-brand-primary/30': pasoActivo !== i && pasoValido(i),
                         'bg-dark-secondary text-dark-text/50 border border-dark-border': pasoActivo !== i && !pasoValido(i)
                     }">
-                    <span class="hidden sm:inline">{{ paso }}</span>
-                    <span class="sm:hidden">{{ i + 1 }}</span>
+                    <span class="hidden md:inline">{{ paso }}</span>
+                    <span class="md:hidden">{{ i + 1 }}</span>
                 </button>
-                <div *ngIf="i < pasos.length - 1" class="w-3 h-px bg-dark-border flex-shrink-0"></div>
+                <div *ngIf="i < pasos.length - 1" class="w-2 h-px bg-dark-border flex-shrink-0"></div>
             </div>
         </div>
 
@@ -90,6 +90,24 @@
                         </div>
                     </div>
                 </div>
+                <!-- Nuevo: Tareas -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="list-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Tareas</span>
+                        <textarea rows="3" formControlName="tareas" class="campo-input"
+                            placeholder="Describa las tareas específicas asociadas al proceso y actividad..."></textarea>
+                    </div>
+                </div>
+                <!-- Nuevo: Cargo -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="briefcase-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Cargo</span>
+                        <input type="text" formControlName="cargo" class="campo-input"
+                            placeholder="Ej: Operario, Técnico, Coordinador...">
+                    </div>
+                </div>
             </div>
 
             <!-- ===== PASO 1: PELIGRO ===== -->
@@ -119,7 +137,7 @@
                 </div>
             </div>
 
-            <!-- ===== PASO 2: CONTROLES ===== -->
+            <!-- ===== PASO 2: CONTROLES EXISTENTES ===== -->
             <div *ngIf="pasoActivo === 2" class="step-panel space-y-4">
                 <p class="text-xs text-dark-text mb-2">Describa los controles existentes para mitigar el peligro:</p>
                 <div class="campo-auxiliar">
@@ -148,8 +166,106 @@
                 </div>
             </div>
 
-            <!-- ===== PASO 3: EVALUACIÓN ===== -->
+            <!-- ===== PASO 3: CRITERIOS PARA ESTABLECER CONTROLES ===== -->
             <div *ngIf="pasoActivo === 3" class="step-panel space-y-4">
+                <p class="text-xs text-dark-text mb-2">Defina los criterios para establecer los controles:</p>
+
+                <!-- Expuestos Directos -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="people-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">No. de Expuestos Directos</span>
+                        <p-inputNumber formControlName="expuestos_directos"
+                            [min]="0" [showButtons]="true" [inputStyleClass]="'iperc-input-number'"
+                            placeholder="0">
+                        </p-inputNumber>
+                    </div>
+                </div>
+
+                <!-- Contratistas -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="people-circle-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">No. de Contratistas</span>
+                        <p-inputNumber formControlName="contratistas"
+                            [min]="0" [showButtons]="true" [inputStyleClass]="'iperc-input-number'"
+                            placeholder="0">
+                        </p-inputNumber>
+                    </div>
+                </div>
+
+                <!-- Requisitos Legales -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="document-text-outline" class="campo-icon"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Existencia de Requisitos Legales Específicos</span>
+                        <div class="flex items-center gap-3 mt-2">
+                            <p-toggleSwitch formControlName="requisitos_legales"></p-toggleSwitch>
+                            <span class="text-sm text-[rgb(var(--color-heading))]">
+                                {{ form.get('requisitos_legales')?.value ? 'Sí aplica' : 'No aplica' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PASO 4: MEDIDAS DE INTERVENCIÓN ===== -->
+            <div *ngIf="pasoActivo === 4" class="step-panel space-y-4">
+                <p class="text-xs text-dark-text mb-2">Jerarquía de controles — Medidas de intervención propuestas:</p>
+
+                <!-- Eliminación -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="close-circle-outline" class="campo-icon text-red-400"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Eliminación</span>
+                        <textarea rows="3" formControlName="eliminacion" class="campo-input"
+                            placeholder="modificar un diseño para eliminar el peligro, por ejemplo, introducir dispositivos mecánicos de levantamiento para eliminar el peligro de manipulación manual."></textarea>
+                    </div>
+                </div>
+
+                <!-- Sustitución -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="swap-vertical-outline" class="campo-icon text-orange-400"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Sustitución</span>
+                        <textarea rows="3" formControlName="sustitucion" class="campo-input"
+                            placeholder="reemplazar por un material menos peligroso o reducir la energía del sistema (por ejemplo, reducir la fuerza, el amperaje, la presión, la temperatura, etc.)."></textarea>
+                    </div>
+                </div>
+
+                <!-- Controles de Ingeniería -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="build-outline" class="campo-icon text-yellow-400"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Controles de Ingeniería</span>
+                        <textarea rows="3" formControlName="controles_ingenieria" class="campo-input"
+                            placeholder="Instalar sistemas de ventilación, barreras físicas, encerramientos, protecciones en máquinas, insonorización..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Controles Administrativos -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="clipboard-outline" class="campo-icon text-blue-400"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Controles Administrativos</span>
+                        <textarea rows="3" formControlName="controles_administrativos" class="campo-input"
+                            placeholder="Capacitaciones, procedimientos de trabajo, señalización, permisos de trabajo, rotación de personal, pausas activas..."></textarea>
+                    </div>
+                </div>
+
+                <!-- EPP -->
+                <div class="campo-auxiliar">
+                    <ion-icon name="body-outline" class="campo-icon text-emerald-400"></ion-icon>
+                    <div class="campo-body">
+                        <span class="campo-label">Elementos de Protección Personal (EPP)</span>
+                        <textarea rows="3" formControlName="epp" class="campo-input"
+                            placeholder="Casco, guantes, gafas de seguridad, protección auditiva, arnés, botas de seguridad, respiradores..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PASO 5: EVALUACIÓN ===== -->
+            <div *ngIf="pasoActivo === 5" class="step-panel space-y-4">
                 <!-- ND -->
                 <div class="campo-auxiliar">
                     <ion-icon name="speedometer-outline" class="campo-icon"></ion-icon>
@@ -218,11 +334,11 @@
                     </div>
                 </div>
 
-                <!-- Medidas de intervención -->
+                <!-- Medidas de intervención generales -->
                 <div class="campo-auxiliar mt-4">
                     <ion-icon name="bulb-outline" class="campo-icon"></ion-icon>
                     <div class="campo-body">
-                        <span class="campo-label">Medidas de intervención propuestas</span>
+                        <span class="campo-label">Medidas de intervención propuestas (resumen)</span>
                         <textarea rows="3" formControlName="medidas_intervencion" class="campo-input"
                             placeholder="Acciones de control adicionales para reducir el nivel de riesgo..."></textarea>
                     </div>

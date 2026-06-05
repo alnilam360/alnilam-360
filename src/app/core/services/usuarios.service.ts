@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseClientService } from './supabase-client.service';
 import { Usuario } from '../models/models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
@@ -35,6 +36,9 @@ export class UsuariosService {
      * 1. Llama al Edge Function `invite-user` que usa `auth.admin.inviteUserByEmail()`.
      * 2. Supabase envía un email al usuario con un link para asignar su contraseña.
      * 3. El Edge Function también crea el perfil en la tabla `usuarios` con `auth_id`.
+     *
+     * El parámetro `redirectTo` dirige al usuario a la ruta `/auth/asignar-password`
+     * donde podrá establecer su contraseña.
      */
     async createUsuario(usuario: Partial<Usuario>): Promise<Usuario> {
         const email = usuario.email?.trim();
@@ -42,8 +46,31 @@ export class UsuariosService {
             throw new Error('El correo electrónico es requerido.');
         }
 
-        const { data: sessionData } = await this.sb.client.auth.getSession();
-        const accessToken = sessionData?.session?.access_token;
+        // Forzar refresh de sesión para garantizar token válido
+        const { data: sessionData, error: sessionError } = await this.sb.client.auth.getSession();
+
+        if (sessionError) {
+            console.error('Error obteniendo sesión:', sessionError.message);
+        }
+
+        let accessToken = sessionData?.session?.access_token;
+
+        // Si el token no existe, intentar refrescar
+        if (!accessToken) {
+            const { data: refreshData, error: refreshError } = await this.sb.client.auth.refreshSession();
+            if (refreshError || !refreshData?.session) {
+                throw new Error(
+                    'No hay sesión activa. Por favor, inicie sesión nuevamente antes de crear usuarios.'
+                );
+            }
+            accessToken = refreshData.session.access_token;
+        }
+
+        // Construir redirectTo dinámicamente según el entorno
+        const baseUrl = environment.production
+            ? (environment as any).siteUrl || window.location.origin
+            : window.location.origin;
+        const redirectTo = `${baseUrl}/auth/asignar-password`;
 
         const { data, error } = await this.sb.client.functions.invoke('invite-user', {
             body: {
@@ -53,15 +80,21 @@ export class UsuariosService {
                 empresa_id: usuario.empresa_id,
                 telefono: usuario.telefono || null,
                 cargo: usuario.cargo || null,
-                estado: usuario.estado ?? true
+                estado: usuario.estado ?? true,
+                redirectTo
             },
-            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
+            headers: { Authorization: `Bearer ${accessToken}` }
         });
 
+        // Manejar errores del SDK (transport, timeout, etc.)
         if (error) {
-            throw new Error(error.message || 'Error al crear usuario.');
+            const edgeMsg = typeof error === 'object' && error !== null && 'message' in error
+                ? (error as { message: string }).message
+                : String(error);
+            throw new Error(`Error al invocar Edge Function: ${edgeMsg}`);
         }
 
+        // Manejar errores lógicos retornados por la función
         if (data?.error) {
             throw new Error(data.error);
         }

@@ -22,7 +22,7 @@ export class IpercFormComponent implements OnInit, OnDestroy {
 
     form!: FormGroup;
     pasoActivo = 0;
-    pasos = ['Contexto', 'Peligro', 'Controles', 'Evaluación'];
+    pasos = ['Contexto', 'Peligro', 'Controles', 'Criterios de Control', 'Medidas de Intervención', 'Evaluación'];
 
     opcionesND = OPCIONES_ND;
     opcionesNE = OPCIONES_NE;
@@ -67,19 +67,31 @@ export class IpercFormComponent implements OnInit, OnDestroy {
 
     private buildForm(): void {
         this.form = this.fb.group({
-            // Paso 1: Contexto
+            // Paso 0: Contexto
             proceso: ['', Validators.required],
             zona_lugar: [''],
             actividad: ['', Validators.required],
             es_rutinaria: [true],
-            // Paso 2: Peligro
+            tareas: [''],
+            cargo: [''],
+            // Paso 1: Peligro
             peligro_id: [null, Validators.required],
             efectos_posibles: [''],
-            // Paso 3: Controles
+            // Paso 2: Controles existentes
             control_fuente: [''],
             control_medio: [''],
             control_individuo: [''],
-            // Paso 4: Evaluación
+            // Paso 3: Criterios para establecer controles
+            expuestos_directos: [0],
+            contratistas: [0],
+            requisitos_legales: [false],
+            // Paso 4: Medidas de intervención (jerarquía de controles)
+            eliminacion: [''],
+            sustitucion: [''],
+            controles_ingenieria: [''],
+            controles_administrativos: [''],
+            epp: [''],
+            // Paso 5: Evaluación
             nivel_deficiencia: [10, Validators.required],
             nivel_exposicion: [1, Validators.required],
             nivel_consecuencia: [10, Validators.required],
@@ -133,11 +145,21 @@ export class IpercFormComponent implements OnInit, OnDestroy {
                         zona_lugar: reg.zona_lugar,
                         actividad: reg.actividad,
                         es_rutinaria: reg.es_rutinaria,
+                        tareas: reg.tareas,
+                        cargo: reg.cargo,
                         peligro_id: reg.peligro_id,
                         efectos_posibles: reg.efectos_posibles,
                         control_fuente: reg.control_fuente,
                         control_medio: reg.control_medio,
                         control_individuo: reg.control_individuo,
+                        expuestos_directos: reg.expuestos_directos ?? 0,
+                        contratistas: reg.contratistas ?? 0,
+                        requisitos_legales: reg.requisitos_legales ?? false,
+                        eliminacion: reg.eliminacion,
+                        sustitucion: reg.sustitucion,
+                        controles_ingenieria: reg.controles_ingenieria,
+                        controles_administrativos: reg.controles_administrativos,
+                        epp: reg.epp,
                         nivel_deficiencia: reg.nivel_deficiencia,
                         nivel_exposicion: reg.nivel_exposicion,
                         nivel_consecuencia: reg.nivel_consecuencia,
@@ -174,8 +196,10 @@ export class IpercFormComponent implements OnInit, OnDestroy {
         switch (paso) {
             case 0: return !!(this.form.get('proceso')?.value && this.form.get('actividad')?.value);
             case 1: return !!this.form.get('peligro_id')?.value;
-            case 2: return true; // controles son opcionales
-            case 3: return this.form.get('nivel_deficiencia')?.valid && this.form.get('nivel_exposicion')?.valid && this.form.get('nivel_consecuencia')?.valid ? true : false;
+            case 2: return true; // controles existentes son opcionales
+            case 3: return true; // criterios de control son opcionales
+            case 4: return true; // medidas de intervención son opcionales
+            case 5: return this.form.get('nivel_deficiencia')?.valid && this.form.get('nivel_exposicion')?.valid && this.form.get('nivel_consecuencia')?.valid ? true : false;
             default: return false;
         }
     }
@@ -209,12 +233,22 @@ export class IpercFormComponent implements OnInit, OnDestroy {
             zona_lugar: val.zona_lugar || null,
             actividad: val.actividad,
             es_rutinaria: val.es_rutinaria,
+            tareas: val.tareas || null,
+            cargo: val.cargo || null,
             peligro_id: val.peligro_id,
             peligro_descripcion: this.peligrosTodos.find(p => p.id === val.peligro_id)?.descripcion ?? null,
             efectos_posibles: val.efectos_posibles || null,
             control_fuente: val.control_fuente || null,
             control_medio: val.control_medio || null,
             control_individuo: val.control_individuo || null,
+            expuestos_directos: val.expuestos_directos ?? 0,
+            contratistas: val.contratistas ?? 0,
+            requisitos_legales: val.requisitos_legales ?? false,
+            eliminacion: val.eliminacion || null,
+            sustitucion: val.sustitucion || null,
+            controles_ingenieria: val.controles_ingenieria || null,
+            controles_administrativos: val.controles_administrativos || null,
+            epp: val.epp || null,
             nivel_deficiencia: Number(val.nivel_deficiencia),
             nivel_exposicion: Number(val.nivel_exposicion),
             nivel_consecuencia: Number(val.nivel_consecuencia),
