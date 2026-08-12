@@ -12,10 +12,10 @@ export class EmpresasService {
     async getEmpresas(): Promise<Empresa[]> {
         const { data, error } = await this.sb.client
             .from('empresas')
-            .select('*')
+            .select('*, oficio_ciuo:catalogo_ciuo_oficios(id, clase_riesgo, codigo_ciuo, descripcion_oficio, nivel_riesgo_numeral)')
             .order('nombre');
         if (error) throw error;
-        return data || [];
+        return (data as Empresa[]) || [];
     }
 
     async createEmpresa(empresa: Partial<Empresa>): Promise<Empresa> {

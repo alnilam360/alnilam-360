@@ -1,62 +1,29 @@
 import { Injectable } from '@angular/core';
 import { SupabaseClientService } from './supabase-client.service';
-import { AuthService } from './auth.service';
+import { TenantService } from './tenant.service';
 import {
-    MatrizIperc, PeligroCatalogo,
+    MatrizIperc, PeligroCatalogo, IpercHistorial,
     NivelDeficiencia, NivelExposicion, NivelConsecuencia,
     NivelIntervencion, Aceptabilidad
 } from '../models/iperc.model';
-import { Empresa, Usuario } from '../models/models';
+import { Empresa } from '../models/models';
 
-// ============================================================================
-// IpercService — CRUD + Motor GTC 45
-// ============================================================================
 @Injectable({ providedIn: 'root' })
 export class IpercService {
 
     constructor(
         private sb: SupabaseClientService,
-        private auth: AuthService
+        private tenant: TenantService
     ) { }
 
     // ========================================================================
-    // Auth / Tenant helpers
+    // Tenant helpers (delegate)
     // ========================================================================
 
-    private async getPerfilSeguro(): Promise<Usuario | null> {
-        let perfil = this.auth.currentPerfil;
-        if (perfil) return perfil;
-        perfil = await this.auth.waitForProfile();
-        return perfil ?? null;
-    }
-
-    async isAdministrador(): Promise<boolean> {
-        const perfil = await this.getPerfilSeguro();
-        if (!perfil) return false;
-        const rol = ((perfil as any).rol_data?.nombre ?? perfil.rol ?? '')
-            .toString().trim().toUpperCase();
-        return ['ADMINISTRADOR', 'ADMIN', 'SUPER ADMIN', 'SUPERADMIN'].includes(rol);
-    }
-
-    async listarEmpresasDisponibles(): Promise<Empresa[]> {
-        if (await this.isAdministrador()) {
-            const { data, error } = await this.sb.client
-                .from('empresas').select('*').order('nombre', { ascending: true });
-            if (error) throw error;
-            return (data as Empresa[]) ?? [];
-        }
-        const perfil = await this.getPerfilSeguro();
-        if (!perfil?.empresa_id) return [];
-        const { data, error } = await this.sb.client
-            .from('empresas').select('*').eq('id', perfil.empresa_id).single();
-        if (error) return [];
-        return [data as Empresa];
-    }
-
-    async getEmpresaTenantId(): Promise<string | null> {
-        const perfil = await this.getPerfilSeguro();
-        return perfil?.empresa_id ?? null;
-    }
+    isAdministrador(): Promise<boolean> { return this.tenant.isAdministrador(); }
+    listarEmpresasDisponibles(): Promise<Empresa[]> { return this.tenant.listarEmpresasDisponibles(); }
+    getEmpresaTenantId(): Promise<string | null> { return this.tenant.getEmpresaTenantId(); }
+    getEmpresaPorId(id: string): Promise<Empresa> { return this.tenant.getEmpresaPorId(id); }
 
     // ========================================================================
     // Motor GTC 45 (Lógica Pura)
@@ -67,7 +34,6 @@ export class IpercService {
         return nd * ne;
     }
 
-    /** Interpretación del Nivel de Probabilidad */
     interpretarNP(np: number): string {
         if (np >= 24) return 'Muy Alto';
         if (np >= 10) return 'Alto';
@@ -80,7 +46,6 @@ export class IpercService {
         return np * nc;
     }
 
-    /** Clasificación del Nivel de Intervención (I–IV) según tabla GTC 45 */
     clasificarNR(nr: number): NivelIntervencion {
         if (nr >= 600) return 'I';
         if (nr >= 150) return 'II';
@@ -88,7 +53,6 @@ export class IpercService {
         return 'IV';
     }
 
-    /** Aceptabilidad según nivel de intervención */
     determinarAceptabilidad(nivel: NivelIntervencion): Aceptabilidad {
         switch (nivel) {
             case 'I': return 'No Aceptable';
@@ -98,7 +62,6 @@ export class IpercService {
         }
     }
 
-    /** Evaluación completa: recibe ND, NE, NC y retorna todo */
     evaluarRiesgo(nd: NivelDeficiencia, ne: NivelExposicion, nc: NivelConsecuencia) {
         const np = this.calcularNP(nd, ne);
         const nr = this.calcularNR(np, nc);
@@ -108,7 +71,6 @@ export class IpercService {
         return { np, nr, interpretacionNp, nivelIntervencion, aceptabilidad };
     }
 
-    /** Color semáforo por nivel de intervención */
     colorNivel(nivel: NivelIntervencion | string | null | undefined): string {
         switch (nivel) {
             case 'I': return 'red';
@@ -148,7 +110,7 @@ export class IpercService {
         return (data as unknown as MatrizIperc) ?? null;
     }
 
-    async crear(registro: Omit<MatrizIperc, 'id' | 'nivel_probabilidad' | 'nivel_riesgo' | 'created_at' | 'updated_at'>): Promise<MatrizIperc> {
+    async crear(registro: Omit<MatrizIperc, 'id' | 'nivel_probabilidad' | 'nivel_riesgo' | 'np_post' | 'nr_post' | 'peligro' | 'created_at' | 'updated_at'>): Promise<MatrizIperc> {
         const { data, error } = await this.sb.client
             .from('sst_matriz_iperc')
             .insert(registro)
@@ -159,8 +121,7 @@ export class IpercService {
     }
 
     async actualizar(id: string, patch: Partial<MatrizIperc>): Promise<MatrizIperc> {
-        // Excluir campos generados
-        const { nivel_probabilidad, nivel_riesgo, ...rest } = patch;
+        const { nivel_probabilidad, nivel_riesgo, np_post, nr_post, peligro, ...rest } = patch as any;
         const { data, error } = await this.sb.client
             .from('sst_matriz_iperc')
             .update(rest)
@@ -192,7 +153,6 @@ export class IpercService {
         return (data as PeligroCatalogo[]) ?? [];
     }
 
-    /** Agrupa peligros por clasificación para el selector */
     agruparPeligros(peligros: PeligroCatalogo[]): { clasificacion: string; items: PeligroCatalogo[] }[] {
         const mapa = new Map<string, PeligroCatalogo[]>();
         for (const p of peligros) {
@@ -201,6 +161,37 @@ export class IpercService {
             mapa.set(p.clasificacion, lista);
         }
         return Array.from(mapa.entries()).map(([clasificacion, items]) => ({ clasificacion, items }));
+    }
+
+    // ========================================================================
+    // Historial / Control de Cambios
+    // ========================================================================
+
+    async registrarCambio(entry: {
+        empresa_id: string;
+        registro_id?: string | null;
+        descripcion: string;
+    }): Promise<void> {
+        const perfil = await this.tenant.getPerfilSeguro();
+        const { error } = await this.sb.client
+            .from('sst_matriz_iperc_historial')
+            .insert({
+                empresa_id: entry.empresa_id,
+                registro_id: entry.registro_id ?? null,
+                descripcion: entry.descripcion,
+                usuario_id: perfil?.id ?? null
+            });
+        if (error) throw error;
+    }
+
+    async listarHistorial(empresaId: string): Promise<IpercHistorial[]> {
+        const { data, error } = await this.sb.client
+            .from('sst_matriz_iperc_historial')
+            .select('*, usuario:usuarios!sst_matriz_iperc_historial_usuario_id_fkey(id, nombre, email)')
+            .eq('empresa_id', empresaId)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return (data as unknown as IpercHistorial[]) ?? [];
     }
 
     // ========================================================================

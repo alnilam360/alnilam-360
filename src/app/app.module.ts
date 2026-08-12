@@ -30,7 +30,7 @@ import { LayoutModule } from './layout/layout.module';
       theme: {
         preset: Aura,
         options: {
-          darkModeSelector: '.dark-mode',
+          darkModeSelector: 'body.theme-dark',
           cssLayer: false
         }
       }

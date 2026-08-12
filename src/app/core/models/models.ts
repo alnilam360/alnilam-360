@@ -1,3 +1,13 @@
+export interface CatalogoCiuoOficio {
+    id: string;
+    clase_riesgo: string;
+    codigo_ciuo: string;
+    descripcion_oficio: string;
+    nivel_riesgo_numeral: NivelRiesgo;
+    activo: boolean;
+    created_at?: string;
+}
+
 export interface Empresa {
     id?: string;
     nit: string;
@@ -43,6 +53,9 @@ export interface Empresa {
     // Campos Res. 0312 (SGSST)
     numero_empleados?: number;
     nivel_riesgo?: NivelRiesgo | null;
+    // CIUO-08
+    id_oficio_ciuo?: string | null;
+    oficio_ciuo?: Partial<CatalogoCiuoOficio> | null;
     created_at?: string;
     updated_at?: string;
 }
@@ -60,6 +73,7 @@ export interface Sede {
     correo: string;
     telefono: string;
     descripcion?: string;
+    numero_trabajadores?: number;
     created_at?: string;
     updated_at?: string;
 }

@@ -149,16 +149,18 @@
 // ==================== Form Styles ====================
 .form-input {
   width: 100%;
-  padding: 0.625rem 0.875rem;
+  padding: 0.35rem 0.625rem;
   background-color: rgb(var(--color-dark-primary));
   border: 1px solid rgb(var(--color-dark-border));
   border-radius: 0.5rem;
   color: rgb(var(--color-heading));
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &::placeholder {
     color: rgb(var(--color-dark-text));
+    font-size: 0.75rem;
   }
 
   &:focus {
@@ -167,8 +169,13 @@
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   }
 
-  &:hover:not(:focus) {
-    border-color: rgb(var(--color-dark-text) / 0.5);
+  &:hover:not(:focus):not([readonly]):not(:disabled) {
+    border-color: rgba(var(--color-dark-text), 0.5);
+  }
+
+  &[readonly], &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 }
 
@@ -176,10 +183,61 @@ select.form-input {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a0a3b5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1rem;
-  padding-right: 2.5rem;
+  background-position: right 0.625rem center;
+  background-size: 0.875rem;
+  padding-right: 2rem;
   cursor: pointer;
+}
+
+// ==================== p-autocomplete dark theme (encapsulation-piercing) ====================
+::ng-deep {
+  .p-autocomplete {
+    width: 100%;
+    display: block;
+
+    // The actual input element
+    .p-autocomplete-input,
+    input.p-autocomplete-input {
+      width: 100%;
+      padding: 0.35rem 0.625rem;
+      background-color: rgb(var(--color-dark-primary)) !important;
+      border: 1px solid rgb(var(--color-dark-border)) !important;
+      border-radius: 0.5rem !important;
+      color: rgb(var(--color-heading)) !important;
+      font-size: 0.8125rem !important;
+      line-height: 1.4;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: none !important;
+
+      &::placeholder {
+        color: rgb(var(--color-dark-text)) !important;
+        font-size: 0.75rem;
+      }
+
+      &:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        outline: none;
+      }
+
+      &:hover:not(:focus) {
+        border-color: rgba(var(--color-dark-text), 0.5) !important;
+      }
+    }
+
+    // Clear button
+    .p-autocomplete-clear-icon,
+    .p-autocomplete-clear-button {
+      color: rgb(var(--color-dark-text)) !important;
+      background: transparent !important;
+      border: none !important;
+      right: 0.5rem;
+
+      &:hover {
+        color: rgb(var(--color-heading)) !important;
+      }
+    }
+  }
 }
 
 .form-checkbox {

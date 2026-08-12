@@ -29,11 +29,18 @@
                     <span *ngIf="!esAdmin && empresa"> · {{ empresa.nombre }}</span>
                 </p>
             </div>
-            <button *ngIf="empresa" (click)="nuevoRegistro()"
-                class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25">
-                <ion-icon name="add-outline" class="text-lg"></ion-icon>
-                <span>Nuevo Riesgo</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <button *ngIf="registros.length > 0" (click)="exportarExcel()"
+                    class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-emerald-600/25">
+                    <ion-icon name="download-outline" class="text-lg"></ion-icon>
+                    <span>Exportar Excel</span>
+                </button>
+                <button *ngIf="empresa" (click)="nuevoRegistro()"
+                    class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25">
+                    <ion-icon name="add-outline" class="text-lg"></ion-icon>
+                    <span>Nuevo Riesgo</span>
+                </button>
+            </div>
         </div>
 
         <!-- Admin selector -->
@@ -63,6 +70,9 @@
         </div>
 
         <ng-container *ngIf="!loading && empresa">
+
+            <!-- ══ Matriz IPERC ══ -->
+
             <!-- Stats semáforo -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                 <div *ngFor="let s of stats" (click)="filtrarPorNivel(s.nivel)"
@@ -150,6 +160,12 @@
                                             ND:{{ r.nivel_deficiencia }} · NE:{{ r.nivel_exposicion }} · NC:{{
                                             r.nivel_consecuencia }}
                                         </span>
+                                        <span *ngIf="r.factor_reduccion != null"
+                                            class="flex items-center gap-1 font-semibold"
+                                            [ngClass]="r.factor_reduccion >= 0 ? 'text-emerald-400' : 'text-red-400'">
+                                            <ion-icon name="trending-down-outline" class="text-xs"></ion-icon>
+                                            F: {{ r.factor_reduccion | number:'1.0-1' }}%
+                                        </span>
                                     </div>
                                 </div>
                                 <!-- Actions -->
@@ -166,6 +182,7 @@
                     </div>
                 </div>
             </div>
+
         </ng-container>
     </ng-container>
 </div>

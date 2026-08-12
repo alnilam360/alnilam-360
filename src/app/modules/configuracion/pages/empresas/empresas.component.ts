@@ -3,7 +3,8 @@ import { Table } from 'primeng/table';
 import { EmpresasService } from '../../../../core/services/empresas.service';
 import { SedesService } from '../../../../core/services/sedes.service';
 import { UbicacionService } from '../../../../core/services/ubicacion.service';
-import { Empresa, Sede, Departamento, Municipio } from '../../../../core/models/models';
+import { CiuoService } from '../../../../core/services/ciuo.service';
+import { CatalogoCiuoOficio, Empresa, NivelRiesgo, Sede, Departamento, Municipio } from '../../../../core/models/models';
 
 @Component({
   selector: 'app-empresas',
@@ -38,15 +39,21 @@ export class EmpresasComponent implements OnInit {
   selectedDepartamentoEmpresa = '';
   selectedDepartamentoSede = '';
 
+  // CIUO-08
+  oficioSeleccionado: CatalogoCiuoOficio | null = null;
+  sugerenciasOficio: CatalogoCiuoOficio[] = [];
+
   constructor(
     private empresasService: EmpresasService,
     private sedesService: SedesService,
-    private ubicacionService: UbicacionService
+    private ubicacionService: UbicacionService,
+    readonly ciuoService: CiuoService
   ) { }
 
   ngOnInit(): void {
     this.loadEmpresas();
     this.loadDepartamentos();
+    this.ciuoService.cargarCatalogo();
   }
 
   async loadEmpresas(): Promise<void> {
@@ -128,8 +135,37 @@ export class EmpresasComponent implements OnInit {
       descripcion: '',
       horarios: { manana: false, tarde: false, noche: false, continuo: false },
       numero_empleados: 0,
-      nivel_riesgo: null
+      nivel_riesgo: null,
+      id_oficio_ciuo: null
     };
+  }
+
+  get nivelRiesgoDisplay(): string {
+    const r = this.oficioSeleccionado?.nivel_riesgo_numeral ?? this.formEmpresa.nivel_riesgo;
+    if (!r) return '';
+    const labels: Record<string, string> = {
+      'I': 'I (Mínimo)', 'II': 'II (Bajo)', 'III': 'III (Medio)', 'IV': 'IV (Alto)', 'V': 'V (Máximo)'
+    };
+    return labels[r] ?? r;
+  }
+
+  buscarOficio(event: { query: string }): void {
+    this.sugerenciasOficio = this.ciuoService.buscarOficios(event.query);
+  }
+
+  onOficioSeleccionado(oficio: CatalogoCiuoOficio): void {
+    this.formEmpresa.id_oficio_ciuo = oficio.id;
+    this.formEmpresa.nivel_riesgo = oficio.nivel_riesgo_numeral as NivelRiesgo;
+  }
+
+  onOficioClear(): void {
+    this.oficioSeleccionado = null;
+    this.formEmpresa.id_oficio_ciuo = null;
+    this.formEmpresa.nivel_riesgo = null;
+  }
+
+  etiquetaOficio(o: CatalogoCiuoOficio): string {
+    return this.ciuoService.etiqueta(o);
   }
 
   /**
@@ -169,7 +205,8 @@ export class EmpresasComponent implements OnInit {
       persona_encargada: '',
       correo: '',
       telefono: '',
-      descripcion: ''
+      descripcion: '',
+      numero_trabajadores: 0
     };
   }
 
@@ -191,16 +228,22 @@ export class EmpresasComponent implements OnInit {
     this.formEmpresa = this.getEmptyEmpresa();
     this.selectedDepartamentoEmpresa = '';
     this.municipiosEmpresa = [];
+    this.oficioSeleccionado = null;
     this.showModal = true;
   }
 
   async editEmpresa(empresa: Empresa): Promise<void> {
     this.selectedEmpresa = empresa;
     this.formEmpresa = JSON.parse(JSON.stringify(empresa));
-    // Normalizar: recalcular N.º de empleados para reflejar el estado actual
-    // de la sección Trabajadores al abrir el modal de edición.
     this.recalcularNumeroEmpleados();
-    // Pre-cargar departamento y municipios si la empresa ya tiene uno asignado
+    // Restore oficio selection
+    if (empresa.oficio_ciuo?.id) {
+      this.oficioSeleccionado = empresa.oficio_ciuo as CatalogoCiuoOficio;
+    } else if (empresa.id_oficio_ciuo) {
+      this.oficioSeleccionado = this.ciuoService.catalogo().find(o => o.id === empresa.id_oficio_ciuo) ?? null;
+    } else {
+      this.oficioSeleccionado = null;
+    }
     const dep = this.departamentos.find(d => d.nombre === empresa.departamento);
     if (dep) {
       this.selectedDepartamentoEmpresa = dep.id;
@@ -223,9 +266,7 @@ export class EmpresasComponent implements OnInit {
       // con el contenido de la sección de Trabajadores.
       this.recalcularNumeroEmpleados();
 
-      // Construir payload SANEADO: sólo columnas actualizables.
-      // Evita enviar id/created_at/updated_at/relaciones anidadas traídas
-      // por el SELECT anterior y que pueden romper la UPDATE en Supabase.
+      // Payload saneado: solo columnas actualizables, sin relaciones anidadas del SELECT.
       const payload: Partial<Empresa> = {
         nit: this.formEmpresa.nit,
         nombre: this.formEmpresa.nombre,
@@ -242,10 +283,11 @@ export class EmpresasComponent implements OnInit {
         descripcion: this.formEmpresa.descripcion,
         horarios: this.formEmpresa.horarios,
         numero_empleados: Number(this.formEmpresa.numero_empleados) || 0,
-        // Normalizar '' -> null para respetar el ENUM nivel_riesgo_enum
-        nivel_riesgo: (this.formEmpresa.nivel_riesgo as string) === ''
-          ? null
-          : (this.formEmpresa.nivel_riesgo ?? null)
+        id_oficio_ciuo: this.formEmpresa.id_oficio_ciuo ?? null,
+        // nivel_riesgo synced by DB trigger from id_oficio_ciuo; send null if no oficio
+        nivel_riesgo: this.formEmpresa.id_oficio_ciuo
+          ? (this.formEmpresa.nivel_riesgo ?? null)
+          : null
       };
 
       if (this.selectedEmpresa && this.selectedEmpresa.id) {

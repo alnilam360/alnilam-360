@@ -1,6 +1,21 @@
+import { Usuario } from './models';
+
 // ============================================================================
 // Modelos: Matriz IPERC — GTC 45
 // ============================================================================
+
+// ---------------------------------------------------------------
+// Historial / Control de Cambios
+// ---------------------------------------------------------------
+export interface IpercHistorial {
+    id?: string;
+    empresa_id: string;
+    registro_id?: string | null;
+    descripcion: string;
+    usuario_id?: string | null;
+    created_at?: string;
+    usuario?: Partial<Usuario> | null;
+}
 
 /** Valores permitidos GTC 45 */
 export type NivelDeficiencia = 0 | 2 | 6 | 10;
@@ -27,48 +42,65 @@ export interface PeligroCatalogo {
 }
 
 // ---------------------------------------------------------------
-// Registro de la Matriz IPERC
+// Registro de la Matriz IPERC — estructura 8 pasos GTC-45
 // ---------------------------------------------------------------
 export interface MatrizIperc {
     id?: string;
     empresa_id: string;
-    // Contexto
+    // Paso 1: Contexto
     proceso: string;
+    subproceso?: string | null;
     zona_lugar?: string | null;
     actividad: string;
     es_rutinaria: boolean;
     tareas?: string | null;
     cargo?: string | null;
-    // Peligro
+    // Paso 2: Peligro
     peligro_id?: string | null;
     peligro_descripcion?: string | null;
+    fuente_peligro?: string | null;
     efectos_posibles?: string | null;
-    // Controles existentes
+    // Paso 3: Controles existentes
     control_fuente?: string | null;
     control_medio?: string | null;
     control_individuo?: string | null;
-    // Criterios para establecer controles
-    expuestos_directos?: number;
-    contratistas?: number;
-    requisitos_legales?: boolean;
-    // Evaluación
+    // Paso 4: Evaluación del riesgo (inicial)
     nivel_deficiencia: NivelDeficiencia;
     nivel_exposicion: NivelExposicion;
     nivel_consecuencia: NivelConsecuencia;
-    // Cálculos (generados por DB, readonly en frontend)
-    nivel_probabilidad?: number;
-    nivel_riesgo?: number;
-    // Interpretaciones
+    nivel_probabilidad?: number;  // GENERATED: nd × ne
+    nivel_riesgo?: number;        // GENERATED: np × nc
     interpretacion_np?: string | null;
     nivel_intervencion?: NivelIntervencion | null;
     aceptabilidad?: Aceptabilidad | null;
-    // Medidas de intervención (jerarquía de controles)
-    medidas_intervencion?: string | null;
+    // Paso 5: Valoración de expuestos
+    expuestos_directos?: number;
+    expuestos_temporales?: number;
+    expuestos_contratistas?: number;
+    expuestos_visitantes?: number;
+    horas_exposicion?: number | null;
+    peor_consecuencia?: string | null;
+    requisitos_legales?: boolean;
+    // Paso 6: Criterios para establecer controles (jerarquía)
     eliminacion?: string | null;
     sustitucion?: string | null;
     controles_ingenieria?: string | null;
     controles_administrativos?: string | null;
     epp?: string | null;
+    // Paso 7: Medidas de intervención (qué se hará concretamente)
+    medidas_intervencion?: string | null;
+    // Paso 8: Evaluación post-controles
+    nd_post?: NivelDeficiencia | null;
+    ne_post?: NivelExposicion | null;
+    nc_post?: NivelConsecuencia | null;
+    np_post?: number;  // GENERATED: nd_post × ne_post
+    nr_post?: number;  // GENERATED: np_post × nc_post
+    interpretacion_np_post?: string | null;
+    nivel_intervencion_post?: NivelIntervencion | null;
+    aceptabilidad_post?: Aceptabilidad | null;
+    factor_reduccion?: number | null;
+    // Actualización
+    actualizacion_nota?: string | null;
     // Metadata
     creado_por?: string | null;
     created_at?: string;

@@ -15,6 +15,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { CheckboxModule } from 'primeng/checkbox';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 const routes: Routes = [
   { path: '', redirectTo: 'empresas', pathMatch: 'full' },
@@ -40,7 +41,8 @@ const routes: Routes = [
     IconFieldModule,
     InputIconModule,
     TagModule,
-    CheckboxModule
+    CheckboxModule,
+    AutoCompleteModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

@@ -83,8 +83,17 @@
           </td>
           <td><span class="text-xs text-[rgb(var(--color-heading))]">{{ empresa.departamento }}</span></td>
           <td><span class="text-xs text-[rgb(var(--color-heading))]">{{ empresa.municipio }}</span></td>
-          <td><span class="text-[10px] text-dark-text line-clamp-2" [title]="empresa.actividad_economica">{{
-              empresa.actividad_economica }}</span></td>
+          <td>
+            <ng-container *ngIf="empresa.oficio_ciuo?.codigo_ciuo; else legadoActividad">
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[10px] font-semibold text-brand-primary">{{ empresa.oficio_ciuo?.codigo_ciuo }} · Riesgo {{ empresa.nivel_riesgo }}</span>
+                <span class="text-[10px] text-dark-text line-clamp-2" [title]="empresa.oficio_ciuo?.descripcion_oficio">{{ empresa.oficio_ciuo?.descripcion_oficio }}</span>
+              </div>
+            </ng-container>
+            <ng-template #legadoActividad>
+              <span class="text-[10px] text-dark-text line-clamp-2" [title]="empresa.actividad_economica">{{ empresa.actividad_economica || '—' }}</span>
+            </ng-template>
+          </td>
           <td><span class="text-xs text-[rgb(var(--color-heading))]">{{ empresa.representante_legal?.nombre }}</span>
           </td>
           <td><span class="text-xs text-[rgb(var(--color-heading))]">{{ empresa.telefono }}</span></td>
@@ -129,17 +138,17 @@
       </button>
     </div>
 
-    <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
-      <form class="space-y-5">
+    <div class="px-4 py-3 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <form class="space-y-3">
 
         <!-- Información General -->
         <div class="form-section">
           <h4
-            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-            <ion-icon name="information-circle-outline" class="text-base text-brand-primary"></ion-icon>
+            class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="information-circle-outline" class="text-sm text-brand-primary"></ion-icon>
             Información General
           </h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             <div class="form-group">
               <label class="block text-xs font-medium text-dark-text mb-1">NIT</label>
               <input type="text" [(ngModel)]="formEmpresa.nit" name="nit" placeholder="Ej: 900123456-1"
@@ -168,9 +177,33 @@
               </select>
             </div>
             <div class="form-group md:col-span-2">
-              <label class="block text-xs font-medium text-dark-text mb-1">Actividad Económica (Decreto 1607)</label>
-              <input type="text" [(ngModel)]="formEmpresa.actividad_economica" name="actividad_economica"
-                placeholder="Ej: 4111 - Construcción de edificios" class="form-input">
+              <label class="block text-xs font-medium text-dark-text mb-1">
+                Actividad Económica — Oficio CIUO-08 <span class="text-red-400">*</span>
+              </label>
+              <p-autocomplete
+                [(ngModel)]="oficioSeleccionado"
+                name="oficio_ciuo"
+                [suggestions]="sugerenciasOficio"
+                (completeMethod)="buscarOficio($event)"
+                (onSelect)="onOficioSeleccionado($event.value)"
+                (onClear)="onOficioClear()"
+                field="descripcion_oficio"
+                [forceSelection]="true"
+                [minLength]="1"
+                [delay]="150"
+                [showClear]="true"
+                placeholder="Buscar por código o descripción del oficio..."
+                styleClass="w-full"
+                appendTo="body">
+                <ng-template pTemplate="item" let-oficio>
+                  <div class="py-1">
+                    <div class="text-[11px] font-semibold text-brand-primary">{{ oficio.codigo_ciuo }} · Riesgo {{ oficio.nivel_riesgo_numeral }}</div>
+                    <div class="text-xs text-[rgb(var(--color-heading))] leading-snug">{{ oficio.descripcion_oficio }}</div>
+                  </div>
+                </ng-template>
+              </p-autocomplete>
+              <p *ngIf="ciuoService.error()" class="mt-1 text-[11px] text-red-400">{{ ciuoService.error() }}</p>
+              <p *ngIf="ciuoService.cargando()" class="mt-1 text-[11px] text-dark-text">Cargando catálogo...</p>
             </div>
             <div class="form-group md:col-span-2">
               <label class="block text-xs font-medium text-dark-text mb-1">Dirección</label>
@@ -185,7 +218,7 @@
             <div class="form-group md:col-span-3">
               <label class="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" [(ngModel)]="formEmpresa.asegurado" name="asegurado" class="form-checkbox">
-                <span class="text-sm text-[rgb(var(--color-heading))]">¿Se encuentra asegurado?</span>
+                <span class="text-xs text-[rgb(var(--color-heading))]">¿Se encuentra asegurado?</span>
               </label>
             </div>
           </div>
@@ -194,11 +227,11 @@
         <!-- Representante Legal -->
         <div class="form-section">
           <h4
-            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-            <ion-icon name="person-outline" class="text-base text-brand-primary"></ion-icon>
+            class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="person-outline" class="text-sm text-brand-primary"></ion-icon>
             Representante Legal
           </h4>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
             <div class="form-group">
               <label class="block text-xs font-medium text-dark-text mb-1">Nombre</label>
               <input type="text" [(ngModel)]="formEmpresa.representante_legal!.nombre" name="rep_nombre"
@@ -220,11 +253,11 @@
         <!-- Encargado SG-SST -->
         <div class="form-section">
           <h4
-            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-            <ion-icon name="shield-checkmark-outline" class="text-base text-brand-primary"></ion-icon>
+            class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="shield-checkmark-outline" class="text-sm text-brand-primary"></ion-icon>
             Encargado Sistema de Gestión de Seguridad y Salud en el Trabajo
           </h4>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
             <div class="form-group">
               <label class="block text-xs font-medium text-dark-text mb-1">Nombre</label>
               <input type="text" [(ngModel)]="formEmpresa.encargado_sst!.nombre" name="sst_nombre"
@@ -246,11 +279,11 @@
         <!-- Trabajadores -->
         <div class="form-section">
           <h4
-            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-            <ion-icon name="people-outline" class="text-base text-brand-primary"></ion-icon>
+            class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="people-outline" class="text-sm text-brand-primary"></ion-icon>
             Información de los Trabajadores
           </h4>
-          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2">
             <div class="form-group"><label class="block text-xs font-medium text-dark-text mb-1">Directos</label><input
                 type="number" min="0" [(ngModel)]="formEmpresa.trabajadores!.directos" name="t_directos"
                 class="form-input" (ngModelChange)="recalcularNumeroEmpleados()"></div>
@@ -298,11 +331,11 @@
         <!-- Clasificación Res. 0312 (SGSST) -->
         <div class="form-section">
           <h4
-            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-            <ion-icon name="clipboard-outline" class="text-base text-brand-primary"></ion-icon>
+            class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="clipboard-outline" class="text-sm text-brand-primary"></ion-icon>
             Clasificación Res. 0312 de 2019 (SGSST)
           </h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             <div class="form-group">
               <label class="block text-xs font-medium text-dark-text mb-1">
                 N.º de empleados
@@ -312,16 +345,13 @@
             </div>
             <div class="form-group">
               <label class="block text-xs font-medium text-dark-text mb-1">
-                Nivel de riesgo <span class="text-red-400">*</span>
+                Nivel de riesgo
               </label>
-              <select [(ngModel)]="formEmpresa.nivel_riesgo" name="nivel_riesgo" class="form-input">
-                <option [ngValue]="null">Seleccione...</option>
-                <option value="I">I (Mínimo)</option>
-                <option value="II">II (Bajo)</option>
-                <option value="III">III (Medio)</option>
-                <option value="IV">IV (Alto)</option>
-                <option value="V">V (Máximo)</option>
-              </select>
+              <input type="text"
+                [value]="nivelRiesgoDisplay"
+                class="form-input opacity-60 cursor-not-allowed"
+                readonly
+                placeholder="Se autocompleta al seleccionar el oficio">
             </div>
             <div class="form-group md:col-span-2 lg:col-span-1 flex items-end">
               <div
@@ -339,8 +369,8 @@
         <!-- Descripción -->
         <div class="form-section">
           <h4
-            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-            <ion-icon name="document-text-outline" class="text-base text-brand-primary"></ion-icon>
+            class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="document-text-outline" class="text-sm text-brand-primary"></ion-icon>
             Descripción de la Organización
           </h4>
           <div class="form-group">
@@ -354,27 +384,27 @@
         <!-- Horarios -->
         <div class="form-section">
           <h4
-            class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-            <ion-icon name="time-outline" class="text-base text-brand-primary"></ion-icon>
+            class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="time-outline" class="text-sm text-brand-primary"></ion-icon>
             Organización del Tiempo de Trabajo
           </h4>
           <div class="flex flex-wrap gap-4">
             <label class="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" [(ngModel)]="formEmpresa.horarios!.manana" name="h_manana" class="form-checkbox">
-              <span class="text-sm text-[rgb(var(--color-heading))]">Mañana</span>
+              <span class="text-xs text-[rgb(var(--color-heading))]">Mañana</span>
             </label>
             <label class="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" [(ngModel)]="formEmpresa.horarios!.tarde" name="h_tarde" class="form-checkbox">
-              <span class="text-sm text-[rgb(var(--color-heading))]">Tarde</span>
+              <span class="text-xs text-[rgb(var(--color-heading))]">Tarde</span>
             </label>
             <label class="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" [(ngModel)]="formEmpresa.horarios!.noche" name="h_noche" class="form-checkbox">
-              <span class="text-sm text-[rgb(var(--color-heading))]">Noche</span>
+              <span class="text-xs text-[rgb(var(--color-heading))]">Noche</span>
             </label>
             <label class="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" [(ngModel)]="formEmpresa.horarios!.continuo" name="h_continuo"
                 class="form-checkbox">
-              <span class="text-sm text-[rgb(var(--color-heading))]">Continuo 8-6</span>
+              <span class="text-xs text-[rgb(var(--color-heading))]">Continuo 8-6</span>
             </label>
           </div>
         </div>
@@ -429,7 +459,10 @@
             <p class="text-sm font-medium text-[rgb(var(--color-heading))]">{{ sede.nombre }}</p>
             <p class="text-[10px] text-dark-text mt-0.5">{{ sede.direccion }}, {{ sede.municipio }} - {{
               sede.departamento }}</p>
-            <p class="text-[10px] text-dark-text mt-0.5">{{ sede.persona_encargada }} • {{ sede.telefono }}</p>
+            <p class="text-[10px] text-dark-text mt-0.5">
+              {{ sede.persona_encargada }} • {{ sede.telefono }}
+              <span *ngIf="sede.numero_trabajadores"> • <b>{{ sede.numero_trabajadores }}</b> trabajadores</span>
+            </p>
           </div>
           <div class="flex items-center gap-1 ml-2">
             <button (click)="openSedeFormModal(sede)" title="Editar sede"
@@ -522,6 +555,11 @@
             <label class="block text-xs font-medium text-dark-text mb-1">Teléfono</label>
             <input type="tel" [(ngModel)]="formSede.telefono" name="sede_telefono" placeholder="Ej: 3001234567"
               class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="block text-xs font-medium text-dark-text mb-1">N.º de Trabajadores</label>
+            <input type="number" min="0" [(ngModel)]="formSede.numero_trabajadores" name="sede_num_trabajadores"
+              placeholder="0" class="form-input">
           </div>
           <div class="form-group md:col-span-2">
             <label class="block text-xs font-medium text-dark-text mb-1">Descripción (Opcional)</label>

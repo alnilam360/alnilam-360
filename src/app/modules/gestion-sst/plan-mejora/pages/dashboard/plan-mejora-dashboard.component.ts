@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Empresa, Usuario } from '../../../../../core/models/models';
-import { SstPlanMejora, EstadoPlanMejora } from '../../../../../core/models/plan-mejora.model';
+import { SstPlanMejora, SstPlanMejoraHistorial, EstadoPlanMejora } from '../../../../../core/models/plan-mejora.model';
 import { PlanMejoraService } from '../../../../../core/services/plan-mejora.service';
 import { AuthService } from '../../../../../core/services/auth.service';
 
@@ -57,6 +57,13 @@ export class PlanMejoraDashboardComponent implements OnInit {
     modalNotasCierre = '';
     modalEvidenciaUrl: string | null = null;
 
+    // Pestañas
+    tabActivo: 'hallazgos' | 'cambios' = 'hallazgos';
+
+    // Control de cambios
+    historial: SstPlanMejoraHistorial[] = [];
+    loadingHistorial = false;
+
     constructor(
         private svc: PlanMejoraService,
         private auth: AuthService
@@ -102,7 +109,9 @@ export class PlanMejoraDashboardComponent implements OnInit {
         this.empresaSeleccionadaId = empresaId;
         this.hallazgos = [];
         this.hallazgosFiltrados = [];
+        this.historial = [];
         this.empresa = null;
+        this.tabActivo = 'hallazgos';
         if (!empresaId) return;
         await this.cargarDatos(empresaId);
     }
@@ -111,8 +120,8 @@ export class PlanMejoraDashboardComponent implements OnInit {
         this.loading = true;
         this.errorMsg = null;
         try {
-            const empresas = await this.svc.listarEmpresasDisponibles();
-            this.empresa = empresas.find(e => e.id === empresaId) ?? null;
+            this.empresa = this.empresasDisponibles.find(e => e.id === empresaId)
+                ?? await this.svc.getEmpresaPorId(empresaId);
             this.hallazgos = await this.svc.listarPorEmpresa(empresaId);
             this.actualizarContadores();
             this.aplicarFiltro(this.filtroActivo);
@@ -172,6 +181,24 @@ export class PlanMejoraDashboardComponent implements OnInit {
         this.saving = true;
         this.errorMsg = null;
         try {
+            // Build change description for historial
+            const prev = this.hallazgoSeleccionado;
+            const cambios: string[] = [];
+            if (this.modalEstado !== prev.estado)
+                cambios.push(`Estado: "${prev.estado}" → "${this.modalEstado}"`);
+            if ((this.modalAccion || null) !== (prev.accion_mejora || null))
+                cambios.push('Acción correctiva/preventiva actualizada');
+            if (this.modalResponsableId !== (prev.responsable_id ?? null))
+                cambios.push('Responsable modificado');
+            if ((this.modalFechaCierre || null) !== (prev.fecha_cierre_proyectada || null))
+                cambios.push(`Fecha cierre proyectada: ${this.modalFechaCierre || 'sin fecha'}`);
+            if (this.modalPresupuesto !== (prev.presupuesto ?? null))
+                cambios.push(`Presupuesto: $${this.modalPresupuesto ?? 0}`);
+            if ((this.modalNotasCierre || null) !== (prev.notas_cierre || null))
+                cambios.push('Notas de cierre actualizadas');
+            if (this.modalEvidenciaUrl !== (prev.evidencia_cierre_url ?? null))
+                cambios.push('Evidencia de cierre cargada');
+
             await this.svc.actualizar(this.hallazgoSeleccionado.id, {
                 accion_mejora: this.modalAccion || null,
                 responsable_id: this.modalResponsableId,
@@ -181,10 +208,23 @@ export class PlanMejoraDashboardComponent implements OnInit {
                 notas_cierre: this.modalNotasCierre || null,
                 evidencia_cierre_url: this.modalEvidenciaUrl
             });
+
+            if (cambios.length > 0 && this.empresaSeleccionadaId) {
+                const item = prev.estandar_item ? `[${prev.estandar_item}] ` : '';
+                await this.svc.registrarCambio({
+                    empresa_id: this.empresaSeleccionadaId,
+                    hallazgo_id: this.hallazgoSeleccionado.id,
+                    descripcion: `${item}${cambios.join('; ')}`
+                }).catch(() => {});
+            }
+
             this.successMsg = 'Hallazgo actualizado correctamente.';
             this.cerrarModal();
             if (this.empresaSeleccionadaId) {
                 await this.cargarDatos(this.empresaSeleccionadaId);
+                if (this.tabActivo === 'cambios') {
+                    await this.cargarHistorial();
+                }
             }
             setTimeout(() => this.successMsg = null, 3000);
         } catch (err: any) {
@@ -209,6 +249,37 @@ export class PlanMejoraDashboardComponent implements OnInit {
         } finally {
             this.uploading = false;
         }
+    }
+
+    // ========================================================================
+    // Pestañas
+    // ========================================================================
+
+    async cambiarTab(tab: 'hallazgos' | 'cambios'): Promise<void> {
+        this.tabActivo = tab;
+        if (tab === 'cambios' && this.empresaSeleccionadaId) {
+            await this.cargarHistorial();
+        }
+    }
+
+    async cargarHistorial(): Promise<void> {
+        if (!this.empresaSeleccionadaId) return;
+        this.loadingHistorial = true;
+        try {
+            this.historial = await this.svc.listarHistorial(this.empresaSeleccionadaId);
+        } catch {
+            this.historial = [];
+        } finally {
+            this.loadingHistorial = false;
+        }
+    }
+
+    formatFecha(iso: string | undefined): string {
+        if (!iso) return '—';
+        return new Date(iso).toLocaleDateString('es-CO', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        });
     }
 
     // ========================================================================

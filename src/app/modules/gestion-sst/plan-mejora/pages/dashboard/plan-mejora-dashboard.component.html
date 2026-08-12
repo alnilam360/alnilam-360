@@ -70,101 +70,176 @@
         <!-- Contenido principal -->
         <ng-container *ngIf="!loading && empresa">
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-                <div *ngFor="let f of filtros" (click)="aplicarFiltro(f.value)"
-                    class="stat-card p-4 bg-dark-secondary border rounded-xl cursor-pointer transition-all duration-200"
-                    [class.border-brand-primary]="filtroActivo === f.value"
-                    [class.border-brand-primary/30]="filtroActivo === f.value"
-                    [class.bg-brand-primary/5]="filtroActivo === f.value"
-                    [class.border-dark-border]="filtroActivo !== f.value"
-                    [class.hover:border-dark-text/30]="filtroActivo !== f.value">
-                    <div class="flex items-center gap-2 mb-2">
-                        <ion-icon [name]="f.icon" [ngClass]="f.color" class="text-lg"></ion-icon>
-                        <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">{{ f.label
-                            }}</span>
-                    </div>
-                    <p class="text-2xl font-bold text-[rgb(var(--color-heading))]">{{ f.count }}</p>
-                </div>
+            <!-- Pestañas -->
+            <div class="flex gap-0 border-b border-dark-border mb-5">
+                <button (click)="cambiarTab('hallazgos')"
+                    class="px-4 py-2.5 text-sm font-medium transition-all duration-200 border-b-2 -mb-[1px] flex items-center gap-1.5"
+                    [ngClass]="tabActivo === 'hallazgos'
+                        ? 'border-brand-primary text-brand-primary'
+                        : 'border-transparent text-dark-text hover:text-[rgb(var(--color-heading))]'">
+                    <ion-icon name="alert-circle-outline" class="text-base"></ion-icon>
+                    Hallazgos
+                    <span class="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold"
+                        [ngClass]="tabActivo === 'hallazgos' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
+                        {{ filtros[0].count }}
+                    </span>
+                </button>
+                <button (click)="cambiarTab('cambios')"
+                    class="px-4 py-2.5 text-sm font-medium transition-all duration-200 border-b-2 -mb-[1px] flex items-center gap-1.5"
+                    [ngClass]="tabActivo === 'cambios'
+                        ? 'border-brand-primary text-brand-primary'
+                        : 'border-transparent text-dark-text hover:text-[rgb(var(--color-heading))]'">
+                    <ion-icon name="time-outline" class="text-base"></ion-icon>
+                    Control de Cambios
+                </button>
             </div>
 
-            <!-- Lista vacía -->
-            <div *ngIf="hallazgosFiltrados.length === 0"
-                class="p-12 bg-dark-secondary border border-dark-border rounded-2xl text-center">
-                <ion-icon name="checkmark-done-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
-                <p class="text-sm text-[rgb(var(--color-heading))] font-medium">
-                    {{ filtroActivo ? 'No hay hallazgos con estado "' + filtroActivo + '"' : 'No hay hallazgos
-                    registrados' }}
-                </p>
-                <p class="text-[11px] text-dark-text mt-1">
-                    Los hallazgos se generan automáticamente al calificar un estándar como "No Cumple" en una
-                    evaluación.
-                </p>
-            </div>
+            <!-- ══ TAB: Hallazgos ══ -->
+            <ng-container *ngIf="tabActivo === 'hallazgos'">
 
-            <!-- Tarjetas de hallazgos -->
-            <div *ngIf="hallazgosFiltrados.length > 0" class="space-y-3">
-                <div *ngFor="let h of hallazgosFiltrados" (click)="abrirModal(h)"
-                    class="hallazgo-card group p-4 bg-dark-secondary border border-dark-border rounded-xl cursor-pointer hover:border-brand-primary/40 transition-all duration-200">
-                    <div class="flex items-start gap-3">
-                        <!-- Left indicator -->
-                        <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center" [ngClass]="{
-                'bg-amber-500/15': h.estado === 'Pendiente',
-                'bg-blue-500/15': h.estado === 'En Proceso',
-                'bg-emerald-500/15': h.estado === 'Cerrado'
-              }">
-                            <ion-icon [name]="iconEstado(h.estado)" class="text-xl" [ngClass]="{
-                  'text-amber-400': h.estado === 'Pendiente',
-                  'text-blue-400': h.estado === 'En Proceso',
-                  'text-emerald-400': h.estado === 'Cerrado'
-                }"></ion-icon>
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                    <div *ngFor="let f of filtros" (click)="aplicarFiltro(f.value)"
+                        class="stat-card p-4 bg-dark-secondary border rounded-xl cursor-pointer transition-all duration-200"
+                        [class.border-brand-primary]="filtroActivo === f.value"
+                        [class.border-brand-primary/30]="filtroActivo === f.value"
+                        [class.bg-brand-primary/5]="filtroActivo === f.value"
+                        [class.border-dark-border]="filtroActivo !== f.value"
+                        [class.hover:border-dark-text/30]="filtroActivo !== f.value">
+                        <div class="flex items-center gap-2 mb-2">
+                            <ion-icon [name]="f.icon" [ngClass]="f.color" class="text-lg"></ion-icon>
+                            <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">{{ f.label }}</span>
                         </div>
+                        <p class="text-2xl font-bold text-[rgb(var(--color-heading))]">{{ f.count }}</p>
+                    </div>
+                </div>
 
-                        <!-- Content -->
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span *ngIf="h.estandar_item"
-                                    class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-brand-primary/15 text-brand-primary border border-brand-primary/25">
-                                    {{ h.estandar_item }}
-                                </span>
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border"
-                                    [ngClass]="badgeEstado(h.estado)">
-                                    {{ h.estado }}
-                                </span>
+                <!-- Lista vacía -->
+                <div *ngIf="hallazgosFiltrados.length === 0"
+                    class="p-12 bg-dark-secondary border border-dark-border rounded-2xl text-center">
+                    <ion-icon name="checkmark-done-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+                    <p class="text-sm text-[rgb(var(--color-heading))] font-medium">
+                        {{ filtroActivo ? 'No hay hallazgos con estado "' + filtroActivo + '"' : 'No hay hallazgos registrados' }}
+                    </p>
+                    <p class="text-[11px] text-dark-text mt-1">
+                        Los hallazgos se generan automáticamente al calificar un estándar como "No Cumple" en una evaluación.
+                    </p>
+                </div>
+
+                <!-- Tarjetas de hallazgos -->
+                <div *ngIf="hallazgosFiltrados.length > 0" class="space-y-3">
+                    <div *ngFor="let h of hallazgosFiltrados" (click)="abrirModal(h)"
+                        class="hallazgo-card group p-4 bg-dark-secondary border border-dark-border rounded-xl cursor-pointer hover:border-brand-primary/40 transition-all duration-200">
+                        <div class="flex items-start gap-3">
+                            <!-- Left indicator -->
+                            <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center" [ngClass]="{
+                    'bg-amber-500/15': h.estado === 'Pendiente',
+                    'bg-blue-500/15': h.estado === 'En Proceso',
+                    'bg-emerald-500/15': h.estado === 'Cerrado'
+                  }">
+                                <ion-icon [name]="iconEstado(h.estado)" class="text-xl" [ngClass]="{
+                      'text-amber-400': h.estado === 'Pendiente',
+                      'text-blue-400': h.estado === 'En Proceso',
+                      'text-emerald-400': h.estado === 'Cerrado'
+                    }"></ion-icon>
                             </div>
-                            <p
-                                class="text-[13px] text-[rgb(var(--color-heading))] font-medium leading-snug mb-1.5 line-clamp-2">
-                                {{ h.estandar_descripcion || 'Estándar sin descripción' }}
-                            </p>
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-dark-text">
-                                <span *ngIf="h.responsable" class="flex items-center gap-1">
+
+                            <!-- Content -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span *ngIf="h.estandar_item"
+                                        class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-brand-primary/15 text-brand-primary border border-brand-primary/25">
+                                        {{ h.estandar_item }}
+                                    </span>
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+                                        [ngClass]="badgeEstado(h.estado)">
+                                        {{ h.estado }}
+                                    </span>
+                                </div>
+                                <p class="text-[13px] text-[rgb(var(--color-heading))] font-medium leading-snug mb-1.5 line-clamp-2">
+                                    {{ h.estandar_descripcion || 'Estándar sin descripción' }}
+                                </p>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-dark-text">
+                                    <span *ngIf="h.responsable" class="flex items-center gap-1">
+                                        <ion-icon name="person-outline" class="text-xs"></ion-icon>
+                                        {{ h.responsable?.nombre || '—' }}
+                                    </span>
+                                    <span *ngIf="h.fecha_cierre_proyectada" class="flex items-center gap-1"
+                                        [class.text-red-400]="fechaVencida(h.fecha_cierre_proyectada) && h.estado !== 'Cerrado'">
+                                        <ion-icon name="calendar-outline" class="text-xs"></ion-icon>
+                                        {{ h.fecha_cierre_proyectada }}
+                                        <ng-container *ngIf="diasRestantes(h.fecha_cierre_proyectada) as dias">
+                                            <span *ngIf="h.estado !== 'Cerrado'" class="ml-0.5">
+                                                ({{ dias >= 0 ? dias + 'd' : 'vencido ' + (-dias) + 'd' }})
+                                            </span>
+                                        </ng-container>
+                                    </span>
+                                    <span *ngIf="h.presupuesto" class="flex items-center gap-1">
+                                        <ion-icon name="cash-outline" class="text-xs"></ion-icon>
+                                        ${{ h.presupuesto | number:'1.0-0' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Arrow -->
+                            <ion-icon name="chevron-forward-outline"
+                                class="text-base text-dark-text group-hover:text-brand-primary transition flex-shrink-0 mt-2"></ion-icon>
+                        </div>
+                    </div>
+                </div>
+
+            </ng-container>
+
+            <!-- ══ TAB: Control de Cambios ══ -->
+            <ng-container *ngIf="tabActivo === 'cambios'">
+
+                <!-- Loading historial -->
+                <div *ngIf="loadingHistorial" class="flex items-center justify-center py-12">
+                    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+                </div>
+
+                <!-- Sin historial -->
+                <div *ngIf="!loadingHistorial && historial.length === 0"
+                    class="p-12 bg-dark-secondary border border-dark-border rounded-2xl text-center">
+                    <ion-icon name="time-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+                    <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Sin registros de cambios</p>
+                    <p class="text-[11px] text-dark-text mt-1">
+                        Cada vez que se modifique un hallazgo, el cambio quedará registrado aquí.
+                    </p>
+                </div>
+
+                <!-- Timeline de cambios -->
+                <div *ngIf="!loadingHistorial && historial.length > 0" class="relative">
+                    <!-- Línea vertical -->
+                    <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-dark-border"></div>
+
+                    <div class="space-y-3 pl-10">
+                        <div *ngFor="let c of historial"
+                            class="relative p-3.5 bg-dark-secondary border border-dark-border rounded-xl hover:border-dark-text/30 transition-all duration-200">
+
+                            <!-- Punto en la línea -->
+                            <div class="absolute -left-[26px] top-4 w-3 h-3 rounded-full border-2 border-brand-primary bg-dark-primary"></div>
+
+                            <!-- Fecha + usuario -->
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <ion-icon name="time-outline" class="text-xs text-dark-text flex-shrink-0"></ion-icon>
+                                <span class="text-[11px] text-dark-text">{{ formatFecha(c.created_at) }}</span>
+                                <span *ngIf="c.usuario?.nombre" class="flex items-center gap-1 text-[11px] text-dark-text ml-auto">
                                     <ion-icon name="person-outline" class="text-xs"></ion-icon>
-                                    {{ h.responsable?.nombre || '—' }}
-                                </span>
-                                <span *ngIf="h.fecha_cierre_proyectada" class="flex items-center gap-1"
-                                    [class.text-red-400]="fechaVencida(h.fecha_cierre_proyectada) && h.estado !== 'Cerrado'">
-                                    <ion-icon name="calendar-outline" class="text-xs"></ion-icon>
-                                    {{ h.fecha_cierre_proyectada }}
-                                    <ng-container *ngIf="diasRestantes(h.fecha_cierre_proyectada) as dias">
-                                        <span *ngIf="h.estado !== 'Cerrado'" class="ml-0.5">
-                                            ({{ dias >= 0 ? dias + 'd' : 'vencido ' + (-dias) + 'd' }})
-                                        </span>
-                                    </ng-container>
-                                </span>
-                                <span *ngIf="h.presupuesto" class="flex items-center gap-1">
-                                    <ion-icon name="cash-outline" class="text-xs"></ion-icon>
-                                    ${{ h.presupuesto | number:'1.0-0' }}
+                                    {{ c.usuario?.nombre }}
                                 </span>
                             </div>
-                        </div>
 
-                        <!-- Arrow -->
-                        <ion-icon name="chevron-forward-outline"
-                            class="text-base text-dark-text group-hover:text-brand-primary transition flex-shrink-0 mt-2"></ion-icon>
+                            <!-- Descripción -->
+                            <p class="text-[13px] text-[rgb(var(--color-heading))] leading-relaxed">
+                                {{ c.descripcion }}
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+            </ng-container>
 
         </ng-container>
     </ng-container>

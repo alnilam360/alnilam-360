@@ -1,68 +1,30 @@
 import { Injectable } from '@angular/core';
 import { SupabaseClientService } from './supabase-client.service';
-import { AuthService } from './auth.service';
-import { SstPlanMejora, EstadoPlanMejora } from '../models/plan-mejora.model';
+import { TenantService } from './tenant.service';
+import { SstPlanMejora, SstPlanMejoraHistorial, EstadoPlanMejora } from '../models/plan-mejora.model';
 import { Empresa, Usuario } from '../models/models';
 
-/**
- * Servicio CRUD para el módulo Plan de Mejora (SGSST - Res. 0312).
- * Gestiona hallazgos derivados de evaluaciones con calificación "No Cumple".
- */
 @Injectable({ providedIn: 'root' })
 export class PlanMejoraService {
 
     constructor(
         private sb: SupabaseClientService,
-        private auth: AuthService
+        private tenant: TenantService
     ) { }
 
     // ========================================================================
-    // Perfil / Empresa helpers (reutiliza patrón de ResEvaluacionesService)
+    // Tenant helpers (delegate)
     // ========================================================================
 
-    private async getPerfilSeguro(): Promise<Usuario | null> {
-        let perfil = this.auth.currentPerfil;
-        if (perfil) return perfil;
-        perfil = await this.auth.waitForProfile();
-        return perfil ?? null;
-    }
-
-    async isAdministrador(): Promise<boolean> {
-        const perfil = await this.getPerfilSeguro();
-        if (!perfil) return false;
-        const nombreRol = (
-            (perfil as any).rol_data?.nombre ?? perfil.rol ?? ''
-        ).toString().trim().toUpperCase();
-        return nombreRol === 'ADMINISTRADOR' || nombreRol === 'ADMIN'
-            || nombreRol === 'SUPER ADMIN' || nombreRol === 'SUPERADMIN';
-    }
-
-    async listarEmpresasDisponibles(): Promise<Empresa[]> {
-        const esAdmin = await this.isAdministrador();
-        if (esAdmin) {
-            const { data, error } = await this.sb.client
-                .from('empresas').select('*').order('nombre', { ascending: true });
-            if (error) throw error;
-            return (data as Empresa[]) ?? [];
-        }
-        const perfil = await this.getPerfilSeguro();
-        if (!perfil?.empresa_id) return [];
-        const { data, error } = await this.sb.client
-            .from('empresas').select('*').eq('id', perfil.empresa_id).single();
-        if (error) return [];
-        return [data as Empresa];
-    }
-
-    async getEmpresaTenantId(): Promise<string | null> {
-        const perfil = await this.getPerfilSeguro();
-        return perfil?.empresa_id ?? null;
-    }
+    isAdministrador(): Promise<boolean> { return this.tenant.isAdministrador(); }
+    listarEmpresasDisponibles(): Promise<Empresa[]> { return this.tenant.listarEmpresasDisponibles(); }
+    getEmpresaTenantId(): Promise<string | null> { return this.tenant.getEmpresaTenantId(); }
+    getEmpresaPorId(id: string): Promise<Empresa> { return this.tenant.getEmpresaPorId(id); }
 
     // ========================================================================
     // CRUD Plan de Mejora
     // ========================================================================
 
-    /** Select con joins necesarios, filtro por empresa y opcionalmente por estado */
     private readonly SELECT_QUERY = `
         *,
         responsable:usuarios!sst_plan_mejora_responsable_id_fkey(id, nombre, email),
@@ -186,5 +148,36 @@ export class PlanMejoraService {
             .order('nombre', { ascending: true });
         if (error) throw error;
         return data ?? [];
+    }
+
+    // ========================================================================
+    // Historial / Control de Cambios
+    // ========================================================================
+
+    async registrarCambio(entry: {
+        empresa_id: string;
+        hallazgo_id: string;
+        descripcion: string;
+    }): Promise<void> {
+        const perfil = await this.tenant.getPerfilSeguro();
+        const { error } = await this.sb.client
+            .from('sst_plan_mejora_historial')
+            .insert({
+                empresa_id: entry.empresa_id,
+                hallazgo_id: entry.hallazgo_id,
+                descripcion: entry.descripcion,
+                usuario_id: perfil?.id ?? null
+            });
+        if (error) throw error;
+    }
+
+    async listarHistorial(empresaId: string): Promise<SstPlanMejoraHistorial[]> {
+        const { data, error } = await this.sb.client
+            .from('sst_plan_mejora_historial')
+            .select('*, usuario:usuarios!sst_plan_mejora_historial_usuario_id_fkey(id, nombre, email)')
+            .eq('empresa_id', empresaId)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return (data as unknown as SstPlanMejoraHistorial[]) ?? [];
     }
 }

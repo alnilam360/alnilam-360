@@ -58,6 +58,61 @@
       <p class="text-sm text-emerald-300 flex-1">{{ successMsg }}</p>
     </div>
 
+    <!-- ═══ Verificación Res. 0312: estándares aplicables ═══ -->
+    <div *ngIf="empresa && resolucionInfo" class="mb-5 p-4 rounded-xl border"
+      [ngClass]="mismatchTipo
+        ? 'bg-amber-500/8 border-amber-500/30'
+        : 'bg-dark-secondary border-dark-border'">
+      <div class="flex items-start gap-3">
+        <ion-icon
+          [name]="mismatchTipo ? 'warning-outline' : 'shield-checkmark-outline'"
+          class="text-xl flex-shrink-0 mt-0.5"
+          [ngClass]="mismatchTipo ? 'text-amber-400' : 'text-emerald-400'"></ion-icon>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] font-semibold uppercase tracking-wider mb-2.5"
+             [ngClass]="mismatchTipo ? 'text-amber-400' : 'text-emerald-400'">
+            {{ mismatchTipo ? 'Verificación Res. 0312 — Posible discrepancia' : 'Verificación Res. 0312 — Correcta' }}
+          </p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2.5">
+            <div>
+              <p class="text-[10px] text-dark-text uppercase tracking-wider mb-0.5">Empresa</p>
+              <p class="text-xs text-[rgb(var(--color-heading))] font-medium truncate">{{ empresa.nombre }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-dark-text uppercase tracking-wider mb-0.5">Trabajadores</p>
+              <p class="text-xs text-[rgb(var(--color-heading))] font-medium">{{ resolucionInfo.numero_empleados }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-dark-text uppercase tracking-wider mb-0.5">Nivel de riesgo</p>
+              <p class="text-xs text-[rgb(var(--color-heading))] font-medium">{{ resolucionInfo.nivel_riesgo || '—' }}</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-dark-text uppercase tracking-wider mb-0.5">Estándares cargados</p>
+              <p class="text-xs font-bold"
+                 [ngClass]="mismatchTipo ? 'text-amber-400' : 'text-emerald-400'">
+                {{ detalle.length }} / {{ resolucionInfo.tipo }} esperados
+              </p>
+            </div>
+          </div>
+          <p class="text-[11px] text-dark-text leading-relaxed">
+            {{ resolucionInfo.motivo }}
+          </p>
+          <p *ngIf="mismatchTipo" class="mt-1.5 text-[11px] text-amber-300 leading-relaxed">
+            Esta evaluación usa <b>{{ evaluacion?.tipo_evaluacion }}</b> estándares pero el perfil de la empresa indica
+            que corresponden <b>{{ resolucionInfo.tipo }}</b>. Verifique el nivel de riesgo y la cantidad de trabajadores registrados en la empresa.
+          </p>
+          <div *ngIf="mismatchTipo && !isReadOnly()" class="mt-3">
+            <button type="button" (click)="corregirTipo()" [disabled]="finalizando"
+              class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500/25 font-medium transition-all duration-200 disabled:opacity-50">
+              <ion-spinner *ngIf="finalizando" name="crescent" style="width:12px;height:12px;--color:#fbbf24;"></ion-spinner>
+              <ion-icon *ngIf="!finalizando" name="refresh-outline" class="text-sm"></ion-icon>
+              Corregir a {{ resolucionInfo.tipo }} estándares
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Form -->
     <form [formGroup]="form">
       <div formArrayName="items" class="space-y-4">

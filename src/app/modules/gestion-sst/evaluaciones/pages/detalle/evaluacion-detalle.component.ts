@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Empresa } from '../../../../../core/models/models';
 import {
     CalificacionEvaluacion,
     CicloPHVA,
     EstandarCatalogo,
+    ResolucionTipoEvaluacion,
     SstEvaluacion,
     SstEvaluacionDetalle
 } from '../../../../../core/models/res0312.model';
@@ -40,6 +42,10 @@ export class EvaluacionDetalleComponent implements OnInit {
     evaluacion: SstEvaluacion | null = null;
     detalle: SstEvaluacionDetalle[] = [];
     grupos: GrupoPHVA[] = [];
+
+    empresa: Empresa | null = null;
+    resolucionInfo: ResolucionTipoEvaluacion | null = null;
+    mismatchTipo = false;
 
     form: FormGroup = this.fb.group({
         items: this.fb.array([])
@@ -78,6 +84,13 @@ export class EvaluacionDetalleComponent implements OnInit {
             this.evaluacion = evaluacion;
             this.detalle = detalle;
             this.construirForm();
+            // Verificar estándares aplicables según perfil de la empresa
+            try {
+                const { empresa, resolucion } = await this.resSvc.getTipoEvaluacionTenant(evaluacion.empresa_id);
+                this.empresa = empresa;
+                this.resolucionInfo = resolucion;
+                this.mismatchTipo = resolucion.tipo !== evaluacion.tipo_evaluacion;
+            } catch { /* silent: mostrar la evaluación aunque falle la verificación */ }
         } catch (error: any) {
             console.error('Error cargando evaluación:', error);
             this.errorMsg = error?.message || 'No fue posible cargar la evaluación.';
@@ -237,6 +250,29 @@ export class EvaluacionDetalleComponent implements OnInit {
         } catch (error: any) {
             console.error('Error finalizando evaluación:', error);
             this.errorMsg = error?.message || 'No fue posible finalizar la evaluación.';
+        } finally {
+            this.finalizando = false;
+        }
+    }
+
+    async corregirTipo(): Promise<void> {
+        if (!this.evaluacion?.id || !this.resolucionInfo || this.finalizando) return;
+        const nuevoTipo = this.resolucionInfo.tipo;
+        if (!confirm(
+            `Se eliminará el detalle actual y se resembrarán ${nuevoTipo} estándares según el perfil de la empresa. ¿Continuar?`
+        )) return;
+
+        this.finalizando = true;
+        this.errorMsg = null;
+        try {
+            this.detalle = await this.resSvc.corregirTipoEvaluacion(this.evaluacion.id, nuevoTipo);
+            this.evaluacion = { ...this.evaluacion, tipo_evaluacion: nuevoTipo };
+            this.mismatchTipo = false;
+            this.construirForm();
+            this.successMsg = `Evaluación corregida a ${nuevoTipo} estándares.`;
+            setTimeout(() => this.successMsg = null, 4000);
+        } catch (error: any) {
+            this.errorMsg = error?.message || 'No fue posible corregir el tipo de evaluación.';
         } finally {
             this.finalizando = false;
         }
