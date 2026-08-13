@@ -101,7 +101,7 @@
             *ngIf="isExpanded(item) && (!isCollapsed || isMobile)"
             class="submenu mt-0.5 space-y-0.5">
             <ng-container *ngFor="let child of item.children; trackBy: trackByFn">
-              <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: 1 }">
+              <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: 1, phvaGroup: item.phvaGroup }">
               </ng-container>
             </ng-container>
           </ul>
@@ -116,8 +116,39 @@
     <!-- Utility items -->
     <ul class="space-y-0.5 px-3">
       <li *ngFor="let item of utilityItems; trackBy: trackByFn">
+
+        <!-- Expandable utility item (has children) -->
+        <ng-container *ngIf="item.children && item.children.length > 0">
+          <button
+            (click)="toggleExpand(item, $event)"
+            class="menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer"
+            [class.has-active]="hasActiveChild(item)"
+            [attr.title]="item.label">
+            <ion-icon
+              [name]="item.icon || 'ellipse-outline'"
+              class="text-lg flex-shrink-0">
+            </ion-icon>
+            <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate">{{ item.label }}</p>
+              <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate">{{ item.subtitle }}</p>
+            </div>
+            <ion-icon
+              *ngIf="!isCollapsed || isMobile"
+              [name]="isExpanded(item) ? 'chevron-down-outline' : 'chevron-forward-outline'"
+              class="text-sm flex-shrink-0 transition-transform duration-200">
+            </ion-icon>
+          </button>
+          <ul *ngIf="isExpanded(item) && (!isCollapsed || isMobile)" class="submenu mt-0.5 space-y-0.5">
+            <ng-container *ngFor="let child of item.children; trackBy: trackByFn">
+              <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: 1 }">
+              </ng-container>
+            </ng-container>
+          </ul>
+        </ng-container>
+
+        <!-- Simple route item -->
         <a
-          *ngIf="item.route"
+          *ngIf="(!item.children || item.children.length === 0) && item.route"
           [routerLink]="item.route"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: false }"
@@ -132,8 +163,10 @@
             <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate">{{ item.subtitle }}</p>
           </div>
         </a>
+
+        <!-- No route, no children -->
         <div
-          *ngIf="!item.route"
+          *ngIf="(!item.children || item.children.length === 0) && !item.route"
           class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
           [attr.title]="item.label">
           <ion-icon
@@ -175,7 +208,7 @@
 </aside>
 
 <!-- Recursive Menu Item Template (used for children) -->
-<ng-template #menuItemTemplate let-item let-level="level">
+<ng-template #menuItemTemplate let-item let-level="level" let-phvaGroup="phvaGroup">
   <li>
     <!-- Leaf item with route -->
     <a
@@ -190,9 +223,20 @@
       <ion-icon
         *ngIf="item.icon"
         [name]="item.icon"
-        class="text-base flex-shrink-0">
+        class="text-base flex-shrink-0"
+        [class.text-blue-400]="phvaGroup === 'P'"
+        [class.text-green-400]="phvaGroup === 'H'"
+        [class.text-violet-400]="phvaGroup === 'V'"
+        [class.text-amber-400]="phvaGroup === 'A'">
       </ion-icon>
-      <span *ngIf="!isCollapsed || isMobile" class="flex-1 truncate text-xs">{{ item.label }}</span>
+      <span *ngIf="!isCollapsed || isMobile"
+        class="flex-1 truncate text-xs"
+        [class.text-blue-300]="phvaGroup === 'P'"
+        [class.text-green-300]="phvaGroup === 'H'"
+        [class.text-violet-300]="phvaGroup === 'V'"
+        [class.text-amber-300]="phvaGroup === 'A'">
+        {{ item.label }}
+      </span>
     </a>
 
     <!-- Expandable item with children -->
@@ -219,7 +263,7 @@
       </button>
       <ul *ngIf="isExpanded(item) && (!isCollapsed || isMobile)" class="submenu mt-0.5 space-y-0.5 overflow-hidden">
         <ng-container *ngFor="let child of item.children; trackBy: trackByFn">
-          <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: level + 1 }">
+          <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: level + 1, phvaGroup: phvaGroup }">
           </ng-container>
         </ng-container>
       </ul>

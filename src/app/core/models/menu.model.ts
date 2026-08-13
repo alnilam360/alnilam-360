@@ -94,7 +94,11 @@ export const MENU_ITEMS: MenuItem[] = [
     subtitle: 'Administración del Sistema',
     icon: 'settings-outline',
     isUtility: true,
-    route: '/configuracion/ajustes'
+    children: [
+      { id: 'conf-empresas', label: 'Empresas', icon: 'business-outline', route: '/configuracion/empresas' },
+      { id: 'conf-roles', label: 'Roles', icon: 'shield-outline', route: '/configuracion/roles' },
+      { id: 'conf-usuarios', label: 'Usuarios', icon: 'people-outline', route: '/configuracion/usuarios' }
+    ]
   },
   {
     id: 'ayuda',
