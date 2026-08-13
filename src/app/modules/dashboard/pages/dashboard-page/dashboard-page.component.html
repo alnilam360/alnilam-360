@@ -1,51 +1,422 @@
-<div class="dashboard-container min-h-full">
-  <!-- Page Header -->
-  <div class="page-header mb-4 sm:mb-6">
-    <h1 class="text-xl sm:text-2xl font-bold text-white mb-1">Panel de Control SST</h1>
-    <p class="text-dark-text text-sm sm:text-base">Resumen de indicadores de Seguridad y Salud en el Trabajo</p>
+<div class="dashboard-container min-h-full space-y-5">
+
+  <!-- ═══════════════════════════════════════════
+       HERO BANNER
+  ════════════════════════════════════════════ -->
+  <div class="hero-banner relative rounded-2xl overflow-hidden border border-dark-border">
+    <!-- Gradient bg -->
+    <div class="absolute inset-0 bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-primary"></div>
+    <div class="absolute inset-0 dot-pattern opacity-30 pointer-events-none"></div>
+
+    <div class="relative flex flex-col lg:flex-row min-h-[200px]">
+
+      <!-- Left: Welcome + PHVA Wheel -->
+      <div class="flex-1 flex flex-col sm:flex-row items-center gap-6 p-6 sm:p-8">
+        <!-- Text -->
+        <div class="flex-1 text-center sm:text-left">
+          <div class="inline-flex items-center gap-2 mb-3 px-3 py-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/20">
+            <div class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></div>
+            <span class="text-xs font-semibold text-brand-primary">SG-SST Activo</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-[rgb(var(--color-heading))] mb-2 leading-tight">
+            ¡Bienvenid@{{ userName ? ', ' + userName : '' }}! <span class="wave">👋</span>
+          </h1>
+          <p class="text-sm text-dark-text mb-5 leading-relaxed">
+            Sistema de Gestión de Seguridad y Salud en el Trabajo
+          </p>
+          <!-- PHVA chips -->
+          <div class="flex gap-2 flex-wrap justify-center sm:justify-start">
+            <span *ngFor="let phase of phvaPhases"
+              class="phva-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-sm"
+              [style.background]="phase.color">
+              <span class="text-sm font-black">{{ phase.letter }}</span>
+              <span class="opacity-90 font-semibold">{{ phase.label }}</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- PHVA Wheel SVG -->
+        <div class="flex-shrink-0 drop-shadow-2xl">
+          <svg viewBox="0 0 220 220" class="w-44 h-44 sm:w-52 sm:h-52">
+            <!-- Shadow -->
+            <defs>
+              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.4)"/>
+              </filter>
+              <filter id="glow-blue">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <g filter="url(#shadow)" transform="translate(10,10)">
+              <!-- P PLANEAR (top-left: 9→12 CW) -->
+              <path d="M 100,100 L 10,100 A 90,90 0 0,1 100,10 Z" fill="#3b82f6"/>
+              <!-- H HACER (top-right: 12→3 CW) -->
+              <path d="M 100,100 L 100,10 A 90,90 0 0,1 190,100 Z" fill="#10b981"/>
+              <!-- V VERIFICAR (bottom-right: 3→6 CW) -->
+              <path d="M 100,100 L 190,100 A 90,90 0 0,1 100,190 Z" fill="#8b5cf6"/>
+              <!-- A ACTUAR (bottom-left: 6→9 CW) -->
+              <path d="M 100,100 L 100,190 A 90,90 0 0,1 10,100 Z" fill="#f59e0b"/>
+            </g>
+
+            <!-- On top of shadow group -->
+            <g transform="translate(10,10)">
+              <!-- White gaps -->
+              <line x1="100" y1="100" x2="100" y2="10"  stroke="white" stroke-width="3" stroke-opacity="0.9"/>
+              <line x1="100" y1="100" x2="190" y2="100" stroke="white" stroke-width="3" stroke-opacity="0.9"/>
+              <line x1="100" y1="100" x2="100" y2="190" stroke="white" stroke-width="3" stroke-opacity="0.9"/>
+              <line x1="100" y1="100" x2="10"  y2="100" stroke="white" stroke-width="3" stroke-opacity="0.9"/>
+
+              <!-- Center circle -->
+              <circle cx="100" cy="100" r="33" fill="rgba(15,23,42,0.85)"/>
+              <circle cx="100" cy="100" r="31" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+              <!-- Shield icon (manual path) -->
+              <path d="M100,84 L87,89 L87,100 C87,108 93,115 100,118 C107,115 113,108 113,100 L113,89 Z"
+                    fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M94,101 L98,105 L107,95" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <text x="100" y="125" text-anchor="middle" font-size="7.5" font-weight="700" fill="white" opacity="0.85" letter-spacing="0.5">SG-SST</text>
+
+              <!-- Quadrant labels -->
+              <text x="52"  y="53"  text-anchor="middle" font-size="11" font-weight="800" fill="white">P</text>
+              <text x="52"  y="65"  text-anchor="middle" font-size="7"  font-weight="500" fill="white" opacity="0.85">PLANEAR</text>
+              <text x="148" y="53"  text-anchor="middle" font-size="11" font-weight="800" fill="white">H</text>
+              <text x="148" y="65"  text-anchor="middle" font-size="7"  font-weight="500" fill="white" opacity="0.85">HACER</text>
+              <text x="148" y="155" text-anchor="middle" font-size="11" font-weight="800" fill="white">V</text>
+              <text x="148" y="167" text-anchor="middle" font-size="7"  font-weight="500" fill="white" opacity="0.85">VERIFICAR</text>
+              <text x="52"  y="155" text-anchor="middle" font-size="11" font-weight="800" fill="white">A</text>
+              <text x="52"  y="167" text-anchor="middle" font-size="7"  font-weight="500" fill="white" opacity="0.85">ACTUAR</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Right: Quote panel (lg+) -->
+      <div class="hidden lg:flex flex-col justify-center px-8 py-8 border-l border-dark-border lg:w-72 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 rounded-full bg-brand-primary/5 -translate-y-8 translate-x-8"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-green-500/5 translate-y-6 -translate-x-6"></div>
+        <div class="relative">
+          <h2 class="text-2xl font-extrabold text-[rgb(var(--color-heading))] mb-3 leading-snug">
+            Un sistema que<br>mejora cada día
+          </h2>
+          <p class="text-sm text-dark-text mb-5 leading-relaxed">
+            Trabajamos juntos por ambientes seguros, saludables y productivos.
+          </p>
+          <p class="text-base font-bold text-brand-primary italic leading-snug">
+            ¡Tu compromiso<br>hace la diferencia!
+          </p>
+        </div>
+      </div>
+
+    </div>
   </div>
 
-  <!-- Stats Cards Row -->
-  <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 mb-4 sm:mb-6">
-    <app-stat-card 
-      *ngFor="let card of statCards"
-      [title]="card.title"
-      [value]="card.value"
-      [change]="card.change"
-      [changeType]="card.changeType"
-      [icon]="card.icon"
-      [iconBg]="card.iconBg">
-    </app-stat-card>
+  <!-- ═══════════════════════════════════════════
+       5 KPI CARDS
+  ════════════════════════════════════════════ -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div *ngFor="let kpi of kpiCards; let i = index"
+      class="kpi-card relative bg-dark-primary border border-dark-border rounded-2xl p-4 sm:p-5 overflow-hidden transition-all duration-300 hover:shadow-xl cursor-default"
+      [style.border-color]="kpi.progressColor + '35'">
+
+      <!-- Subtle accent blob -->
+      <div class="absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 -translate-y-6 translate-x-6"
+        [style.background]="kpi.progressColor"></div>
+
+      <!-- Top row: icon -->
+      <div class="flex items-start justify-between mb-4">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+          [style.background-color]="kpi.iconBg">
+          <ion-icon [name]="kpi.icon" class="text-2xl" [style.color]="kpi.iconColor"></ion-icon>
+        </div>
+      </div>
+
+      <!-- Value + status -->
+      <div class="mb-1">
+        <div class="text-2xl sm:text-3xl font-extrabold text-[rgb(var(--color-heading))] leading-none mb-1">{{ kpi.value }}</div>
+        <div class="text-[10px] font-bold tracking-wide uppercase" [style.color]="kpi.statusColor">{{ kpi.status }}</div>
+      </div>
+
+      <p class="text-[11px] text-dark-text leading-tight mb-3 mt-1">{{ kpi.label }}</p>
+
+      <!-- Progress bar -->
+      <div class="h-1.5 bg-dark-accent rounded-full overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-1000"
+          [style.width.%]="kpi.progress"
+          [style.background-color]="kpi.progressColor">
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Main Content Grid -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-4 sm:mb-6">
-    <!-- Monthly Chart - Takes 2 columns on large screens -->
-    <div class="lg:col-span-2 order-1">
-      <app-monthly-chart 
-        [labels]="monthlyData.labels"
-        [inspections]="monthlyData.inspections"
-        [incidents]="monthlyData.incidents">
-      </app-monthly-chart>
+  <!-- ═══════════════════════════════════════════
+       3-COLUMN CONTENT GRID
+  ════════════════════════════════════════════ -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+
+    <!-- INDICADORES CLAVE -->
+    <div class="content-card bg-dark-primary border border-dark-border rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-bold text-[rgb(var(--color-heading))] text-base">Indicadores Clave</h3>
+          <p class="text-xs text-dark-text mt-0.5">Seguimiento mensual SST</p>
+        </div>
+        <a class="text-xs font-semibold text-brand-primary hover:underline cursor-pointer px-3 py-1.5 rounded-lg bg-brand-primary/10">
+          Ver todos
+        </a>
+      </div>
+
+      <div class="space-y-4">
+        <div *ngFor="let ind of keyIndicators"
+          class="indicator-row flex items-center gap-3 p-3 rounded-xl bg-dark-secondary hover:bg-dark-accent/60 transition-colors duration-200 cursor-pointer">
+
+          <!-- Status dot -->
+          <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+            [class.bg-green-500\/15]="!ind.isBad"
+            [class.bg-red-500\/15]="ind.isBad">
+            <ion-icon
+              [name]="ind.isBad ? 'close-circle-outline' : 'checkmark-circle-outline'"
+              class="text-base"
+              [class.text-green-400]="!ind.isBad"
+              [class.text-red-400]="ind.isBad">
+            </ion-icon>
+          </div>
+
+          <!-- Label -->
+          <span class="flex-1 text-xs font-medium text-[rgb(var(--color-heading))] truncate">{{ ind.label }}</span>
+
+          <!-- Value -->
+          <span class="text-sm font-extrabold text-[rgb(var(--color-heading))] flex-shrink-0">{{ ind.value }}</span>
+
+          <!-- Trend -->
+          <div class="flex items-center gap-0.5 flex-shrink-0"
+            [class.text-green-400]="isGoodTrend(ind)"
+            [class.text-red-400]="!isGoodTrend(ind)">
+            <ion-icon
+              [name]="ind.trendDir === 'up' ? 'caret-up-outline' : 'caret-down-outline'"
+              class="text-xs">
+            </ion-icon>
+            <span class="text-xs font-bold">{{ ind.trendPct }}</span>
+          </div>
+
+          <!-- Sparkline -->
+          <svg class="w-16 h-8 flex-shrink-0" viewBox="0 0 64 32" preserveAspectRatio="none">
+            <polyline
+              [attr.points]="ind.sparkPoints"
+              fill="none"
+              [attr.stroke]="getSparkColor(ind)"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-dark-border flex items-center gap-2">
+        <ion-icon name="calendar-outline" class="text-dark-text text-xs"></ion-icon>
+        <p class="text-xs text-dark-text">Período: Mayo 2026</p>
+      </div>
     </div>
 
-    <!-- Progress Gauge -->
-    <div class="lg:col-span-1 order-2">
-      <app-progress-gauge
-        [percentage]="complianceData.percentage"
-        [target]="complianceData.target"
-        [description]="complianceData.description"
-        [details]="complianceData.details">
-      </app-progress-gauge>
+    <!-- PRÓXIMAS ACTIVIDADES -->
+    <div class="content-card bg-dark-primary border border-dark-border rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-bold text-[rgb(var(--color-heading))] text-base">Próximas Actividades</h3>
+          <p class="text-xs text-dark-text mt-0.5">Agenda del plan de trabajo</p>
+        </div>
+        <a class="text-xs font-semibold text-brand-primary hover:underline cursor-pointer px-3 py-1.5 rounded-lg bg-brand-primary/10 flex items-center gap-1">
+          Ver calendario <ion-icon name="chevron-down-outline" class="text-xs"></ion-icon>
+        </a>
+      </div>
+
+      <div class="space-y-3">
+        <div *ngFor="let act of upcomingActivities; let last = last"
+          class="activity-item flex items-center gap-4 p-4 rounded-xl bg-dark-secondary hover:bg-dark-accent/60 transition-colors duration-200 cursor-pointer border border-dark-border hover:border-brand-primary/30">
+
+          <!-- Date badge -->
+          <div class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-brand-primary/10 border border-brand-primary/20">
+            <span class="text-2xl font-extrabold text-[rgb(var(--color-heading))] leading-none">{{ act.day }}</span>
+            <span class="text-[10px] font-bold text-brand-primary uppercase tracking-widest mt-0.5">{{ act.month }}</span>
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-[rgb(var(--color-heading))] truncate leading-tight mb-1">{{ act.title }}</p>
+            <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+              {{ act.type }}
+            </span>
+          </div>
+
+          <ion-icon name="calendar-number-outline" class="text-dark-text text-lg flex-shrink-0"></ion-icon>
+        </div>
+      </div>
+
+      <div class="mt-5 text-center">
+        <a class="inline-flex items-center gap-2 text-sm font-semibold text-brand-primary hover:underline cursor-pointer">
+          Ver todas las actividades
+          <ion-icon name="arrow-forward-outline" class="text-sm"></ion-icon>
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="space-y-4">
+
+      <!-- CUMPLIMIENTO POR ESTÁNDAR 0312 -->
+      <div class="content-card bg-dark-primary border border-dark-border rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-[rgb(var(--color-heading))] text-base">Cumplimiento por Estándar</h3>
+            <p class="text-[10px] text-dark-text mt-0.5">Resolución 0312 de 2019</p>
+          </div>
+          <a class="text-xs font-semibold text-brand-primary hover:underline cursor-pointer">Ver detalle</a>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- Multi-color donut -->
+          <div class="relative flex-shrink-0" style="width:90px;height:90px;">
+            <svg viewBox="0 0 90 90" style="width:90px;height:90px;transform:rotate(-90deg)">
+              <!-- Background track -->
+              <circle cx="45" cy="45" r="36" fill="none" stroke="rgb(var(--color-dark-accent))" stroke-width="10"/>
+              <!-- Segment 1: Recursos 100% → 0→53.9° of 360° -->
+              <circle cx="45" cy="45" r="36" fill="none" stroke="#10b981" stroke-width="10"
+                stroke-dasharray="226.2" stroke-dashoffset="194.1" stroke-linecap="butt"/>
+              <!-- Segment 2: Gestión 92% (offset = 194.1 - 49.5 = cumulative) -->
+              <circle cx="45" cy="45" r="36" fill="none" stroke="#3b82f6" stroke-width="10"
+                stroke-dasharray="226.2" stroke-dashoffset="145.5" stroke-linecap="butt"
+                transform="rotate(85.4, 45, 45)"/>
+              <!-- Segment 3: Salud 93% -->
+              <circle cx="45" cy="45" r="36" fill="none" stroke="#06b6d4" stroke-width="10"
+                stroke-dasharray="226.2" stroke-dashoffset="142.1" stroke-linecap="butt"
+                transform="rotate(167, 45, 45)"/>
+              <!-- Segment 4: Peligros 90% -->
+              <circle cx="45" cy="45" r="36" fill="none" stroke="#ef4444" stroke-width="10"
+                stroke-dasharray="226.2" stroke-dashoffset="148.8" stroke-linecap="butt"
+                transform="rotate(247.7, 45, 45)"/>
+              <!-- Segment 5: Amenazas 96% (remaining arc) -->
+              <circle cx="45" cy="45" r="36" fill="none" stroke="#8b5cf6" stroke-width="10"
+                stroke-dasharray="226.2" stroke-dashoffset="135.7" stroke-linecap="butt"
+                transform="rotate(314.9, 45, 45)"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-[9px] font-semibold text-dark-text">Total</span>
+              <span class="text-lg font-extrabold text-brand-primary leading-none">95%</span>
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="flex-1 space-y-1.5 min-w-0">
+            <div *ngFor="let std of complianceStandards" class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="w-2 h-2 rounded-full flex-shrink-0" [style.background-color]="std.color"></span>
+                <span class="text-[11px] text-dark-text truncate">{{ std.label }}</span>
+              </div>
+              <span class="text-[11px] font-bold text-[rgb(var(--color-heading))] flex-shrink-0">{{ std.value }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTAS Y NOTIFICACIONES -->
+      <div class="content-card bg-dark-primary border border-dark-border rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-[rgb(var(--color-heading))] text-base">Alertas y Notificaciones</h3>
+          <a class="text-xs font-semibold text-brand-primary hover:underline cursor-pointer">Ver todas</a>
+        </div>
+
+        <div class="space-y-2.5">
+          <div *ngFor="let alert of dashAlerts"
+            class="flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:border-opacity-60"
+            [class.border-red-500\/20]="alert.severity === 'danger'"
+            [class.border-amber-500\/20]="alert.severity === 'warning'"
+            [class.border-blue-500\/20]="alert.severity === 'info'"
+            [class.bg-red-500\/5]="alert.severity === 'danger'"
+            [class.bg-amber-500\/5]="alert.severity === 'warning'"
+            [class.bg-blue-500\/5]="alert.severity === 'info'">
+
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+              [class.bg-red-500\/15]="alert.severity === 'danger'"
+              [class.bg-amber-500\/15]="alert.severity === 'warning'"
+              [class.bg-blue-500\/15]="alert.severity === 'info'">
+              <ion-icon [name]="alert.icon" class="text-base"
+                [class.text-red-400]="alert.severity === 'danger'"
+                [class.text-amber-400]="alert.severity === 'warning'"
+                [class.text-blue-400]="alert.severity === 'info'">
+              </ion-icon>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold text-[rgb(var(--color-heading))]">{{ alert.title }}</p>
+              <p class="text-[10px] text-dark-text mt-0.5">{{ alert.detail }}</p>
+            </div>
+            <span class="text-[10px] font-semibold flex-shrink-0 mt-0.5"
+              [class.text-red-400]="alert.severity === 'danger'"
+              [class.text-amber-400]="alert.severity === 'warning'"
+              [class.text-blue-400]="alert.severity === 'info'">
+              {{ alert.when }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Help CTA -->
+        <div class="mt-4 p-3 rounded-xl bg-dark-secondary border border-dark-border flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-brand-primary/20 flex items-center justify-center flex-shrink-0">
+            <ion-icon name="headset-outline" class="text-brand-primary text-lg"></ion-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-[rgb(var(--color-heading))]">¿Necesitas ayuda?</p>
+            <p class="text-[10px] text-dark-text">Estamos para apoyarte</p>
+          </div>
+          <button class="px-3 py-2 bg-brand-primary text-white text-xs font-bold rounded-xl hover:bg-blue-600 transition-colors flex-shrink-0">
+            Soporte
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- Bottom Row -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
-    <!-- Recent Activity -->
-    <app-recent-activity [activities]="recentActivities"></app-recent-activity>
-
-    <!-- Quick Actions -->
-    <app-quick-actions [actions]="quickActions"></app-quick-actions>
+  <!-- ═══════════════════════════════════════════
+       ACCESOS RÁPIDOS
+  ════════════════════════════════════════════ -->
+  <div class="content-card bg-dark-primary border border-dark-border rounded-2xl p-5">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h3 class="font-bold text-[rgb(var(--color-heading))] text-base">Accesos Rápidos</h3>
+        <p class="text-xs text-dark-text mt-0.5">Funciones de uso frecuente</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3">
+      <button *ngFor="let action of quickAccessActions"
+        class="quick-action flex flex-col items-center gap-2.5 p-3 rounded-2xl hover:bg-dark-accent transition-all duration-200 group border border-transparent hover:border-dark-border"
+        [attr.title]="action.label">
+        <div class="w-13 h-13 rounded-2xl flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:shadow-lg"
+          style="width:52px;height:52px;"
+          [style.background-color]="action.bgColor">
+          <ion-icon [name]="action.icon" class="text-2xl" [style.color]="action.color"></ion-icon>
+        </div>
+        <span class="text-[10px] font-medium text-dark-text text-center leading-tight group-hover:text-[rgb(var(--color-heading))] transition-colors duration-200 line-clamp-2">
+          {{ action.label }}
+        </span>
+      </button>
+    </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER BANNER
+  ════════════════════════════════════════════ -->
+  <div class="footer-banner relative rounded-2xl overflow-hidden border border-dark-border p-6 sm:p-8 text-center">
+    <div class="absolute inset-0 bg-gradient-to-r from-brand-primary/10 via-green-500/8 to-violet-500/10"></div>
+    <div class="absolute inset-0 dot-pattern opacity-20 pointer-events-none"></div>
+    <div class="relative">
+      <p class="text-sm text-dark-text mb-2">
+        La seguridad no es solo una norma, es lo que nos conecta.
+      </p>
+      <p class="text-xl sm:text-2xl font-extrabold text-[rgb(var(--color-heading))]">
+        ¡Juntos construimos un mejor lugar para trabajar!
+      </p>
+    </div>
+  </div>
+
 </div>

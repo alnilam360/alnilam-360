@@ -8,74 +8,71 @@
 
 .menu-item {
   position: relative;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   letter-spacing: 0.01em;
-  padding-top: 0.55rem;
-  padding-bottom: 0.55rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
   color: rgb(var(--color-dark-text));
 
-  &[data-level="0"] {
-    font-size: 0.95rem;
-  }
-
-  &[data-level="1"] {
-    font-size: 0.85rem;
-  }
-
-  &[data-level="2"],
-  &[data-level="3"],
-  &[data-level="4"] {
-    font-size: 0.8rem;
-  }
-  
   &::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 2px;
+    width: 3px;
     height: 0;
     background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 3px 3px 0;
     transition: height 0.2s ease;
   }
-  
+
   &:hover::before {
-    height: 60%;
+    height: 55%;
   }
-  
+
   &.active,
   &.has-active {
-    background: rgb(var(--color-brand-primary) / 0.15);
+    background: rgb(var(--color-brand-primary) / 0.12);
     color: rgb(var(--color-heading));
-    
+
     &::before {
-      height: 70%;
+      height: 65%;
     }
-    
+
     ion-icon {
       color: rgb(var(--color-brand-primary));
     }
   }
 }
 
+/* PHVA group — colored left border on active */
+.phva-badge + span + ion-icon,
+.phva-badge ~ * {
+  transition: opacity 0.2s;
+}
+
+.menu-item.has-active .phva-badge {
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+}
+
 .submenu {
-  border-left: 1px solid rgba(255, 255, 255, 0.04);
-  margin-left: 1rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  margin-left: 1.25rem;
   padding-left: 0.5rem;
-  
+
   .menu-item {
-    padding-top: 0.45rem;
-    padding-bottom: 0.45rem;
-    
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    font-size: 0.8rem;
+
     &::before {
       display: none;
     }
-    
+
     &.active {
-      background: rgb(var(--color-brand-primary) / 0.12);
-      
+      background: rgb(var(--color-brand-primary) / 0.1);
+
       &::after {
         content: '';
         position: absolute;
@@ -93,19 +90,19 @@
 
 .custom-scrollbar {
   &::-webkit-scrollbar {
-    width: 4px;
+    width: 3px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 2px;
-    
+
     &:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.15);
     }
   }
 }

@@ -94,20 +94,38 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
+  get mainMenuItems(): MenuItemNode[] {
+    return this.menuItems.filter(item => !item.isUtility);
+  }
+
+  get utilityItems(): MenuItemNode[] {
+    return this.menuItems.filter(item => !!item.isUtility);
+  }
+
   private async loadPermisosAndFilter(rolId: string): Promise<void> {
     try {
       this.modulosPermitidos = await this.rolesService.getModulosPermitidos(rolId);
 
       if (this.modulosPermitidos.length === 0) {
-        // Si no hay permisos configurados, mostrar todo
         this.menuItems = this.allMenuItems;
         return;
       }
 
-      // Filtrar menu: solo mostrar módulos raíz que estén en los permisos
-      this.menuItems = this.allMenuItems.filter(item =>
-        this.modulosPermitidos.includes(item.id)
-      );
+      // Backward compat: roles with old IDs (gestion-sst, indicadores, etc.)
+      // get all PHVA groups mapped in so the new menu shows correctly.
+      const phvaIds = ['planear', 'hacer', 'verificar', 'actuar'];
+      const legacyIds = ['gestion-sst', 'indicadores', 'auditorias', 'personal', 'formatos-operativos', 'calendario'];
+      const hasNewPhva = phvaIds.some(id => this.modulosPermitidos.includes(id));
+      const hasLegacy = legacyIds.some(id => this.modulosPermitidos.includes(id));
+
+      if (hasLegacy && !hasNewPhva) {
+        this.modulosPermitidos = [...this.modulosPermitidos, ...phvaIds];
+      }
+
+      this.menuItems = this.allMenuItems.filter(item => {
+        if (item.isSectionLabel || item.isUtility) return true;
+        return this.modulosPermitidos.includes(item.id);
+      });
     } catch (error) {
       console.error('Error loading permisos for sidebar:', error);
       this.menuItems = this.allMenuItems;

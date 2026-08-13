@@ -1,33 +1,31 @@
 <!-- Mobile Overlay -->
-<div 
+<div
   *ngIf="isMobile && isOpen"
   (click)="closeMobileSidebar()"
   class="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300">
 </div>
 
 <!-- Sidebar -->
-<aside 
+<aside
   class="sidebar fixed top-0 left-0 h-screen bg-dark-primary border-r border-dark-border z-50 flex flex-col transition-all duration-300"
   [class.w-64]="!isCollapsed || isMobile"
   [class.w-20]="isCollapsed && !isMobile"
   [class.-translate-x-full]="isMobile && !isOpen"
   [class.translate-x-0]="!isMobile || isOpen">
-  
-  <!-- Logo Section -->
+
+  <!-- Logo -->
   <div class="h-14 md:h-16 flex items-center justify-between px-4 border-b border-dark-border flex-shrink-0">
     <div class="flex items-center gap-3 overflow-hidden">
       <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
-        <img src="assets/icon/alnilam.png" alt="ALNILAM 360" class="w-32 h-32 xl:w-36 xl:h-36 object-contain">
+        <img src="assets/icon/alnilam.png" alt="ALNILAM 360" class="w-8 h-8 object-contain">
       </div>
-      <span 
+      <span
         *ngIf="!isCollapsed || isMobile"
         class="font-bold text-lg whitespace-nowrap text-[rgb(var(--color-heading))]">
         ALNILAM 360
       </span>
     </div>
-    
-    <!-- Close button (mobile only) -->
-    <button 
+    <button
       *ngIf="isMobile"
       (click)="closeMobileSidebar()"
       class="p-2 rounded-lg text-dark-text hover-theme-text hover-theme-bg transition-all duration-200">
@@ -35,116 +33,194 @@
     </button>
   </div>
 
-  <!-- Menu Items -->
-  <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-3 custom-scrollbar">
-    <ul class="space-y-1">
-      <ng-container *ngFor="let item of menuItems; trackBy: trackByFn">
-        <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: item, level: 0 }"></ng-container>
+  <!-- Nav -->
+  <nav class="flex-1 overflow-y-auto overflow-x-hidden py-3 custom-scrollbar flex flex-col">
+
+    <!-- Main menu (dashboard + PHVA groups) -->
+    <ul class="space-y-0.5 px-3">
+      <ng-container *ngFor="let item of mainMenuItems; trackBy: trackByFn">
+
+        <!-- Section label (CICLO PHVA) -->
+        <li *ngIf="item.isSectionLabel" class="pt-3 pb-1.5">
+          <span
+            *ngIf="!isCollapsed || isMobile"
+            class="block text-[10px] font-bold tracking-widest uppercase text-dark-text px-2">
+            {{ item.label }}
+          </span>
+          <div
+            *ngIf="isCollapsed && !isMobile"
+            class="border-t border-dark-border mt-1 mx-2">
+          </div>
+        </li>
+
+        <!-- Dashboard / leaf items at level 0 -->
+        <li *ngIf="!item.isSectionLabel && !item.phvaGroup && item.route && (!item.children || item.children.length === 0)">
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+            class="menu-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer"
+            [attr.title]="item.label">
+            <ion-icon
+              [name]="item.icon || 'ellipse-outline'"
+              class="text-xl flex-shrink-0">
+            </ion-icon>
+            <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0">
+              <p class="text-sm font-semibold leading-tight truncate">{{ item.label }}</p>
+              <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate mt-0.5">{{ item.subtitle }}</p>
+            </div>
+          </a>
+        </li>
+
+        <!-- PHVA group (expandable with colored badge) -->
+        <li *ngIf="item.phvaGroup && item.children && item.children.length > 0">
+          <button
+            (click)="toggleExpand(item, $event)"
+            class="menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
+            [class.has-active]="hasActiveChild(item)"
+            [attr.title]="item.label">
+            <span
+              class="phva-badge flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+              [class.bg-blue-500]="item.phvaGroup === 'P'"
+              [class.bg-green-500]="item.phvaGroup === 'H'"
+              [class.bg-violet-500]="item.phvaGroup === 'V'"
+              [class.bg-amber-500]="item.phvaGroup === 'A'">
+              {{ item.phvaGroup }}
+            </span>
+            <span *ngIf="!isCollapsed || isMobile" class="flex-1 text-sm font-bold tracking-wide truncate text-left">
+              {{ item.label }}
+            </span>
+            <ion-icon
+              *ngIf="!isCollapsed || isMobile"
+              [name]="isExpanded(item) ? 'chevron-down-outline' : 'chevron-forward-outline'"
+              class="text-sm flex-shrink-0 transition-transform duration-200">
+            </ion-icon>
+          </button>
+
+          <ul
+            *ngIf="isExpanded(item) && (!isCollapsed || isMobile)"
+            class="submenu mt-0.5 space-y-0.5">
+            <ng-container *ngFor="let child of item.children; trackBy: trackByFn">
+              <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: 1 }">
+              </ng-container>
+            </ng-container>
+          </ul>
+        </li>
+
       </ng-container>
     </ul>
+
+    <!-- Separator -->
+    <div class="mx-4 my-3 border-t border-dark-border"></div>
+
+    <!-- Utility items -->
+    <ul class="space-y-0.5 px-3">
+      <li *ngFor="let item of utilityItems; trackBy: trackByFn">
+        <a
+          *ngIf="item.route"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
+          [attr.title]="item.label">
+          <ion-icon
+            [name]="item.icon || 'ellipse-outline'"
+            class="text-lg flex-shrink-0">
+          </ion-icon>
+          <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">{{ item.label }}</p>
+            <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate">{{ item.subtitle }}</p>
+          </div>
+        </a>
+        <div
+          *ngIf="!item.route"
+          class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
+          [attr.title]="item.label">
+          <ion-icon
+            [name]="item.icon || 'ellipse-outline'"
+            class="text-lg flex-shrink-0">
+          </ion-icon>
+          <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">{{ item.label }}</p>
+            <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate">{{ item.subtitle }}</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+
   </nav>
 
-  <!-- Footer -->
-  <div class="p-4 border-t border-dark-border flex-shrink-0">
-    <div 
+  <!-- Help Footer -->
+  <div class="p-3 border-t border-dark-border flex-shrink-0">
+    <button
       *ngIf="!isCollapsed || isMobile"
-      class="flex items-center gap-3 px-2">
-      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
-        <span class="text-white text-xs font-semibold">v1</span>
+      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 transition-all duration-200 text-left">
+      <div class="w-8 h-8 rounded-full bg-brand-primary/20 flex items-center justify-center flex-shrink-0">
+        <ion-icon name="headset-outline" class="text-brand-primary text-base"></ion-icon>
       </div>
-      <div class="overflow-hidden">
-        <p class="text-xs text-dark-text truncate">Sistema SG-SST</p>
-        <p class="text-xs text-dark-text/60 truncate">Res. 0312 de 2019</p>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold text-[rgb(var(--color-heading))]">¿Necesitas ayuda?</p>
+        <p class="text-[10px] text-dark-text">Soporte en línea</p>
       </div>
-    </div>
-    <div 
+      <ion-icon name="chevron-forward-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+    </button>
+    <div
       *ngIf="isCollapsed && !isMobile"
       class="flex justify-center">
-      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-        <span class="text-white text-xs font-semibold">v1</span>
-      </div>
+      <button class="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center hover:bg-brand-primary/20 transition-all duration-200">
+        <ion-icon name="headset-outline" class="text-brand-primary text-xl"></ion-icon>
+      </button>
     </div>
   </div>
 </aside>
 
-<!-- Menu Item Template (Recursive) -->
+<!-- Recursive Menu Item Template (used for children) -->
 <ng-template #menuItemTemplate let-item let-level="level">
   <li>
-    <!-- Item with route (no children) -->
-    <a 
+    <!-- Leaf item with route -->
+    <a
       *ngIf="item.route && (!item.children || item.children.length === 0)"
       [routerLink]="item.route"
       routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
-      class="menu-item flex items-center gap-2 px-3 rounded-lg text-sm hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
-      [attr.title]="item.label"
-      [attr.aria-label]="item.label"
-      [attr.data-level]="level"
+      [routerLinkActiveOptions]="{ exact: false }"
+      class="menu-item flex items-center gap-2 px-3 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer"
       [class.pl-5]="level === 1"
-      [class.pl-8]="level === 2"
-      [class.pl-10]="level >= 3"
-      [class.text-xs]="level >= 1">
-      <ion-icon 
-        *ngIf="item.icon && (level === 0 || !isCollapsed || isMobile)"
-        [name]="item.icon" 
-        class="text-base flex-shrink-0 transition-colors duration-200"
-        [class.text-lg]="level === 0">
+      [class.pl-8]="level >= 2"
+      [attr.title]="item.label">
+      <ion-icon
+        *ngIf="item.icon"
+        [name]="item.icon"
+        class="text-base flex-shrink-0">
       </ion-icon>
-      <span 
-        *ngIf="!isCollapsed || isMobile"
-        class="flex-1 truncate">
-        {{ item.label }}
-      </span>
-      <span 
-        *ngIf="item.badge && (!isCollapsed || isMobile)"
-        class="px-2 py-0.5 text-xs rounded-full font-medium"
-        [class.bg-brand-primary]="item.badgeColor === 'primary' || !item.badgeColor"
-        [class.bg-brand-success]="item.badgeColor === 'success'"
-        [class.bg-brand-warning]="item.badgeColor === 'warning'"
-        [class.bg-brand-danger]="item.badgeColor === 'danger'"
-        [class.text-white]="true">
-        {{ item.badge }}
-      </span>
+      <span *ngIf="!isCollapsed || isMobile" class="flex-1 truncate text-xs">{{ item.label }}</span>
     </a>
 
-    <!-- Item with children (expandable) -->
+    <!-- Expandable item with children -->
     <div *ngIf="item.children && item.children.length > 0">
-      <button 
+      <button
         (click)="toggleExpand(item, $event)"
-        class="menu-item w-full flex items-center gap-2 px-3 rounded-lg text-sm hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
-        [attr.data-level]="level"
-        [attr.title]="item.label"
-        [attr.aria-label]="item.label"
+        class="menu-item w-full flex items-center gap-2 px-3 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer"
         [class.pl-5]="level === 1"
-        [class.pl-8]="level === 2"
-        [class.pl-10]="level >= 3"
-        [class.text-xs]="level >= 1"
-        [class.has-active]="hasActiveChild(item)">
-        <ion-icon 
-          *ngIf="item.icon && (level === 0 || !isCollapsed || isMobile)"
-          [name]="item.icon" 
-          class="text-base flex-shrink-0 transition-colors duration-200"
-          [class.text-lg]="level === 0"
+        [class.pl-8]="level >= 2"
+        [class.has-active]="hasActiveChild(item)"
+        [attr.title]="item.label">
+        <ion-icon
+          *ngIf="item.icon"
+          [name]="item.icon"
+          class="text-base flex-shrink-0"
           [class.text-brand-primary]="hasActiveChild(item)">
         </ion-icon>
-        <span 
+        <span *ngIf="!isCollapsed || isMobile" class="flex-1 truncate text-left text-xs">{{ item.label }}</span>
+        <ion-icon
           *ngIf="!isCollapsed || isMobile"
-          class="flex-1 truncate text-left">
-          {{ item.label }}
-        </span>
-        <ion-icon 
-          *ngIf="!isCollapsed || isMobile"
-          [name]="isExpanded(item) ? 'chevron-down-outline' : 'chevron-forward-outline'" 
-          class="text-sm flex-shrink-0 transition-transform duration-200">
+          [name]="isExpanded(item) ? 'chevron-down-outline' : 'chevron-forward-outline'"
+          class="text-xs flex-shrink-0">
         </ion-icon>
       </button>
-
-      <!-- Submenu -->
-      <ul 
-        *ngIf="isExpanded(item) && (!isCollapsed || isMobile)"
-        class="submenu mt-1 space-y-1 overflow-hidden">
+      <ul *ngIf="isExpanded(item) && (!isCollapsed || isMobile)" class="submenu mt-0.5 space-y-0.5 overflow-hidden">
         <ng-container *ngFor="let child of item.children; trackBy: trackByFn">
-          <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: level + 1 }"></ng-container>
+          <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: level + 1 }">
+          </ng-container>
         </ng-container>
       </ul>
     </div>

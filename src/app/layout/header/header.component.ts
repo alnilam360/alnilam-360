@@ -52,6 +52,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   userName = '';
   userRole = '';
   userInitials = '';
+  empresaName = 'Mi Empresa';
 
   constructor(
     private sidebarService: SidebarService,
@@ -91,8 +92,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
           this.userName = state.perfil.nombre || '';
           this.userRole = state.perfil.rol || '';
           this.userInitials = this.getInitials(this.userName);
+          this.empresaName = state.perfil.empresa?.nombre || 'Mi Empresa';
         } else if (state.user) {
-          // Fallback: usar datos del auth user si no hay perfil
           this.userName = state.user.user_metadata?.['nombre'] || state.user.email || '';
           this.userRole = state.user.user_metadata?.['rol'] || 'Usuario';
           this.userInitials = this.getInitials(this.userName);

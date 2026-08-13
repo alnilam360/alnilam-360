@@ -1,14 +1,93 @@
 .dashboard-container {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Dot pattern background */
+.dot-pattern {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Hero wave emoji */
+.wave {
+  display: inline-block;
+  animation: wave 2.5s ease-in-out infinite;
+  transform-origin: 70% 70%;
+}
+
+@keyframes wave {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%, 30%      { transform: rotate(20deg); }
+  20%           { transform: rotate(-8deg); }
+  40%           { transform: rotate(12deg); }
+  50%           { transform: rotate(-4deg); }
+}
+
+/* PHVA chips */
+.phva-chip {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+/* KPI card hover lift */
+.kpi-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
   }
 }
+
+/* Content cards */
+.content-card {
+  transition: box-shadow 0.2s ease;
+}
+
+/* Activity item hover */
+.activity-item {
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  &:hover {
+    transform: translateX(3px);
+  }
+}
+
+/* Indicator rows */
+.indicator-row {
+  border: 1px solid transparent;
+  &:hover {
+    border-color: rgb(var(--color-dark-border));
+  }
+}
+
+/* Quick action button */
+.quick-action {
+  &:hover .icon-wrapper {
+    transform: scale(1.12);
+  }
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* bg-*/
+.bg-green-500\/15 { background-color: rgba(16,185,129,0.15); }
+.bg-red-500\/15   { background-color: rgba(239,68,68,0.15); }
+.bg-red-500\/5    { background-color: rgba(239,68,68,0.05); }
+.bg-amber-500\/5  { background-color: rgba(245,158,11,0.05); }
+.bg-blue-500\/5   { background-color: rgba(59,130,246,0.05); }
+.bg-red-500\/15   { background-color: rgba(239,68,68,0.15); }
+.bg-amber-500\/15 { background-color: rgba(245,158,11,0.15); }
+.bg-blue-500\/15  { background-color: rgba(59,130,246,0.15); }
+.border-red-500\/20   { border-color: rgba(239,68,68,0.20); }
+.border-amber-500\/20 { border-color: rgba(245,158,11,0.20); }
+.border-blue-500\/20  { border-color: rgba(59,130,246,0.20); }

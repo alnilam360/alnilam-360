@@ -2,29 +2,33 @@
   class="header fixed top-0 right-0 h-14 md:h-16 bg-dark-primary border-b border-dark-border z-40 flex items-center justify-between px-3 md:px-4 transition-all duration-300"
   [class.left-0]="isMobile" [style.left]="isMobile ? '0' : (isCollapsed ? '5rem' : '16rem')">
 
-  <!-- Left Section -->
-  <div class="flex items-center gap-2 md:gap-4">
-    <!-- Toggle Button -->
+  <!-- Left -->
+  <div class="flex items-center gap-2 md:gap-3">
     <button (click)="toggleSidebar()"
       class="p-2 rounded-lg bg-dark-secondary border border-dark-border text-dark-text hover-theme-text hover-theme-bg transition-all duration-200">
       <ion-icon name="menu-outline" class="text-xl"></ion-icon>
     </button>
-
-    <!-- Page Title (Mobile) -->
-    <h1 class="text-white font-semibold text-base md:text-lg truncate max-w-[150px] sm:max-w-none">
+    <h1 class="text-sm md:text-base font-semibold text-[rgb(var(--color-heading))] truncate max-w-[140px] sm:max-w-xs hidden sm:block">
       {{ currentTitle }}
     </h1>
   </div>
 
-  <!-- Right Section -->
-  <div class="flex items-center gap-1 sm:gap-2 md:gap-3">
-    <!-- Theme Toggle (hidden on very small screens) -->
+  <!-- Right -->
+  <div class="flex items-center gap-1.5 sm:gap-2">
+
+    <!-- Empresa (md+) -->
+    <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-secondary border border-dark-border cursor-pointer hover:border-brand-primary/40 transition-all duration-200">
+      <ion-icon name="business-outline" class="text-brand-primary text-base flex-shrink-0"></ion-icon>
+      <span class="text-xs font-medium text-[rgb(var(--color-heading))] max-w-[120px] truncate">{{ empresaName }}</span>
+      <ion-icon name="chevron-down-outline" class="text-dark-text text-xs flex-shrink-0"></ion-icon>
+    </div>
+
+    <!-- Theme toggle -->
     <button
       class="hidden sm:flex p-2 rounded-lg text-dark-text hover-theme-text hover-theme-bg transition-all duration-200"
       (click)="toggleTheme()"
       [attr.aria-label]="currentTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'">
-      <ion-icon [name]="currentTheme === 'dark' ? 'sunny-outline' : 'moon-outline'" class="text-xl">
-      </ion-icon>
+      <ion-icon [name]="currentTheme === 'dark' ? 'sunny-outline' : 'moon-outline'" class="text-xl"></ion-icon>
     </button>
 
     <!-- Notifications -->
@@ -33,7 +37,7 @@
         class="p-2 rounded-lg text-dark-text hover-theme-text hover-theme-bg transition-all duration-200 relative">
         <ion-icon name="notifications-outline" class="text-xl"></ion-icon>
         <span *ngIf="unreadCount > 0"
-          class="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-red-500 text-white text-[10px] md:text-xs rounded-full flex items-center justify-center font-medium">
+          class="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-red-500 text-white text-[10px] md:text-xs rounded-full flex items-center justify-center font-bold">
           {{ unreadCount }}
         </span>
       </button>
@@ -43,13 +47,13 @@
         class="notifications-dropdown absolute right-0 top-full mt-2 w-[calc(100vw-1.5rem)] sm:w-80 max-w-sm bg-dark-secondary border border-dark-border rounded-xl shadow-xl overflow-hidden"
         [class.-right-2]="isMobile">
         <div class="px-4 py-3 border-b border-dark-border flex items-center justify-between">
-          <h3 class="font-semibold text-sm md:text-base text-[rgb(var(--color-heading))]">Notificaciones</h3>
+          <h3 class="font-semibold text-sm text-[rgb(var(--color-heading))]">Notificaciones</h3>
           <span class="text-xs text-brand-primary cursor-pointer hover:underline">Marcar como leídas</span>
         </div>
-        <div class="max-h-60 md:max-h-80 overflow-y-auto">
+        <div class="max-h-72 overflow-y-auto">
           <div *ngFor="let notification of notifications"
-            class="px-4 py-3 transition-colors duration-200 cursor-pointer border-b border-dark-border last:border-b-0"
-            [class.bg-dark-accent]="!notification.read" [class.bg-opacity-50]="!notification.read">
+            class="px-4 py-3 transition-colors duration-200 cursor-pointer border-b border-dark-border last:border-b-0 hover:bg-dark-accent"
+            [class.bg-dark-accent]="!notification.read">
             <div class="flex items-start gap-3">
               <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0"
                 [class.bg-brand-primary]="notification.type === 'info'"
@@ -73,10 +77,14 @@
     <!-- User Menu -->
     <div class="relative">
       <button (click)="toggleUserMenu()"
-        class="flex items-center gap-1 sm:gap-2 md:gap-3 p-1 sm:p-1.5 sm:pr-2 md:pr-3 rounded-lg hover:bg-dark-accent transition-all duration-200">
+        class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-dark-accent transition-all duration-200">
         <div
-          class="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center text-white font-semibold text-xs md:text-sm">
+          class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
           {{ userInitials }}
+        </div>
+        <div class="hidden md:flex flex-col text-left">
+          <span class="text-sm font-semibold text-[rgb(var(--color-heading))] leading-tight">{{ userName || 'Usuario' }}</span>
+          <span class="text-[10px] text-dark-text leading-tight">{{ userRole || 'Sin rol' }}</span>
         </div>
         <ion-icon name="chevron-down-outline" class="text-dark-text text-sm hidden sm:block"></ion-icon>
       </button>
@@ -85,28 +93,24 @@
       <div *ngIf="showUserMenu"
         class="user-dropdown absolute right-0 top-full mt-2 w-56 bg-dark-secondary border border-dark-border rounded-xl shadow-xl overflow-hidden z-50">
         <div class="px-4 py-3 border-b border-dark-border">
-          <p class="font-medium text-sm md:text-base text-[rgb(var(--color-heading))]">{{ userName }}</p>
-          <p class="text-xs md:text-sm text-dark-text">{{ userRole }}</p>
+          <p class="font-semibold text-sm text-[rgb(var(--color-heading))]">{{ userName }}</p>
+          <p class="text-xs text-dark-text">{{ userRole }}</p>
         </div>
         <div class="py-2">
-          <a
-            class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
+          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
             <ion-icon name="person-outline" class="text-lg"></ion-icon>
             <span class="text-sm">Mi Perfil</span>
           </a>
-          <a
-            class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
+          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
             <ion-icon name="settings-outline" class="text-lg"></ion-icon>
             <span class="text-sm">Configuración</span>
           </a>
-          <!-- Theme toggle for mobile -->
-          <a
+          <a (click)="toggleTheme()"
             class="flex sm:hidden items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
-            <ion-icon name="sunny-outline" class="text-lg"></ion-icon>
+            <ion-icon [name]="currentTheme === 'dark' ? 'sunny-outline' : 'moon-outline'" class="text-lg"></ion-icon>
             <span class="text-sm">Cambiar Tema</span>
           </a>
-          <a
-            class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
+          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
             <ion-icon name="help-circle-outline" class="text-lg"></ion-icon>
             <span class="text-sm">Ayuda</span>
           </a>
@@ -125,5 +129,5 @@
 
 <!-- Overlay for closing dropdowns -->
 <div *ngIf="showNotifications || showUserMenu" (click)="closeDropdowns()"
-  class="fixed inset-0 z-30 bg-black/20 md:bg-transparent">
+  class="fixed inset-0 z-30 bg-black/10 md:bg-transparent">
 </div>
