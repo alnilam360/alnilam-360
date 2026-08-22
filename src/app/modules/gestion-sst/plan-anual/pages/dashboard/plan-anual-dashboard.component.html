@@ -1,0 +1,713 @@
+<div class="plan-anual-dashboard space-y-5">
+
+  <!-- ── INICIALIZANDO ── -->
+  <div *ngIf="inicializando" class="flex items-center justify-center py-16">
+    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!inicializando">
+
+    <!-- ── ERROR GLOBAL ── -->
+    <div *ngIf="errorMsg"
+         class="mb-4 flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
+      <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+      <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
+      <button (click)="errorMsg = null"
+              class="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+
+    <!-- ── SELECTOR EMPRESA + AÑO ── -->
+    <div *ngIf="esAdmin" class="p-3.5 bg-brand-primary/5 border border-brand-primary/30 rounded-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <ion-icon name="business-outline" class="text-brand-primary text-lg"></ion-icon>
+          <label class="text-xs font-semibold text-[rgb(var(--color-heading))]">Empresa:</label>
+        </div>
+        <select [(ngModel)]="empresaSeleccionadaId" (ngModelChange)="onSeleccionEmpresa($event)"
+                class="flex-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+          <option [ngValue]="null">— Seleccione una empresa —</option>
+          <option *ngFor="let e of empresasDisponibles" [ngValue]="e.id">{{ e.nombre }}</option>
+        </select>
+        <select [(ngModel)]="anioSeleccionado" (ngModelChange)="onSeleccionAnio($event)"
+                class="w-32 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+          <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="!esAdmin" class="flex items-center gap-2">
+      <label class="text-xs font-semibold text-dark-text uppercase tracking-wider">Año:</label>
+      <select [(ngModel)]="anioSeleccionado" (ngModelChange)="onSeleccionAnio($event)"
+              class="px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+        <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
+      </select>
+    </div>
+
+    <!-- ── LOADING DATOS ── -->
+    <div *ngIf="loadingDatos" class="flex items-center justify-center py-10">
+      <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    </div>
+
+    <!-- ── SIN EMPRESA (admin) ── -->
+    <div *ngIf="!loadingDatos && esAdmin && !empresaSeleccionadaId"
+         class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
+      <ion-icon name="business-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+      <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Seleccione una empresa para comenzar</p>
+      <p class="text-[11px] text-dark-text mt-1">Elija en el selector superior la empresa sobre la que desea trabajar.</p>
+    </div>
+
+    <!-- ── SIN PLAN ── -->
+    <div *ngIf="!loadingDatos && empresaSeleccionadaId && !plan"
+         class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
+      <ion-icon name="calendar-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+      <p class="text-sm text-[rgb(var(--color-heading))] font-semibold mb-1">
+        Sin plan para {{ empresa?.nombre }} — {{ anioSeleccionado }}
+      </p>
+      <p class="text-[11px] text-dark-text mt-1 mb-5">Crea el plan anual para registrar actividades.</p>
+      <button (click)="crearNuevoPlan()" [disabled]="guardandoEncabezado"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-primary hover:bg-blue-600
+                     text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-primary/25
+                     disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        <ion-spinner *ngIf="guardandoEncabezado" name="crescent" class="w-4 h-4"></ion-spinner>
+        <ion-icon *ngIf="!guardandoEncabezado" name="add-outline" class="text-lg"></ion-icon>
+        Crear Plan {{ anioSeleccionado }}
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- PLAN EXISTE                                        -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <ng-container *ngIf="!loadingDatos && plan">
+
+      <!-- HEADER del plan -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">
+            Plan Anual de Trabajo · {{ anioSeleccionado }}
+          </h2>
+          <p class="text-xs text-dark-text mt-0.5">
+            SG-SST
+            <span *ngIf="empresa"> · {{ empresa.nombre }}</span>
+          </p>
+        </div>
+        <button (click)="exportarExcel()" [disabled]="exportandoExcel"
+                class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       text-white text-xs font-semibold rounded-xl
+                       shadow-md shadow-emerald-600/25 transition-all shrink-0 self-start">
+          <ion-spinner *ngIf="exportandoExcel" name="crescent" class="w-3.5 h-3.5"></ion-spinner>
+          <ion-icon *ngIf="!exportandoExcel" name="download-outline" class="text-base"></ion-icon>
+          Exportar Excel
+        </button>
+      </div>
+
+      <!-- TABS -->
+      <div class="flex gap-0 border-b border-dark-border">
+        <button class="tab-btn px-5 py-2.5 text-sm font-semibold"
+                [class.active]="tabActivo === 'planeacion'"
+                (click)="tabActivo = 'planeacion'">
+          Planeación
+        </button>
+        <button class="tab-btn px-5 py-2.5 text-sm font-semibold"
+                [class.active]="tabActivo === 'plan-accion'"
+                (click)="tabActivo = 'plan-accion'">
+          Plan de Acción
+        </button>
+      </div>
+
+      <!-- ═══ TAB: PLANEACIÓN ═══ -->
+      <div *ngIf="tabActivo === 'planeacion'" class="space-y-4">
+
+        <!-- ── ENCABEZADO DEL PLAN ── -->
+        <div class="encabezado-plan bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+
+          <!-- Banda superior de identificación del documento -->
+          <div class="encabezado-top flex items-stretch">
+            <!-- Acento vertical azul -->
+            <div class="w-1 bg-brand-primary shrink-0"></div>
+
+            <div class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-brand-primary/15 border border-brand-primary/30
+                            flex items-center justify-center shrink-0">
+                  <ion-icon name="document-text-outline" class="text-brand-primary text-lg"></ion-icon>
+                </div>
+                <div>
+                  <p class="text-[10px] uppercase tracking-widest text-brand-primary font-semibold">SG-SST · Plan de Trabajo</p>
+                  <h3 class="text-sm font-bold text-[rgb(var(--color-heading))] leading-tight">
+                    Plan Anual de Trabajo · {{ anioSeleccionado }}
+                  </h3>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button *ngIf="!editandoEncabezado"
+                        (click)="editandoEncabezado = true"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-border
+                               text-dark-text hover:text-brand-primary hover:border-brand-primary/30
+                               text-xs font-medium transition-all">
+                  <ion-icon name="pencil-outline" class="text-sm"></ion-icon>
+                  Editar
+                </button>
+                <button (click)="encabezadoExpandido = !encabezadoExpandido"
+                        class="p-1.5 rounded-lg hover:bg-dark-accent text-dark-text transition-colors">
+                  <ion-icon name="chevron-down-outline"
+                            class="transition-transform duration-200 text-lg"
+                            [class.rotate-180]="encabezadoExpandido"></ion-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <ng-container *ngIf="encabezadoExpandido">
+
+            <!-- VISTA LECTURA -->
+            <ng-container *ngIf="!editandoEncabezado">
+
+              <!-- Fila identificadores documento -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 border-t border-dark-border">
+                <div *ngFor="let c of [
+                  {label:'UEN / Empresa', val: encabezadoSst.uen,            icon:'business-outline'},
+                  {label:'Localización',  val: encabezadoSst.localizacion,   icon:'location-outline'},
+                  {label:'Elaborado y Revisado', val: encabezadoSst.elaboradoPor, icon:'person-circle-outline'},
+                  {label:'Autorizado',    val: encabezadoSst.autorizado,     icon:'shield-checkmark-outline'}
+                ]"
+                     class="px-4 py-3 border-r border-b border-dark-border last:border-r-0">
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <ion-icon [name]="c.icon" class="text-brand-primary text-[11px]"></ion-icon>
+                    <p class="text-[9px] uppercase tracking-widest text-dark-text font-semibold">{{ c.label }}</p>
+                  </div>
+                  <p class="text-sm text-[rgb(var(--color-heading))] font-semibold leading-tight">{{ c.val || '—' }}</p>
+                </div>
+              </div>
+
+              <!-- Contenido del plan -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 border-t border-dark-border">
+                <!-- Objetivo (ocupa 2 columnas en sm) -->
+                <div class="sm:col-span-2 px-4 py-3 border-r border-b border-dark-border sm:border-b-0">
+                  <div class="flex items-center gap-1.5 mb-1.5">
+                    <ion-icon name="flag-outline" class="text-brand-primary text-xs"></ion-icon>
+                    <p class="text-[9px] uppercase tracking-widest text-dark-text font-semibold">Objetivo del Plan</p>
+                  </div>
+                  <p class="text-sm text-[rgb(var(--color-heading))] leading-relaxed">{{ plan.objetivo || '—' }}</p>
+                </div>
+
+                <!-- Meta % con indicador visual -->
+                <div class="px-4 py-3 flex flex-col justify-between border-b border-dark-border sm:border-b-0">
+                  <div class="flex items-center gap-1.5 mb-2">
+                    <ion-icon name="analytics-outline" class="text-brand-primary text-xs"></ion-icon>
+                    <p class="text-[9px] uppercase tracking-widest text-dark-text font-semibold">Meta de Cumplimiento</p>
+                  </div>
+                  <div class="flex items-end gap-3">
+                    <span class="text-4xl font-bold text-brand-primary leading-none">{{ plan.meta_porcentaje }}</span>
+                    <span class="text-lg font-semibold text-dark-text mb-0.5">%</span>
+                  </div>
+                  <!-- Barra de meta -->
+                  <div class="mt-2 h-1.5 bg-dark-primary rounded-full overflow-hidden">
+                    <div class="h-full bg-brand-primary rounded-full transition-all duration-700"
+                         [style.width.%]="plan.meta_porcentaje"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Alcance, Recursos, Meta -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 border-t border-dark-border">
+                <div *ngFor="let c of [
+                  {label:'Alcance',   val: plan.alcance,   icon:'expand-outline'},
+                  {label:'Recursos',  val: plan.recursos,  icon:'wallet-outline'},
+                  {label:'Meta',      val: plan.meta,      icon:'ribbon-outline'}
+                ]"
+                     class="px-4 py-3 border-r border-dark-border last:border-r-0">
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <ion-icon [name]="c.icon" class="text-brand-primary text-xs"></ion-icon>
+                    <p class="text-[9px] uppercase tracking-widest text-dark-text font-semibold">{{ c.label }}</p>
+                  </div>
+                  <p class="text-sm text-[rgb(var(--color-heading))] leading-relaxed">{{ c.val || '—' }}</p>
+                </div>
+              </div>
+
+            </ng-container>
+
+            <!-- MODO EDICIÓN -->
+            <form *ngIf="editandoEncabezado" (ngSubmit)="guardarEncabezado()" class="border-t border-dark-border">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
+                <div class="campo-auxiliar">
+                  <ion-icon name="flag-outline" class="campo-icon"></ion-icon>
+                  <div class="campo-body">
+                    <span class="campo-label">Objetivo del Plan</span>
+                    <textarea rows="2" name="objetivo" [(ngModel)]="encabezadoForm.objetivo" class="campo-input"></textarea>
+                  </div>
+                </div>
+                <div class="campo-auxiliar">
+                  <ion-icon name="expand-outline" class="campo-icon"></ion-icon>
+                  <div class="campo-body">
+                    <span class="campo-label">Alcance</span>
+                    <textarea rows="2" name="alcance" [(ngModel)]="encabezadoForm.alcance" class="campo-input"></textarea>
+                  </div>
+                </div>
+                <div class="campo-auxiliar">
+                  <ion-icon name="wallet-outline" class="campo-icon"></ion-icon>
+                  <div class="campo-body">
+                    <span class="campo-label">Recursos</span>
+                    <textarea rows="2" name="recursos" [(ngModel)]="encabezadoForm.recursos" class="campo-input"></textarea>
+                  </div>
+                </div>
+                <div class="campo-auxiliar">
+                  <ion-icon name="ribbon-outline" class="campo-icon"></ion-icon>
+                  <div class="campo-body">
+                    <span class="campo-label">Meta</span>
+                    <textarea rows="2" name="meta" [(ngModel)]="encabezadoForm.meta" class="campo-input"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 px-4 pb-4">
+                <div class="campo-auxiliar" style="max-width: 160px">
+                  <ion-icon name="analytics-outline" class="campo-icon"></ion-icon>
+                  <div class="campo-body">
+                    <span class="campo-label">Meta %</span>
+                    <input type="number" min="0" max="100" name="meta_porcentaje"
+                           [(ngModel)]="encabezadoForm.meta_porcentaje" class="campo-input w-16">
+                  </div>
+                </div>
+                <div class="flex gap-2 ml-auto">
+                  <button type="button" (click)="cancelarEdicionEncabezado()"
+                          class="px-3 py-1.5 rounded-lg border border-dark-border text-dark-text text-xs hover:bg-dark-accent transition-all">
+                    Cancelar
+                  </button>
+                  <button type="submit" [disabled]="guardandoEncabezado"
+                          class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-brand-primary hover:bg-blue-600
+                                 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-brand-primary/20 transition-all">
+                    <ion-spinner *ngIf="guardandoEncabezado" name="crescent" class="w-3 h-3"></ion-spinner>
+                    <ion-icon *ngIf="!guardandoEncabezado" name="save-outline" class="text-sm"></ion-icon>
+                    Guardar
+                  </button>
+                </div>
+              </div>
+            </form>
+
+          </ng-container>
+        </div>
+
+        <!-- ── TABLA DE ACTIVIDADES ── -->
+        <div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+
+          <!-- Header + filtros + botón -->
+          <div class="flex flex-wrap items-center gap-3 px-4 py-2.5 border-b border-dark-border">
+            <div>
+              <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))]">Planeación</h3>
+              <p class="text-[11px] text-dark-text">{{ actividades.length }} actividades registradas</p>
+            </div>
+            <div class="flex flex-wrap gap-2 flex-1 ml-2">
+              <select class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition flex-1 min-w-[100px]"
+                      [(ngModel)]="filtroFase" (ngModelChange)="aplicarFiltros()">
+                <option value="">Todas las fases</option>
+                <option *ngFor="let f of fases" [value]="f.nombre">{{ f.nombre }}</option>
+              </select>
+              <select class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition flex-1 min-w-[100px]"
+                      [(ngModel)]="filtroPrograma" (ngModelChange)="aplicarFiltros()">
+                <option value="">Todos los programas</option>
+                <option *ngFor="let p of programas" [value]="p.id">{{ p.nombre }}</option>
+              </select>
+              <select class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition flex-1 min-w-[100px]"
+                      [(ngModel)]="filtroGrupo" (ngModelChange)="aplicarFiltros()">
+                <option value="">Todos los grupos</option>
+                <option *ngFor="let g of gruposObjetivo" [value]="g.id">{{ g.nombre }}</option>
+              </select>
+            </div>
+            <button (click)="abrirNuevaActividad()"
+                    class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600
+                           text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25 shrink-0">
+              <ion-icon name="add-outline" class="text-lg"></ion-icon>
+              <span>Agregar</span>
+            </button>
+          </div>
+
+          <!-- Tabla con scroll horizontal -->
+          <div class="overflow-x-auto">
+
+            <!-- Vacío -->
+            <div *ngIf="actividadesFiltradas.length === 0"
+                 class="p-12 text-center">
+              <ion-icon name="clipboard-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+              <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Sin actividades registradas</p>
+              <p class="text-[11px] text-dark-text mt-1">Haga clic en "Agregar" para comenzar.</p>
+            </div>
+
+            <!-- Tabla -->
+            <table *ngIf="actividadesFiltradas.length > 0" class="act-table w-full text-xs">
+              <thead>
+                <tr class="bg-dark-primary/60 border-b border-dark-border">
+                  <th class="sticky left-0 z-10 bg-dark-primary px-3 py-2.5 text-left font-semibold text-dark-text uppercase tracking-wide min-w-[80px]">Fase</th>
+                  <th class="px-3 py-2.5 text-left font-semibold text-dark-text uppercase tracking-wide min-w-[140px]">Programa</th>
+                  <th class="px-3 py-2.5 text-left font-semibold text-dark-text uppercase tracking-wide min-w-[180px]">Actividad</th>
+                  <th class="px-3 py-2.5 text-left font-semibold text-dark-text uppercase tracking-wide min-w-[90px]">Ciudad</th>
+                  <th class="px-3 py-2.5 text-left font-semibold text-dark-text uppercase tracking-wide min-w-[120px]">Grupo Obj.</th>
+                  <th class="px-3 py-2.5 text-left font-semibold text-dark-text uppercase tracking-wide min-w-[110px]">Responsable</th>
+                  <th class="px-3 py-2.5 text-center font-semibold text-dark-text uppercase tracking-wide w-6"></th>
+                  <th *ngFor="let lbl of mesesLabels" class="px-1 py-2.5 text-center font-semibold text-dark-text uppercase tracking-wide w-10 min-w-[32px]">{{ lbl }}</th>
+                  <th class="px-3 py-2.5 text-center font-semibold text-dark-text uppercase tracking-wide min-w-[70px]">Cumpl.</th>
+                  <th class="px-3 py-2.5 text-center w-16"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let act of actividadesFiltradas; let even = even">
+                  <!-- Fila Programado -->
+                  <tr class="border-b border-dark-border/50 hover:bg-dark-accent/30 transition-colors"
+                      [class.bg-dark-secondary]="even"
+                      [class.bg-dark-primary\/30]="!even">
+                    <td class="sticky left-0 z-10 px-3 py-2 align-middle" rowspan="2"
+                        [ngClass]="even ? 'bg-dark-secondary' : 'bg-dark-primary'">
+                      <div class="flex flex-wrap gap-1 justify-center">
+                        <span *ngFor="let f of act.fases"
+                              class="text-[9px] px-1.5 py-0.5 rounded-full font-bold border"
+                              [ngClass]="{
+                                'bg-blue-500/20 border-blue-500/40 text-blue-300':         f === 'Planear',
+                                'bg-emerald-500/20 border-emerald-500/40 text-emerald-300': f === 'Hacer',
+                                'bg-amber-500/20 border-amber-500/40 text-amber-300':       f === 'Verificar',
+                                'bg-red-500/20 border-red-500/40 text-red-300':             f === 'Actuar'
+                              }">{{ f[0] }}</span>
+                      </div>
+                    </td>
+                    <td class="px-3 py-2 text-dark-text" rowspan="2">
+                      <span class="line-clamp-2 leading-tight">{{ programaNombre(act) }}</span>
+                    </td>
+                    <td class="px-3 py-2 text-[rgb(var(--color-heading))] font-medium" rowspan="2">
+                      <span class="line-clamp-2 leading-tight">{{ act.actividad }}</span>
+                    </td>
+                    <td class="px-3 py-2 text-dark-text" rowspan="2">{{ act.ciudad || '—' }}</td>
+                    <td class="px-3 py-2 text-dark-text" rowspan="2">
+                      <span class="line-clamp-1">{{ grupoNombre(act) }}</span>
+                    </td>
+                    <td class="px-3 py-2 text-dark-text" rowspan="2">
+                      <span class="line-clamp-1">{{ responsableNombre(act) }}</span>
+                    </td>
+                    <!-- P label -->
+                    <td class="px-1 py-2 text-center">
+                      <span class="text-[10px] font-bold text-brand-primary">P</span>
+                    </td>
+                    <!-- Checkboxes P -->
+                    <td *ngFor="let lbl of mesesLabels; let j = index" class="px-1 py-2 text-center">
+                      <input type="checkbox" class="checkbox-p cursor-pointer w-3.5 h-3.5"
+                             [checked]="getMes(act, j+1).programado"
+                             (change)="toggleMes(act, j+1, 'programado')">
+                    </td>
+                    <!-- Cumplimiento (rowspan 2) -->
+                    <td class="px-3 py-2 text-center" rowspan="2">
+                      <span class="text-sm font-bold"
+                            [ngClass]="semaforoKpi(porcentajeActividadCumplimiento(act), plan.meta_porcentaje)">
+                        {{ porcentajeActividadCumplimiento(act) }}%
+                      </span>
+                    </td>
+                    <!-- Acciones (rowspan 2) -->
+                    <td class="px-2 py-2 text-center" rowspan="2">
+                      <div class="flex flex-col gap-1 items-center">
+                        <button (click)="abrirEditarActividad(act)"
+                                class="p-1.5 rounded-lg hover:bg-dark-accent text-dark-text hover:text-brand-primary transition-all">
+                          <ion-icon name="pencil-outline" class="text-base"></ion-icon>
+                        </button>
+                        <button (click)="eliminarActividad(act)"
+                                class="p-1.5 rounded-lg hover:bg-red-500/10 text-dark-text hover:text-red-400 transition-all">
+                          <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Fila Ejecutado -->
+                  <tr class="border-b border-dark-border/60"
+                      [class.bg-dark-secondary\/50]="even"
+                      [class.bg-dark-primary\/20]="!even">
+                    <!-- E label -->
+                    <td class="px-1 py-1.5 text-center">
+                      <span class="text-[10px] font-bold text-emerald-400">E</span>
+                    </td>
+                    <!-- Checkboxes E -->
+                    <td *ngFor="let lbl of mesesLabels; let j = index" class="px-1 py-1.5 text-center">
+                      <input type="checkbox" class="checkbox-e cursor-pointer w-3.5 h-3.5"
+                             [checked]="getMes(act, j+1).ejecutado"
+                             (change)="toggleMes(act, j+1, 'ejecutado')">
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── MEDICIÓN Y SEGUIMIENTO (KPI) ── -->
+        <div *ngIf="kpi" class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-2.5 border-b border-dark-border">
+            <div>
+              <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))]">Medición y Seguimiento</h3>
+              <p class="text-[11px] text-dark-text">Indicadores de cumplimiento del plan</p>
+            </div>
+          </div>
+
+          <div class="p-4 space-y-4">
+            <!-- KPIs resumen -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="p-4 bg-dark-primary/50 border border-dark-border rounded-xl text-center">
+                <p class="text-3xl font-bold text-brand-primary">{{ kpi.totalProgramadas }}</p>
+                <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Programadas</p>
+              </div>
+              <div class="p-4 bg-dark-primary/50 border border-dark-border rounded-xl text-center">
+                <p class="text-3xl font-bold text-brand-success">{{ kpi.totalEjecutadas }}</p>
+                <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Ejecutadas</p>
+              </div>
+              <div class="p-4 bg-brand-primary/10 border border-brand-primary/30 rounded-xl text-center">
+                <p class="text-3xl font-bold"
+                   [ngClass]="semaforoKpi(kpi.cumplimientoAnual, kpi.metaPorcentaje)">
+                  {{ kpi.cumplimientoAnual !== null ? (kpi.cumplimientoAnual + '%') : 'N/A' }}
+                </p>
+                <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">
+                  Cumplimiento (Meta {{ kpi.metaPorcentaje }}%)
+                </p>
+              </div>
+            </div>
+
+            <!-- Tabla mensual KPI -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs" style="min-width: 700px">
+                <thead>
+                  <tr class="border-b border-dark-border">
+                    <th class="text-left py-2 pr-4 text-dark-text font-semibold uppercase tracking-wide w-44">Indicador</th>
+                    <th *ngFor="let m of kpi.meses" class="text-center py-2 px-1 text-dark-text font-semibold uppercase tracking-wide">{{ m.label }}</th>
+                    <th class="text-center py-2 px-2 text-dark-text font-semibold uppercase tracking-wide">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-dark-border/40">
+                    <td class="py-2 pr-4 text-dark-text font-medium">Act. Programadas</td>
+                    <td *ngFor="let m of kpi.meses" class="text-center py-2 px-1">
+                      <span class="text-brand-primary font-medium">{{ m.programadas || '—' }}</span>
+                    </td>
+                    <td class="text-center py-2 px-2 text-brand-primary font-bold">{{ kpi.totalProgramadas }}</td>
+                  </tr>
+                  <tr class="border-b border-dark-border/40">
+                    <td class="py-2 pr-4 text-dark-text font-medium">Act. Ejecutadas</td>
+                    <td *ngFor="let m of kpi.meses" class="text-center py-2 px-1">
+                      <span class="text-brand-success font-medium">{{ m.ejecutadas || '—' }}</span>
+                    </td>
+                    <td class="text-center py-2 px-2 text-brand-success font-bold">{{ kpi.totalEjecutadas }}</td>
+                  </tr>
+                  <tr class="border-b border-dark-border/40">
+                    <td class="py-2 pr-4 text-dark-text font-medium">% Cumplimiento</td>
+                    <td *ngFor="let m of kpi.meses" class="text-center py-2 px-1">
+                      <span [ngClass]="semaforoKpi(m.porcentaje, kpi.metaPorcentaje)" class="font-semibold">
+                        {{ m.porcentaje !== null ? (m.porcentaje + '%') : '—' }}
+                      </span>
+                    </td>
+                    <td class="text-center py-2 px-2 font-bold"
+                        [ngClass]="semaforoKpi(kpi.cumplimientoAnual, kpi.metaPorcentaje)">
+                      {{ kpi.cumplimientoAnual !== null ? (kpi.cumplimientoAnual + '%') : '—' }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2 pr-4 text-brand-primary font-medium">Meta</td>
+                    <td *ngFor="let m of kpi.meses" class="text-center py-2 px-1 text-brand-primary/60 font-medium">
+                      {{ kpi.metaPorcentaje }}%
+                    </td>
+                    <td class="text-center py-2 px-2 text-brand-primary font-bold">{{ kpi.metaPorcentaje }}%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Mini barras visuales -->
+            <div class="grid grid-cols-12 gap-1 pt-1">
+              <div *ngFor="let m of kpi.meses" class="flex flex-col items-center gap-1">
+                <div class="w-full h-14 bg-dark-primary rounded relative overflow-hidden flex flex-col-reverse">
+                  <div class="w-full bg-brand-success/50 transition-all duration-500 rounded-sm"
+                       [style.height.%]="m.programadas > 0 ? (m.ejecutadas / m.programadas * 100) : 0"></div>
+                  <div class="absolute w-full border-t border-dashed border-brand-primary/40"
+                       [style.bottom.%]="kpi.metaPorcentaje"></div>
+                </div>
+                <span class="text-[9px] text-dark-text">{{ m.label }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ TAB: PLAN DE ACCIÓN ═══ -->
+      <div *ngIf="tabActivo === 'plan-accion'" class="space-y-4">
+
+        <!-- ── ANÁLISIS Y PLAN DE ACCIÓN ── -->
+        <div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-2.5 border-b border-dark-border">
+            <div>
+              <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))]">
+                Análisis y Plan de Acción — {{ anioSeleccionado }}
+              </h3>
+              <p class="text-[11px] text-dark-text">Revisión trimestral del cumplimiento del plan</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm" style="min-width: 720px">
+              <thead>
+                <tr class="border-b border-dark-border bg-dark-primary/40">
+                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-dark-text w-32">Periodo</th>
+                  <th class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wide text-dark-text w-24">Resultado %</th>
+                  <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-dark-text">Análisis</th>
+                  <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-dark-text">Plan de Acción</th>
+                  <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-dark-text w-32">Fecha</th>
+                  <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-dark-text w-40">Responsable</th>
+                  <th class="px-3 py-3 w-24"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let t of trimestres"
+                    class="border-b border-dark-border/40 hover:bg-dark-accent/20 transition-colors">
+                  <ng-container *ngIf="getAnalisisPeriodo(t.periodo) as analisis">
+                    <!-- Periodo -->
+                    <td class="px-4 py-3 align-top">
+                      <div class="flex flex-col gap-1">
+                        <span class="text-sm font-semibold text-[rgb(var(--color-heading))]">{{ t.label }}</span>
+                        <span *ngIf="t.periodo === trimestreActual()"
+                              class="text-[10px] px-2 py-0.5 rounded-full bg-brand-primary/20 text-brand-primary border border-brand-primary/30 w-fit">
+                          En curso
+                        </span>
+                      </div>
+                    </td>
+                    <!-- Resultado % (calculado) -->
+                    <td class="px-3 py-3 text-center align-top">
+                      <span class="text-xl font-bold"
+                            [ngClass]="semaforoKpi(porcentajeTrimestre(t.periodo), plan.meta_porcentaje)">
+                        {{ porcentajeTrimestre(t.periodo) !== null ? (porcentajeTrimestre(t.periodo) + '%') : '—' }}
+                      </span>
+                    </td>
+                    <!-- Análisis -->
+                    <td class="px-3 py-3 align-top">
+                      <textarea rows="3"
+                                class="w-full bg-dark-primary border border-dark-border rounded-lg px-2.5 py-2 text-xs text-[rgb(var(--color-heading))] resize-none
+                                       focus:outline-none focus:border-brand-primary transition-colors"
+                                style="color: rgb(var(--color-heading)); background: rgb(var(--color-dark-primary));"
+                                placeholder="Descripción del análisis..."
+                                [(ngModel)]="analisis.analisis"
+                                [name]="'analisis_' + t.periodo"></textarea>
+                    </td>
+                    <!-- Plan de acción -->
+                    <td class="px-3 py-3 align-top">
+                      <textarea rows="3"
+                                class="w-full bg-dark-primary border border-dark-border rounded-lg px-2.5 py-2 text-xs text-[rgb(var(--color-heading))] resize-none
+                                       focus:outline-none focus:border-brand-primary transition-colors"
+                                style="color: rgb(var(--color-heading)); background: rgb(var(--color-dark-primary));"
+                                placeholder="Acciones a tomar..."
+                                [(ngModel)]="analisis.plan_accion"
+                                [name]="'plan_accion_' + t.periodo"></textarea>
+                    </td>
+                    <!-- Fecha -->
+                    <td class="px-3 py-3 align-top">
+                      <input type="date"
+                             class="w-full bg-dark-primary border border-dark-border rounded-lg px-2.5 py-2 text-xs text-[rgb(var(--color-heading))]
+                                    focus:outline-none focus:border-brand-primary transition-colors"
+                             style="color: rgb(var(--color-heading)); background: rgb(var(--color-dark-primary));"
+                             [(ngModel)]="analisis.fecha"
+                             [name]="'fecha_' + t.periodo">
+                    </td>
+                    <!-- Responsable -->
+                    <td class="px-3 py-3 align-top">
+                      <select class="w-full bg-dark-primary border border-dark-border rounded-lg px-2.5 py-2 text-xs text-[rgb(var(--color-heading))]
+                                     focus:outline-none focus:border-brand-primary transition-colors"
+                              style="background: rgb(var(--color-dark-primary));"
+                              [(ngModel)]="analisis.responsable_id"
+                              [name]="'resp_' + t.periodo">
+                        <option [value]="undefined">— —</option>
+                        <option *ngFor="let r of responsables" [value]="r.id">{{ r.nombre }}</option>
+                      </select>
+                    </td>
+                    <!-- Guardar -->
+                    <td class="px-3 py-3 align-top text-center">
+                      <button [disabled]="guardandoTrimestre === t.periodo"
+                              (click)="guardarAnalisis(t.periodo, {
+                                analisis: analisis.analisis,
+                                plan_accion: analisis.plan_accion,
+                                fecha: analisis.fecha,
+                                responsable_id: analisis.responsable_id
+                              })"
+                              class="flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600
+                                     disabled:opacity-50 text-white text-xs font-semibold rounded-lg
+                                     shadow-md shadow-brand-primary/20 transition-all mx-auto">
+                        <ion-spinner *ngIf="guardandoTrimestre === t.periodo" name="crescent" class="w-3 h-3"></ion-spinner>
+                        <ion-icon *ngIf="guardandoTrimestre !== t.periodo" name="save-outline" class="text-sm"></ion-icon>
+                        Guardar
+                      </button>
+                    </td>
+                  </ng-container>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div><!-- /análisis card -->
+
+        <!-- ── GRÁFICA % CUMPLIMIENTO ── -->
+        <div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+          <div class="px-4 py-2.5 border-b border-dark-border">
+            <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))]">% Cumplimiento Mensual</h3>
+            <p class="text-[11px] text-dark-text">Actividades ejecutadas vs. meta {{ plan.meta_porcentaje }}%</p>
+          </div>
+          <div class="p-4">
+            <ng-container *ngIf="cumplimientoChart as chart">
+              <svg viewBox="0 0 588 230" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto" aria-hidden="true">
+                <text x="294" y="16" text-anchor="middle"
+                      font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="700"
+                      fill="rgb(229,231,235)">% Cumplimiento</text>
+                <line x1="15" x2="573"
+                      [attr.y1]="chart.metaY" [attr.y2]="chart.metaY"
+                      stroke="#818cf8" stroke-width="1.4" stroke-dasharray="4,3"/>
+                <ng-container *ngFor="let b of chart.bars">
+                  <rect *ngIf="b.bh > 0"
+                        [attr.x]="b.bx" [attr.y]="b.by"
+                        [attr.width]="b.bw" [attr.height]="b.bh"
+                        [attr.fill]="b.color" rx="2" opacity="0.88"/>
+                  <text [attr.x]="b.axX"
+                        [attr.y]="b.bh > 3 ? b.lblY : 193"
+                        text-anchor="middle"
+                        font-family="Inter,system-ui,sans-serif" font-size="7.5" font-weight="700"
+                        fill="rgb(229,231,235)">{{ b.pctTxt }}</text>
+                  <text [attr.x]="b.axX" [attr.y]="chart.metaY - 3"
+                        text-anchor="middle"
+                        font-family="Inter,system-ui,sans-serif" font-size="7" font-weight="500"
+                        fill="#a5b4fc">{{ chart.meta }}%</text>
+                  <text [attr.x]="b.axX" [attr.y]="b.axY"
+                        text-anchor="middle"
+                        font-family="Inter,system-ui,sans-serif" font-size="8"
+                        fill="rgb(160,163,181)">{{ b.label }}</text>
+                </ng-container>
+                <line x1="15" x2="573" y1="198" y2="198"
+                      stroke="rgb(49,52,66)" stroke-width="1"/>
+              </svg>
+            </ng-container>
+            <div *ngIf="!cumplimientoChart" class="py-10 text-center text-xs text-dark-text">
+              Sin datos de cumplimiento aún.
+            </div>
+          </div>
+        </div><!-- /chart card -->
+
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <!-- MODAL ACTIVIDAD -->
+  <ion-modal [isOpen]="mostrarModalActividad"
+             (didDismiss)="mostrarModalActividad = false"
+             cssClass="actividad-modal-dialog">
+    <ng-template>
+      <app-actividad-form-modal
+        [plan]="plan"
+        [actividad]="actividadEditar"
+        [fases]="fases"
+        [programas]="programas"
+        [gruposObjetivo]="gruposObjetivoConEmpresa"
+        [responsables]="responsables"
+        [sedes]="sedes"
+        (guardado)="onActividadGuardada()"
+        (cancelado)="cerrarModalActividad()">
+      </app-actividad-form-modal>
+    </ng-template>
+  </ion-modal>
+
+</div>

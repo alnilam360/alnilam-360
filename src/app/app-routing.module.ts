@@ -47,7 +47,7 @@ const routes: Routes = [
           {
             path: 'planes',
             children: [
-              { path: 'plan-trabajo', loadChildren: () => import('./modules/gestion-sst/planes/planes.module').then(m => m.PlanesModule), data: { tipo: 'plan-trabajo' } },
+              { path: 'plan-trabajo', loadChildren: () => import('./modules/gestion-sst/plan-anual/plan-anual.module').then(m => m.PlanAnualModule) },
               { path: 'capacitaciones', loadChildren: () => import('./modules/gestion-sst/planes/planes.module').then(m => m.PlanesModule), data: { tipo: 'capacitaciones' } },
               { path: 'inspecciones', loadChildren: () => import('./modules/gestion-sst/planes/planes.module').then(m => m.PlanesModule), data: { tipo: 'inspecciones' } },
               { path: 'mantenimiento', loadChildren: () => import('./modules/gestion-sst/planes/planes.module').then(m => m.PlanesModule), data: { tipo: 'mantenimiento' } },

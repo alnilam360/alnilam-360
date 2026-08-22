@@ -148,6 +148,15 @@ h1.text-white {
   }
 }
 
+// ─── Plan Anual — modal dialog centrado ──────────────────────────────────────
+.actividad-modal-dialog {
+  --width: min(600px, 95vw);
+  --height: min(680px, 92vh);
+  --border-radius: 12px;
+  --box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  --backdrop-opacity: 0.5;
+}
+
 // PrimeNG Overlay wrapper (used by several components with appendTo="body")
 .p-overlay {
   .p-overlay-content {

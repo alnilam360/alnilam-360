@@ -163,7 +163,7 @@
                                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-dark-text">
                                     <span *ngIf="h.responsable" class="flex items-center gap-1">
                                         <ion-icon name="person-outline" class="text-xs"></ion-icon>
-                                        {{ h.responsable?.nombre || '—' }}
+                                        {{ h.responsable.nombre || '—' }}
                                     </span>
                                     <span *ngIf="h.fecha_cierre_proyectada" class="flex items-center gap-1"
                                         [class.text-red-400]="fechaVencida(h.fecha_cierre_proyectada) && h.estado !== 'Cerrado'">

@@ -199,6 +199,16 @@ export class IpercDashboardComponent implements OnInit {
             III: { bg: C.III_bg, tx: C.III_tx },
             IV:  { bg: C.IV_bg,  tx: C.IV_tx  },
         };
+
+        // INP text → color (GTC-45: Muy Alto / Alto / Medio / Bajo)
+        const inpStyleMap: Record<string, { bg: string; tx: string }> = {
+            'muy alto': nivelStyle['I'],  'ma': nivelStyle['I'],
+            'alto':     nivelStyle['II'], 'a':  nivelStyle['II'],
+            'medio':    nivelStyle['III'],'m':  nivelStyle['III'],
+            'bajo':     nivelStyle['IV'], 'b':  nivelStyle['IV'],
+        };
+        const getInpStyle = (val: any): { bg: string; tx: string } | null =>
+            val ? (inpStyleMap[String(val).toLowerCase().trim()] ?? null) : null;
         const SECTION_STARTS = new Set([7, 11, 14, 22, 30, 35, 43, 44]);
 
         // ── FILA 1: Cabecera organización ─────────────────────────────────────
@@ -371,6 +381,11 @@ export class IpercDashboardComponent implements OnInit {
                 }
                 if ((col === 41 || col === 42) && nvPost && nivelStyle[nvPost]) {
                     cellBg = nivelStyle[nvPost].bg; cellTx = nivelStyle[nvPost].tx; bold = true;
+                }
+                // INP columns — color por nivel de probabilidad
+                if (col === 17 || col === 38) {
+                    const s = getInpStyle(val);
+                    if (s) { cellBg = s.bg; cellTx = s.tx; bold = true; }
                 }
 
                 cell.font = f({ size: 9, color: { argb: cellTx }, bold }) as any;

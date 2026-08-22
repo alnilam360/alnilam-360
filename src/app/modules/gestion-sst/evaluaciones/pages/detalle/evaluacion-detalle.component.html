@@ -98,7 +98,7 @@
             {{ resolucionInfo.motivo }}
           </p>
           <p *ngIf="mismatchTipo" class="mt-1.5 text-[11px] text-amber-300 leading-relaxed">
-            Esta evaluación usa <b>{{ evaluacion?.tipo_evaluacion }}</b> estándares pero el perfil de la empresa indica
+            Esta evaluación usa <b>{{ evaluacion.tipo_evaluacion }}</b> estándares pero el perfil de la empresa indica
             que corresponden <b>{{ resolucionInfo.tipo }}</b>. Verifique el nivel de riesgo y la cantidad de trabajadores registrados en la empresa.
           </p>
           <div *ngIf="mismatchTipo && !isReadOnly()" class="mt-3">
