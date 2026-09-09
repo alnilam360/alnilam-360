@@ -1,0 +1,359 @@
+<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4" (click)="cerrar.emit()">
+  <div class="bg-dark-primary border border-dark-border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[92vh] flex flex-col overflow-hidden" (click)="$event.stopPropagation()">
+
+    <!-- Header + stepper -->
+    <div class="p-4 border-b border-dark-border">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-bold text-[rgb(var(--color-heading))]">{{ modoEditar ? 'Editar caso' : 'Reportar caso' }}</h3>
+        <button (click)="cerrar.emit()" class="p-1.5 text-dark-text hover:text-[rgb(var(--color-heading))] rounded-lg hover:bg-dark-accent transition">
+          <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        </button>
+      </div>
+      <div class="flex items-center gap-1">
+        <ng-container *ngFor="let s of [1,2,3,4]; let i = index">
+          <div class="flex-1 h-1.5 rounded-full transition-colors" [ngClass]="paso() >= s ? 'bg-brand-primary' : 'bg-dark-accent'"></div>
+        </ng-container>
+      </div>
+      <p class="text-[11px] text-dark-text mt-2">
+        Paso {{ paso() }} de 4 ·
+        <span [ngSwitch]="paso()">
+          <span *ngSwitchCase="1">Datos del evento</span>
+          <span *ngSwitchCase="2">Clasificación</span>
+          <span *ngSwitchCase="3">Investigación (opcional)</span>
+          <span *ngSwitchCase="4">Acciones correctivas</span>
+        </span>
+      </p>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+      <div *ngIf="error()" class="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+        <ion-icon name="alert-circle-outline" class="text-red-400 text-lg flex-shrink-0 mt-0.5"></ion-icon>
+        <p class="text-xs text-red-300">{{ error() }}</p>
+      </div>
+
+      <!-- PASO 1 · Evento -->
+      <div *ngIf="paso() === 1" class="space-y-3">
+        <div class="inline-flex rounded-lg bg-dark-secondary border border-dark-border p-1 w-full">
+          <button (click)="form.tipo_evento = 'accidente_trabajo'" class="flex-1 px-3 py-1.5 text-xs font-medium rounded transition"
+                  [ngClass]="form.tipo_evento === 'accidente_trabajo' ? 'bg-brand-primary text-white' : 'text-dark-text'">Accidente de trabajo</button>
+          <button (click)="form.tipo_evento = 'incidente_casi_accidente'" class="flex-1 px-3 py-1.5 text-xs font-medium rounded transition"
+                  [ngClass]="form.tipo_evento === 'incidente_casi_accidente' ? 'bg-cyan-600 text-white' : 'text-dark-text'">Incidente / casi-accidente</button>
+        </div>
+
+        <label class="block">
+          <span class="text-[11px] text-dark-text">Trabajador *</span>
+          <input [(ngModel)]="form.trabajador_nombre" type="text" placeholder="Nombre completo"
+                 class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+        </label>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Documento</span>
+            <input [(ngModel)]="form.trabajador_documento" type="text"
+                   class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Cargo</span>
+            <input [(ngModel)]="form.trabajador_cargo" type="text"
+                   class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </label>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Vinculación</span>
+            <select [(ngModel)]="form.trabajador_vinculacion"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option *ngFor="let v of vinculaciones" [value]="v">{{ v }}</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Sede</span>
+            <select [(ngModel)]="form.sede_id"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option [ngValue]="null">— Sede —</option>
+              <option *ngFor="let s of sedes" [ngValue]="s.id">{{ s.nombre }}<span *ngIf="s.municipio"> · {{ s.municipio }}</span></option>
+            </select>
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="text-[11px] text-dark-text">Fecha y hora del evento *</span>
+          <input [(ngModel)]="form.fecha_hora_evento" type="datetime-local"
+                 class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+        </label>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Área / proceso</span>
+            <input [(ngModel)]="form.area_proceso" type="text"
+                   class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Actividad al momento</span>
+            <input [(ngModel)]="form.actividad_al_momento" type="text"
+                   class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="text-[11px] text-dark-text">¿Qué pasó?</span>
+          <textarea [(ngModel)]="form.descripcion_evento" rows="3"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"></textarea>
+        </label>
+
+        <!-- Foto del sitio -->
+        <div>
+          <span class="text-[11px] text-dark-text">Foto del sitio (opcional)</span>
+          <button *ngIf="esNativo" type="button" (click)="tomarFoto()"
+                  class="mt-1 w-full flex items-center gap-2 px-3 py-2 bg-dark-secondary border border-dashed border-dark-border rounded-lg text-sm text-dark-text hover:border-brand-primary transition">
+            <ion-icon name="camera-outline" class="text-lg"></ion-icon>
+            <span>{{ archivo ? archivo.name : 'Tomar foto con la cámara' }}</span>
+          </button>
+          <label *ngIf="!esNativo" class="mt-1 flex items-center gap-2 px-3 py-2 bg-dark-secondary border border-dashed border-dark-border rounded-lg text-sm text-dark-text cursor-pointer hover:border-brand-primary transition">
+            <ion-icon name="camera-outline" class="text-lg"></ion-icon>
+            <span>{{ archivo ? archivo.name : 'Tomar o adjuntar foto' }}</span>
+            <input type="file" accept="image/*" capture="environment" (change)="onArchivo($event)" class="hidden">
+          </label>
+          <img *ngIf="previewUrl" [src]="previewUrl" alt="Vista previa" class="mt-2 h-24 rounded-lg object-cover border border-dark-border">
+        </div>
+      </div>
+
+      <!-- PASO 2 · Clasificación -->
+      <div *ngIf="paso() === 2" class="space-y-3">
+        <div>
+          <span class="text-[11px] text-dark-text">Gravedad *</span>
+          <div class="grid grid-cols-3 gap-2 mt-1">
+            <button (click)="form.clasificacion_gravedad = 'leve'" class="px-3 py-2 text-xs font-medium rounded-lg border transition"
+                    [ngClass]="form.clasificacion_gravedad === 'leve' ? 'bg-amber-400/20 border-amber-400 text-amber-300' : 'bg-dark-secondary border-dark-border text-dark-text'">Leve</button>
+            <button (click)="form.clasificacion_gravedad = 'grave'" class="px-3 py-2 text-xs font-medium rounded-lg border transition"
+                    [ngClass]="form.clasificacion_gravedad === 'grave' ? 'bg-orange-500/20 border-orange-500 text-orange-300' : 'bg-dark-secondary border-dark-border text-dark-text'">Grave</button>
+            <button (click)="form.clasificacion_gravedad = 'mortal'" class="px-3 py-2 text-xs font-medium rounded-lg border transition"
+                    [ngClass]="form.clasificacion_gravedad === 'mortal' ? 'bg-red-500/20 border-red-500 text-red-300' : 'bg-dark-secondary border-dark-border text-dark-text'">Mortal</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label *ngIf="form.tipo_evento === 'accidente_trabajo'" class="block">
+            <span class="text-[11px] text-dark-text">Tipo de accidente</span>
+            <select [(ngModel)]="form.tipo_accidente"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option [ngValue]="null">— Seleccione —</option>
+              <option value="violencia">Violencia</option>
+              <option value="transito">Tránsito</option>
+              <option value="deportivo">Deportivo</option>
+              <option value="recreativo_cultural">Recreativo o cultural</option>
+              <option value="propios_trabajo">Propios del trabajo</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Lugar de ocurrencia</span>
+            <select [(ngModel)]="form.lugar_ocurrencia"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option [ngValue]="null">— Seleccione —</option>
+              <option value="dentro">Dentro de la empresa</option>
+              <option value="fuera">Fuera de la empresa</option>
+              <option value="trabajo_casa">Trabajo en casa</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Aviso ARL -->
+        <div *ngIf="reporteInmediatoArl" class="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <ion-icon name="warning-outline" class="text-red-400 text-lg flex-shrink-0 mt-0.5"></ion-icon>
+          <p class="text-xs text-red-300">Accidente grave/mortal: <strong>reporte inmediato a la ARL</strong> (Res. 156/2005).</p>
+        </div>
+        <div *ngIf="!reporteInmediatoArl && limiteArl" class="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <ion-icon name="time-outline" class="text-amber-400 text-lg flex-shrink-0 mt-0.5"></ion-icon>
+          <p class="text-xs text-amber-300">Reporte a la ARL hasta el <strong>{{ limiteArl | date:'dd MMM y' }}</strong> (2 días hábiles).</p>
+        </div>
+
+        <!-- Reporte a la ARL -->
+        <div class="p-3 bg-dark-secondary border border-dark-border rounded-lg space-y-2">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input [(ngModel)]="form.reportado_arl" type="checkbox" class="accent-brand-primary">
+            <span class="text-xs text-[rgb(var(--color-heading))]">Ya reportado a la ARL</span>
+          </label>
+          <div *ngIf="form.reportado_arl" class="grid grid-cols-2 gap-2">
+            <input [(ngModel)]="form.fecha_reporte_arl" type="date" title="Fecha de reporte a la ARL"
+                   class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <input [(ngModel)]="form.furat_radicado" type="text" placeholder="N.º radicado FURAT"
+                   class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </div>
+        </div>
+
+        <label class="block">
+          <span class="text-[11px] text-dark-text">Clasificación del peligro (IPERC)</span>
+          <select [(ngModel)]="form.peligro_id"
+                  class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <option [ngValue]="null">— Seleccione —</option>
+            <option *ngFor="let p of peligros" [ngValue]="p.id">{{ p.nombre }}</option>
+          </select>
+        </label>
+
+        <!-- Catálogos FURAT con búsqueda -->
+        <div class="grid grid-cols-1 gap-3">
+          <div>
+            <span class="text-[11px] text-dark-text">Agente del accidente</span>
+            <input [(ngModel)]="q.agente" type="text" placeholder="Buscar agente…"
+                   class="w-full mt-1 px-3 py-1.5 bg-dark-accent border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <select [(ngModel)]="form.agente_id" size="3"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option *ngFor="let a of filtrar(agentes, q.agente)" [ngValue]="a.id">{{ a.nombre }}</option>
+              <option *ngIf="agentes.length === 0" disabled>Catálogo FURAT pendiente de sembrar</option>
+            </select>
+          </div>
+          <div>
+            <span class="text-[11px] text-dark-text">Mecanismo de la lesión</span>
+            <input [(ngModel)]="q.mecanismo" type="text" placeholder="Buscar mecanismo…"
+                   class="w-full mt-1 px-3 py-1.5 bg-dark-accent border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <select [(ngModel)]="form.mecanismo_id" size="3"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option *ngFor="let m of filtrar(mecanismos, q.mecanismo)" [ngValue]="m.id">{{ m.nombre }}</option>
+              <option *ngIf="mecanismos.length === 0" disabled>Catálogo FURAT pendiente de sembrar</option>
+            </select>
+          </div>
+          <div>
+            <span class="text-[11px] text-dark-text">Parte del cuerpo afectada</span>
+            <input [(ngModel)]="q.parte" type="text" placeholder="Buscar parte del cuerpo…"
+                   class="w-full mt-1 px-3 py-1.5 bg-dark-accent border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <select [(ngModel)]="form.parte_cuerpo_id" size="3"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option *ngFor="let p of filtrar(partes, q.parte)" [ngValue]="p.id">{{ p.nombre }}</option>
+              <option *ngIf="partes.length === 0" disabled>Catálogo FURAT pendiente de sembrar</option>
+            </select>
+          </div>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Tipo de lesión</span>
+            <select [(ngModel)]="form.tipo_lesion_id"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option [ngValue]="null">— Seleccione —</option>
+              <option *ngFor="let t of tipos" [ngValue]="t.id">{{ t.codigo }} · {{ t.nombre }}</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Sitio de ocurrencia</span>
+            <select [(ngModel)]="form.sitio_ocurrencia_id"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option [ngValue]="null">— Seleccione —</option>
+              <option *ngFor="let s of sitios" [ngValue]="s.id">{{ s.nombre }}</option>
+              <option *ngIf="sitios.length === 0" disabled>Catálogo FURAT pendiente de sembrar</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="text-[11px] text-dark-text">Días de incapacidad</span>
+          <input [(ngModel)]="form.dias_incapacidad" type="number" min="0" [disabled]="esMortal"
+                 class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary disabled:opacity-50">
+          <span *ngIf="esMortal" class="text-[10px] text-red-300">Caso mortal: se cargan {{ diasMuerte }} días (NTC 3701) automáticamente.</span>
+        </label>
+      </div>
+
+      <!-- PASO 3 · Investigación -->
+      <div *ngIf="paso() === 3" class="space-y-3">
+        <p *ngIf="limiteInvestigacion" class="text-[11px] text-amber-300 flex items-center gap-1.5">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Plazo de investigación: hasta el {{ limiteInvestigacion | date:'dd MMM y' }} (15 días, Res. 1401/2007). Puede completarse después.
+        </p>
+        <label class="block">
+          <span class="text-[11px] text-dark-text">Metodología</span>
+          <select [(ngModel)]="investigacion.metodologia"
+                  class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <option [ngValue]="null">— Seleccione —</option>
+            <option *ngFor="let m of metodologias" [ngValue]="m.k">{{ m.l }}</option>
+          </select>
+        </label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Actos inseguros (uno por línea)</span>
+            <textarea [(ngModel)]="investigacion.actos_inseguros" rows="3" class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"></textarea>
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Condiciones inseguras (una por línea)</span>
+            <textarea [(ngModel)]="investigacion.condiciones_inseguras" rows="3" class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"></textarea>
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Factores personales (uno por línea)</span>
+            <textarea [(ngModel)]="investigacion.factores_personales" rows="3" class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"></textarea>
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Factores del trabajo (uno por línea)</span>
+            <textarea [(ngModel)]="investigacion.factores_trabajo" rows="3" class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"></textarea>
+          </label>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Responsable</span>
+            <input [(ngModel)]="investigacion.responsable_texto" type="text" class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </label>
+          <label class="block">
+            <span class="text-[11px] text-dark-text">Fecha de investigación</span>
+            <input [(ngModel)]="investigacion.fecha_investigacion" type="date" class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </label>
+        </div>
+        <label class="block">
+          <span class="text-[11px] text-dark-text">Conclusiones</span>
+          <textarea [(ngModel)]="investigacion.conclusiones" rows="2" class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"></textarea>
+        </label>
+      </div>
+
+      <!-- PASO 4 · Acciones -->
+      <div *ngIf="paso() === 4" class="space-y-3">
+        <label *ngIf="modoEditar" class="block p-3 bg-dark-secondary border border-dark-border rounded-lg">
+          <span class="text-[11px] text-dark-text">Estado del caso</span>
+          <select [(ngModel)]="form.estado_caso"
+                  class="w-full mt-1 px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <option value="reportado">Reportado</option>
+            <option value="en_investigacion">En investigación</option>
+            <option value="cerrado">Cerrado</option>
+          </select>
+        </label>
+
+        <div *ngFor="let a of acciones; let i = index" class="p-3 bg-dark-secondary border border-dark-border rounded-lg space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] text-dark-text font-semibold">Acción {{ i + 1 }}</span>
+            <button (click)="quitarAccion(i)" class="text-red-400 hover:text-red-300"><ion-icon name="trash-outline"></ion-icon></button>
+          </div>
+          <textarea [(ngModel)]="a.descripcion_accion" rows="2" placeholder="Descripción de la acción correctiva"
+                    class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"></textarea>
+          <div class="grid grid-cols-2 gap-2">
+            <input [(ngModel)]="a.responsable_texto" type="text" placeholder="Responsable"
+                   class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <input [(ngModel)]="a.fecha_compromiso" type="date"
+                   class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </div>
+          <div *ngIf="modoEditar" class="grid grid-cols-2 gap-2">
+            <select [(ngModel)]="a.estado"
+                    class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option value="pendiente">Pendiente</option>
+              <option value="en_progreso">En progreso</option>
+              <option value="cerrada">Cerrada</option>
+            </select>
+            <input [(ngModel)]="a.fecha_cierre" type="date" placeholder="Fecha cierre"
+                   class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </div>
+        </div>
+        <button (click)="agregarAccion()" class="w-full flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-dark-border rounded-lg text-sm text-dark-text hover:border-brand-primary hover:text-brand-primary transition">
+          <ion-icon name="add-outline"></ion-icon> Agregar acción
+        </button>
+        <p class="text-[11px] text-dark-text">La investigación y las acciones pueden completarse después; el reporte inicial no las exige.</p>
+      </div>
+    </div>
+
+    <!-- Footer nav -->
+    <div class="p-4 border-t border-dark-border flex items-center justify-between gap-2">
+      <button (click)="retroceder()" [disabled]="paso() === 1"
+              class="px-4 py-2 text-sm rounded-xl border border-dark-border text-dark-text hover:text-[rgb(var(--color-heading))] disabled:opacity-40 transition">Atrás</button>
+      <button *ngIf="paso() < 4" (click)="avanzar()"
+              class="px-5 py-2 text-sm rounded-xl bg-brand-primary hover:bg-blue-600 text-white font-medium transition">Siguiente</button>
+      <button *ngIf="paso() === 4" (click)="guardar()" [disabled]="guardando()"
+              class="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition disabled:opacity-50">
+        <ion-spinner *ngIf="guardando()" name="crescent" class="w-4 h-4"></ion-spinner>
+        <span>{{ modoEditar ? 'Guardar cambios' : 'Guardar caso' }}</span>
+      </button>
+    </div>
+  </div>
+</div>

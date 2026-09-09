@@ -57,7 +57,7 @@ export const MENU_ITEMS: MenuItem[] = [
     children: [
       { id: 'indicadores-resultados', label: 'Indicadores y Resultados', icon: 'stats-chart-outline', route: '/indicadores/accidentalidad/indicadores' },
       { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'checkbox-outline', route: '/auditorias/programacion' },
-      { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/gestion-sst/incidentes/investigacion' },
+      { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/indicadores/accidentalidad/matriz' },
       { id: 'cumplimiento-legal', label: 'Cumplimiento Legal', icon: 'shield-checkmark-outline', route: '/documentos/catalogos/matriz-requisitos' },
       { id: 'revision-alta-direccion', label: 'Revisión por la Alta Dirección', icon: 'eye-outline', route: '/gestion-sst/plan-mejora' }
     ]
@@ -67,7 +67,7 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'ACTUAR',
     phvaGroup: 'A',
     children: [
-      { id: 'acciones-correctivas', label: 'Acciones Correctivas', icon: 'construct-outline', route: '/gestion-sst/incidentes/registro' },
+      { id: 'acciones-correctivas', label: 'Acciones Correctivas', icon: 'construct-outline', route: '/indicadores/accidentalidad/matriz' },
       { id: 'acciones-preventivas', label: 'Acciones Preventivas', icon: 'shield-outline', route: '/gestion-sst/incidentes/actos-condiciones' },
       { id: 'mejora-continua', label: 'Mejora Continua', icon: 'trending-up-outline', route: '/gestion-sst/plan-mejora' }
     ]

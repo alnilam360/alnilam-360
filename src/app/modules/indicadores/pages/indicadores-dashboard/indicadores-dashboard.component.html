@@ -1,0 +1,134 @@
+<div class="at-dashboard space-y-5">
+
+  <!-- Encabezado solo impresión (informe gerencial) -->
+  <div class="solo-print mb-4">
+    <h1 class="text-xl font-bold">Informe de indicadores de accidentalidad</h1>
+    <p class="text-sm">{{ empresaNombre }} · Período {{ resumen().periodoLabel }} · Generado {{ hoy | date:'dd MMM y' }}</p>
+    <p class="text-xs">Res. 0312/2019 Art. 30 · NTC 3701 · K={{ srv.constanteK() }}</p>
+  </div>
+
+  <!-- Período + exportar -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="inline-flex rounded-xl bg-dark-secondary border border-dark-border p-1">
+      <button *ngFor="let p of [{k:'mes',l:'Mes'},{k:'trim',l:'Trimestre'},{k:'anio',l:'Año'}]"
+              (click)="periodo.set($any(p.k))"
+              class="px-3 py-1.5 text-xs font-medium rounded-lg transition"
+              [ngClass]="periodo() === p.k ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
+        {{ p.l }}
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <select *ngIf="periodo() === 'mes'" [ngModel]="mesSel()" (ngModelChange)="mesSel.set(+$event)"
+              class="px-3 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+        <option *ngFor="let m of meses; let i = index" [value]="i + 1">{{ m }}</option>
+      </select>
+      <select *ngIf="periodo() === 'trim'" [ngModel]="trimSel()" (ngModelChange)="trimSel.set(+$event)"
+              class="px-3 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+        <option *ngFor="let t of trimestres; let i = index" [value]="i">{{ t }}</option>
+      </select>
+      <button (click)="imprimir()"
+              class="flex items-center gap-2 px-3 py-1.5 bg-dark-secondary hover:bg-dark-accent border border-dark-border text-[rgb(var(--color-heading))] text-xs rounded-lg font-medium transition no-print">
+        <ion-icon name="download-outline"></ion-icon>
+        <span>Exportar informe</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Estados -->
+  <div *ngIf="srv.cargando()" class="flex items-center justify-center py-16">
+    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+  </div>
+  <div *ngIf="srv.error()" class="flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
+    <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+    <p class="text-sm text-red-300 flex-1">{{ srv.error() }}</p>
+  </div>
+
+  <ng-container *ngIf="!srv.cargando() && !srv.error()">
+
+    <!-- Z1 · HERO: racha + Bird -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="bg-dark-secondary border border-dark-border rounded-xl p-5 flex flex-col justify-center">
+        <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">Días sin accidente de trabajo</span>
+        <div class="flex items-end gap-3 mt-2">
+          <span class="text-5xl font-bold text-emerald-400 tabular-nums leading-none">
+            {{ srv.diasSinAccidentes().dias ?? '—' }}
+          </span>
+          <span class="text-xs text-dark-text mb-1">días</span>
+        </div>
+        <p class="text-[11px] text-dark-text mt-2">
+          Récord histórico: <span class="text-[rgb(var(--color-heading))] font-medium tabular-nums">{{ srv.diasSinAccidentes().record ?? '—' }}</span>
+          <span *ngIf="srv.diasSinAccidentes().fechaUltimoAt"> · último AT: {{ srv.diasSinAccidentes().fechaUltimoAt | date:'dd MMM y' }}</span>
+          <span *ngIf="!srv.diasSinAccidentes().fechaUltimoAt"> · sin accidentes registrados</span>
+        </p>
+      </div>
+      <app-bird-triangle [triangulo]="srv.trianguloBird()"></app-bird-triangle>
+    </div>
+
+    <!-- Z2 · KPI strip -->
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+      <app-kpi-card label="Frecuencia acc." icon="pulse-outline"
+        [valor]="resumen().frecuencia.valor" [estado]="resumen().frecuencia.estado"
+        [meta]="resumen().frecuencia.meta" [cumpleMeta]="resumen().frecuencia.cumpleMeta"></app-kpi-card>
+      <app-kpi-card label="Severidad acc." icon="bandage-outline"
+        [valor]="resumen().severidad.valor" [estado]="resumen().severidad.estado"
+        [meta]="resumen().severidad.meta" [cumpleMeta]="resumen().severidad.cumpleMeta"></app-kpi-card>
+      <app-kpi-card label="Tasa accidentalidad" icon="trending-up-outline" unidad="%"
+        [valor]="resumen().tasa.valor" [estado]="resumen().tasa.estado"
+        [meta]="resumen().tasa.meta" [cumpleMeta]="resumen().tasa.cumpleMeta"></app-kpi-card>
+      <app-kpi-card label="AT del período" icon="warning-outline"
+        [valor]="resumen().numAt" estado="ok" [sub]="resumen().periodoLabel"></app-kpi-card>
+      <app-kpi-card label="AT mortales (año)" icon="alert-circle-outline"
+        [valor]="srv.indicadorAnual().numAtMortales" estado="ok"
+        [cumpleMeta]="srv.indicadorAnual().numAtMortales === 0" [meta]="0" metaComparador="=" sub="acumulado año"></app-kpi-card>
+    </div>
+
+    <!-- Z3 · Tendencia -->
+    <app-trend-line [data]="trendData()"></app-trend-line>
+
+    <!-- Operativo (oculto para rol Gerencia) -->
+    <ng-container *ngIf="!esGerencia()">
+
+      <!-- Z4 · Cuerpo + Pareto -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <app-body-heatmap [conteos]="srv.agrupaciones().porParteCuerpo" (regionSelect)="onHeatmap($event)"></app-body-heatmap>
+        <app-pareto-chart [titulo]="paretoDim() === 'agente' ? 'Pareto · agente del accidente' : 'Pareto · mecanismo de lesión'"
+                          [conteos]="paretoConteos()">
+          <div class="inline-flex rounded-lg bg-dark-accent p-0.5">
+            <button (click)="paretoDim.set('agente')" class="px-2 py-0.5 text-[10px] rounded transition"
+                    [ngClass]="paretoDim() === 'agente' ? 'bg-brand-primary text-white' : 'text-dark-text'">Agente</button>
+            <button (click)="paretoDim.set('mecanismo')" class="px-2 py-0.5 text-[10px] rounded transition"
+                    [ngClass]="paretoDim() === 'mecanismo' ? 'bg-brand-primary text-white' : 'text-dark-text'">Mecanismo</button>
+          </div>
+        </app-pareto-chart>
+      </div>
+
+      <!-- Z5 · Área + Acciones vencidas -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <app-bar-breakdown titulo="Accidentes por área/proceso" icon="grid-outline" dimension="área"
+                           [conteos]="srv.agrupaciones().porAreaProceso"
+                           (barSelect)="drill.emit({ tipo: 'area', value: $event.label })"></app-bar-breakdown>
+
+        <div class="bg-dark-secondary border border-red-500/30 rounded-xl p-4 flex flex-col">
+          <div class="flex items-center gap-2 mb-3">
+            <ion-icon name="alarm-outline" class="text-red-400"></ion-icon>
+            <span class="text-[10px] uppercase tracking-wider text-red-300 font-semibold">Acciones correctivas vencidas</span>
+          </div>
+          <div *ngIf="srv.accionesVencidas().length === 0" class="flex-1 flex items-center justify-center">
+            <p class="text-[11px] text-dark-text">Sin acciones vencidas. 👌</p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <div *ngFor="let a of srv.accionesVencidas()" class="flex items-start gap-2 p-2 rounded-lg bg-red-500/5">
+              <span class="w-2 h-2 rounded-full bg-red-500 mt-1.5 flex-shrink-0"></span>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs text-[rgb(var(--color-heading))] truncate">{{ a.descripcion }}</p>
+                <p class="text-[10px] text-dark-text">{{ a.responsable }} · venció hace {{ a.diasVencido }} d</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </ng-container>
+</div>

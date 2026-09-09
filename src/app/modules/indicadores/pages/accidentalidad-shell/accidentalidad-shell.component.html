@@ -1,0 +1,69 @@
+<div class="p-4 space-y-5">
+
+  <div *ngIf="inicializando()" class="flex items-center justify-center py-16">
+    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+  </div>
+
+  <div *ngIf="!inicializando() && !soportado()"
+       class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
+    <ion-icon name="construct-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+    <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Módulo en construcción</p>
+    <p class="text-[11px] text-dark-text mt-1">Esta sección de indicadores aún no está disponible.</p>
+  </div>
+
+  <ng-container *ngIf="!inicializando() && soportado()">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">Matriz e Indicadores AT</h2>
+        <p class="text-xs text-dark-text mt-0.5">Accidentalidad · Res. 0312/2019 · Res. 1401/2007 · NTC 3701</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <select *ngIf="esAdmin()" [ngModel]="empresaId()" (ngModelChange)="empresaId.set($event)"
+                class="px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          <option [ngValue]="null">— Empresa —</option>
+          <option *ngFor="let e of empresas()" [ngValue]="e.id">{{ e.nombre }}</option>
+        </select>
+        <select [ngModel]="anio()" (ngModelChange)="anio.set(+$event)"
+                class="px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="inline-flex rounded-xl bg-dark-secondary border border-dark-border p-1">
+      <button (click)="tab.set('matriz')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+              [ngClass]="tab() === 'matriz' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
+        <ion-icon name="list-outline"></ion-icon> Matriz
+      </button>
+      <button (click)="tab.set('indicadores')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+              [ngClass]="tab() === 'indicadores' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
+        <ion-icon name="stats-chart-outline"></ion-icon> Indicadores
+      </button>
+      <button (click)="tab.set('parametros')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+              [ngClass]="tab() === 'parametros' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
+        <ion-icon name="settings-outline"></ion-icon> Parámetros
+      </button>
+    </div>
+
+    <!-- Sin empresa (admin) -->
+    <div *ngIf="esAdmin() && !empresaId()"
+         class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
+      <ion-icon name="business-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+      <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Seleccione una empresa para comenzar</p>
+    </div>
+
+    <!-- Contenido -->
+    <ng-container *ngIf="empresaId()">
+      <app-matriz-casos *ngIf="tab() === 'matriz'"
+        [empresaId]="empresaId()" [anio]="anio()" [filtroInicial]="filtroMatriz()"></app-matriz-casos>
+      <app-indicadores-dashboard *ngIf="tab() === 'indicadores'"
+        [empresaId]="empresaId()" [anio]="anio()" [empresaNombre]="nombreEmpresa()" (drill)="onDrill($event)"></app-indicadores-dashboard>
+      <app-parametros-mensuales *ngIf="tab() === 'parametros'"
+        [empresaId]="empresaId()" [anio]="anio()"></app-parametros-mensuales>
+    </ng-container>
+
+  </ng-container>
+</div>

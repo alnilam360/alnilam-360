@@ -165,3 +165,23 @@ h1.text-white {
     box-shadow: none !important;
   }
 }
+
+// ─── Impresión (informe gerencial vía "Guardar como PDF") ────────────────────
+.solo-print { display: none; }
+
+@media print {
+  app-sidebar,
+  app-header { display: none !important; }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding-top: 0 !important;
+    overflow: visible !important;
+  }
+
+  .no-print { display: none !important; }
+  .solo-print { display: block !important; }
+
+  // Evitar cortes feos de tarjetas entre páginas
+  .at-dashboard .bg-dark-secondary { break-inside: avoid; }
+}

@@ -1,0 +1,133 @@
+<div class="space-y-4">
+
+  <!-- Barra superior -->
+  <div class="flex items-center justify-between gap-2">
+    <p class="text-xs text-dark-text">Registro de casos de accidentes e incidentes</p>
+    <button (click)="abrirWizard()"
+            class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25">
+      <ion-icon name="add-outline" class="text-lg"></ion-icon>
+      <span>Reportar caso</span>
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="bg-dark-secondary border border-dark-border rounded-xl p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
+    <input [(ngModel)]="f.desde" (change)="aplicarFiltros()" type="date"
+           class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+    <input [(ngModel)]="f.hasta" (change)="aplicarFiltros()" type="date"
+           class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+    <select [(ngModel)]="f.sedeId" (ngModelChange)="aplicarFiltros()"
+            class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+      <option value="">Todas las sedes</option>
+      <option *ngFor="let s of sedes" [value]="s.id">{{ s.nombre }}</option>
+    </select>
+    <select [(ngModel)]="f.areaProceso" (ngModelChange)="aplicarFiltros()"
+            class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+      <option value="">Toda área</option>
+      <option *ngFor="let a of areas" [value]="a">{{ a }}</option>
+    </select>
+    <select [(ngModel)]="f.tipoEvento" (ngModelChange)="aplicarFiltros()"
+            class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+      <option value="">Todo tipo</option>
+      <option value="accidente_trabajo">Accidente</option>
+      <option value="incidente_casi_accidente">Incidente</option>
+    </select>
+    <select [(ngModel)]="f.gravedad" (ngModelChange)="aplicarFiltros()"
+            class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+      <option value="">Toda gravedad</option>
+      <option value="leve">Leve</option>
+      <option value="grave">Grave</option>
+      <option value="mortal">Mortal</option>
+    </select>
+    <select [(ngModel)]="f.estado" (ngModelChange)="aplicarFiltros()"
+            class="px-2 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+      <option value="">Todo estado</option>
+      <option value="reportado">Reportado</option>
+      <option value="en_investigacion">En investigación</option>
+      <option value="cerrado">Cerrado</option>
+    </select>
+  </div>
+
+  <div class="flex items-center justify-between gap-2">
+    <span *ngIf="parteFiltro" class="flex items-center gap-1.5 px-2.5 py-1 bg-brand-primary/10 border border-brand-primary/30 rounded-full text-[11px] text-[rgb(var(--color-heading))]">
+      <ion-icon name="body-outline" class="text-brand-primary"></ion-icon>
+      Parte del cuerpo: {{ parteFiltro.zona }}
+      <button (click)="quitarParteFiltro()" class="text-dark-text hover:text-red-400"><ion-icon name="close-outline"></ion-icon></button>
+    </span>
+    <span *ngIf="!parteFiltro"></span>
+    <button (click)="limpiarFiltros()" class="text-[11px] text-dark-text hover:text-brand-primary transition flex items-center gap-1">
+      <ion-icon name="refresh-outline"></ion-icon> Limpiar filtros
+    </button>
+  </div>
+
+  <!-- Estados -->
+  <div *ngIf="loading()" class="flex items-center justify-center py-12">
+    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+  </div>
+  <div *ngIf="error()" class="flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
+    <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+    <p class="text-sm text-red-300 flex-1">{{ error() }}</p>
+  </div>
+
+  <!-- Vacío -->
+  <div *ngIf="!loading() && casos().length === 0"
+       class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
+    <ion-icon name="documents-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+    <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Sin casos en el período/filtro</p>
+    <p class="text-[11px] text-dark-text mt-1">Use "Reportar caso" para registrar el primero.</p>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!loading() && casos().length > 0" class="overflow-x-auto bg-dark-secondary border border-dark-border rounded-xl">
+    <table class="w-full min-w-[720px] text-sm">
+      <thead>
+        <tr class="text-[10px] uppercase tracking-wider text-dark-text border-b border-dark-border">
+          <th class="text-left font-semibold px-3 py-2.5">Fecha</th>
+          <th class="text-left font-semibold px-3 py-2.5">Trabajador</th>
+          <th class="text-left font-semibold px-3 py-2.5">Tipo</th>
+          <th class="text-left font-semibold px-3 py-2.5">Gravedad</th>
+          <th class="text-left font-semibold px-3 py-2.5">Área</th>
+          <th class="text-left font-semibold px-3 py-2.5">Estado</th>
+          <th class="text-left font-semibold px-3 py-2.5">Alertas</th>
+          <th class="text-right font-semibold px-3 py-2.5"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of casos()" class="border-b border-dark-border/50 hover:bg-dark-accent/40 transition">
+          <td class="px-3 py-2.5 text-dark-text whitespace-nowrap">{{ c.fecha_hora_evento | date:'dd MMM y' }}</td>
+          <td class="px-3 py-2.5 text-[rgb(var(--color-heading))]">{{ c.trabajador_nombre }}</td>
+          <td class="px-3 py-2.5 text-dark-text">{{ c.tipo_evento === 'accidente_trabajo' ? 'Accidente' : 'Incidente' }}</td>
+          <td class="px-3 py-2.5">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold text-white" [ngClass]="gravedadColor(c)">{{ etiquetaGravedad(c) }}</span>
+          </td>
+          <td class="px-3 py-2.5 text-dark-text">{{ c.area_proceso || '—' }}</td>
+          <td class="px-3 py-2.5">
+            <span class="px-2 py-0.5 rounded text-[10px] font-medium" [ngClass]="estadoBadge(c.estado_caso)">
+              {{ c.estado_caso === 'en_investigacion' ? 'En investigación' : (c.estado_caso | titlecase) }}
+            </span>
+          </td>
+          <td class="px-3 py-2.5">
+            <div class="flex gap-1">
+              <span *ngIf="arlVencido(c)" title="Reporte ARL vencido" class="px-1.5 py-0.5 rounded text-[9px] bg-red-500/15 text-red-300">ARL</span>
+              <span *ngIf="investigacionFueraPlazo(c)" title="Investigación fuera de plazo" class="px-1.5 py-0.5 rounded text-[9px] bg-red-500/15 text-red-300">INV</span>
+            </div>
+          </td>
+          <td class="px-3 py-2.5 text-right whitespace-nowrap">
+            <button (click)="verDetalle(c)" class="p-1.5 text-dark-text hover:text-brand-primary rounded-lg hover:bg-dark-accent transition" title="Ver detalle">
+              <ion-icon name="eye-outline"></ion-icon>
+            </button>
+            <button (click)="editar(c)" class="p-1.5 text-dark-text hover:text-brand-primary rounded-lg hover:bg-dark-accent transition" title="Editar">
+              <ion-icon name="create-outline"></ion-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Wizard -->
+<app-caso-wizard *ngIf="wizardOpen()" [empresaId]="empresaId!" [casoEditar]="casoEditar()" (cerrar)="cerrarWizard()" (guardado)="onGuardado()"></app-caso-wizard>
+
+<!-- Detalle -->
+<app-caso-detalle *ngIf="detalle()" [caso]="detalle()!" (cerrar)="detalle.set(null)"></app-caso-detalle>
