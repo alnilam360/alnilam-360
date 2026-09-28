@@ -151,23 +151,10 @@ const routes: Routes = [
         ]
       },
 
-      // Indicadores
+      // Indicadores (Dividido en 4 Módulos: Accidentalidad, Enfermedad Laboral, Ausentismo, SG-SST)
       {
         path: 'indicadores',
-        children: [
-          {
-            path: 'accidentalidad',
-            children: [
-              { path: 'indicadores', loadChildren: () => import('./modules/indicadores/indicadores.module').then(m => m.IndicadoresModule), data: { tipo: 'indicadores' } },
-              { path: 'matriz', loadChildren: () => import('./modules/indicadores/indicadores.module').then(m => m.IndicadoresModule), data: { tipo: 'matriz' } },
-              { path: 'fichas', loadChildren: () => import('./modules/indicadores/indicadores.module').then(m => m.IndicadoresModule), data: { tipo: 'fichas' } },
-              { path: '', redirectTo: 'indicadores', pathMatch: 'full' }
-            ]
-          },
-          { path: 'ausentismo', loadChildren: () => import('./modules/indicadores/indicadores.module').then(m => m.IndicadoresModule), data: { tipo: 'ausentismo' } },
-          { path: 'otros-kpi', loadChildren: () => import('./modules/indicadores/indicadores.module').then(m => m.IndicadoresModule), data: { tipo: 'otros-kpi' } },
-          { path: '', redirectTo: 'accidentalidad', pathMatch: 'full' }
-        ]
+        loadChildren: () => import('./modules/indicadores/indicadores.module').then(m => m.IndicadoresModule)
       },
 
       // Auditorías

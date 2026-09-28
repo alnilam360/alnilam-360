@@ -32,6 +32,7 @@ export interface MatrizAtCaso {
   id?: string;
   empresa_id: string;
   sede_id: string | null;
+  trabajador_id?: string | null;
   tipo_evento: TipoEvento;
   fecha_hora_evento: string;              // ISO 8601
   fecha_reporte?: string;

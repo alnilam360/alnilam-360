@@ -27,13 +27,22 @@
               class="px-3 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
         <option *ngFor="let t of trimestres; let i = index" [value]="i">{{ t }}</option>
       </select>
+      <button (click)="exportarExcel()" [disabled]="exportandoExcel()"
+              title="Descargar libro Excel con indicadores mensuales, anuales y análisis Pareto (.xlsx)"
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs rounded-lg font-medium transition shadow-sm no-print">
+        <ion-icon [name]="exportandoExcel() ? 'sync-outline' : 'download-outline'"
+                  [class.animate-spin]="exportandoExcel()"></ion-icon>
+        <span>{{ exportandoExcel() ? 'Generando...' : 'Exportar Excel' }}</span>
+      </button>
+
       <button (click)="imprimir()"
-              class="flex items-center gap-2 px-3 py-1.5 bg-dark-secondary hover:bg-dark-accent border border-dark-border text-[rgb(var(--color-heading))] text-xs rounded-lg font-medium transition no-print">
-        <ion-icon name="download-outline"></ion-icon>
-        <span>Exportar informe</span>
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-dark-secondary hover:bg-dark-accent border border-dark-border text-[rgb(var(--color-heading))] text-xs rounded-lg font-medium transition no-print">
+        <ion-icon name="print-outline"></ion-icon>
+        <span>Imprimir informe</span>
       </button>
     </div>
   </div>
+
 
   <!-- Estados -->
   <div *ngIf="srv.cargando()" class="flex items-center justify-center py-16">

@@ -59,15 +59,17 @@
             [routerLink]="item.route"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
-            class="menu-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer"
+            class="menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer text-left"
             [attr.title]="item.label">
-            <ion-icon
-              [name]="item.icon || 'ellipse-outline'"
-              class="text-xl flex-shrink-0">
-            </ion-icon>
-            <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0">
-              <p class="text-sm font-semibold leading-tight truncate">{{ item.label }}</p>
-              <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate mt-0.5">{{ item.subtitle }}</p>
+            <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <ion-icon
+                [name]="item.icon || 'ellipse-outline'"
+                class="text-xl">
+              </ion-icon>
+            </div>
+            <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0 text-left">
+              <p class="text-sm font-semibold leading-tight truncate text-left">{{ item.label }}</p>
+              <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate mt-0.5 text-left">{{ item.subtitle }}</p>
             </div>
           </a>
         </li>
@@ -76,7 +78,7 @@
         <li *ngIf="item.phvaGroup && item.children && item.children.length > 0">
           <button
             (click)="toggleExpand(item, $event)"
-            class="menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
+            class="menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group text-left"
             [class.has-active]="hasActiveChild(item)"
             [attr.title]="item.label">
             <span
@@ -117,20 +119,22 @@
     <ul class="space-y-0.5 px-3">
       <li *ngFor="let item of utilityItems; trackBy: trackByFn">
 
-        <!-- Expandable utility item (has children) -->
+        <!-- Expandable utility item (has children) - ej: Configuración -->
         <ng-container *ngIf="item.children && item.children.length > 0">
           <button
             (click)="toggleExpand(item, $event)"
-            class="menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer"
+            class="menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group text-left"
             [class.has-active]="hasActiveChild(item)"
             [attr.title]="item.label">
-            <ion-icon
-              [name]="item.icon || 'ellipse-outline'"
-              class="text-lg flex-shrink-0">
-            </ion-icon>
-            <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0">
-              <p class="text-sm font-medium truncate">{{ item.label }}</p>
-              <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate">{{ item.subtitle }}</p>
+            <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <ion-icon
+                [name]="item.icon || 'ellipse-outline'"
+                class="text-xl">
+              </ion-icon>
+            </div>
+            <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0 text-left">
+              <p class="text-sm font-semibold leading-tight truncate text-left">{{ item.label }}</p>
+              <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate mt-0.5 text-left">{{ item.subtitle }}</p>
             </div>
             <ion-icon
               *ngIf="!isCollapsed || isMobile"
@@ -146,36 +150,40 @@
           </ul>
         </ng-container>
 
-        <!-- Simple route item -->
+        <!-- Simple route item - ej: Documentos, Reportes -->
         <a
           *ngIf="(!item.children || item.children.length === 0) && item.route"
           [routerLink]="item.route"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: false }"
-          class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
+          class="menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group text-left"
           [attr.title]="item.label">
-          <ion-icon
-            [name]="item.icon || 'ellipse-outline'"
-            class="text-lg flex-shrink-0">
-          </ion-icon>
-          <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate">{{ item.label }}</p>
-            <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate">{{ item.subtitle }}</p>
+          <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+            <ion-icon
+              [name]="item.icon || 'ellipse-outline'"
+              class="text-xl">
+            </ion-icon>
+          </div>
+          <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0 text-left">
+            <p class="text-sm font-semibold leading-tight truncate text-left">{{ item.label }}</p>
+            <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate mt-0.5 text-left">{{ item.subtitle }}</p>
           </div>
         </a>
 
-        <!-- No route, no children -->
+        <!-- No route, no children - ej: Ayuda y Soporte -->
         <div
           *ngIf="(!item.children || item.children.length === 0) && !item.route"
-          class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group"
+          class="menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover-theme-text hover-theme-bg transition-all duration-200 cursor-pointer group text-left"
           [attr.title]="item.label">
-          <ion-icon
-            [name]="item.icon || 'ellipse-outline'"
-            class="text-lg flex-shrink-0">
-          </ion-icon>
-          <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate">{{ item.label }}</p>
-            <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate">{{ item.subtitle }}</p>
+          <div class="w-6 h-6 flex items-center justify-center flex-shrink-0">
+            <ion-icon
+              [name]="item.icon || 'ellipse-outline'"
+              class="text-xl">
+            </ion-icon>
+          </div>
+          <div *ngIf="!isCollapsed || isMobile" class="flex-1 min-w-0 text-left">
+            <p class="text-sm font-semibold leading-tight truncate text-left">{{ item.label }}</p>
+            <p *ngIf="item.subtitle" class="text-[10px] text-dark-text truncate mt-0.5 text-left">{{ item.subtitle }}</p>
           </div>
         </div>
       </li>

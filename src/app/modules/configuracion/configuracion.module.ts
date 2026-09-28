@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../shared/shared.module';
 import { EmpresasComponent } from './pages/empresas/empresas.component';
 import { RolesComponent } from './pages/roles/roles.component';
+import { TrabajadoresComponent } from './pages/trabajadores/trabajadores.component';
 
 // PrimeNG
 import { TableModule } from 'primeng/table';
@@ -20,13 +21,15 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 const routes: Routes = [
   { path: '', redirectTo: 'empresas', pathMatch: 'full' },
   { path: 'empresas', component: EmpresasComponent },
-  { path: 'roles', component: RolesComponent }
+  { path: 'roles', component: RolesComponent },
+  { path: 'trabajadores', component: TrabajadoresComponent }
 ];
 
 @NgModule({
   declarations: [
     EmpresasComponent,
-    RolesComponent
+    RolesComponent,
+    TrabajadoresComponent
   ],
   imports: [
     CommonModule,
@@ -47,3 +50,4 @@ const routes: Routes = [
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ConfiguracionModule { }
+

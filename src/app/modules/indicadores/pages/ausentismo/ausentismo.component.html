@@ -1,0 +1,341 @@
+<div class="space-y-6">
+  <!-- HEADER & SELECTORES -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+        <ion-icon name="time-outline" class="text-amber-500"></ion-icon>
+        Indicadores de Ausentismo Laboral (Incapacidades)
+      </h1>
+      <p class="text-xs text-dark-text mt-0.5">
+        Res. 0312/2019, Dec. 1072/2015 · Tasa de Ausentismo y Costos de Incapacidades Médicas y Laborales
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Selector Empresa (Admin) -->
+      <div *ngIf="esAdmin() && empresas().length > 1" class="min-w-[180px]">
+        <select [ngModel]="empresaId()" (ngModelChange)="onEmpresaChange($event)"
+                class="w-full px-3 py-1.5 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          <option *ngFor="let emp of empresas()" [value]="emp.id">{{ emp.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Selector Año -->
+      <div class="min-w-[100px]">
+        <select [ngModel]="anio()" (ngModelChange)="onAnioChange($event)"
+                class="w-full px-3 py-1.5 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-semibold">
+          <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADO DE CARGA -->
+  <div *ngIf="inicializando() || cargando" class="flex items-center justify-center py-12">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+  </div>
+
+  <ng-container *ngIf="!inicializando() && !cargando">
+    <div *ngIf="!empresaId()" class="p-6 rounded-xl border border-dark-border bg-dark-secondary text-center text-dark-text">
+      Seleccione una empresa para visualizar los indicadores de ausentismo laboral.
+    </div>
+
+    <ng-container *ngIf="empresaId()">
+      <!-- PESTAÑAS PRINCIPALES -->
+      <div class="flex items-center gap-2 border-b border-dark-border pb-2">
+        <button (click)="tab.set('indicadores')"
+                class="px-4 py-2 text-xs font-semibold rounded-lg transition"
+                [ngClass]="tab() === 'indicadores' ? 'bg-brand-primary text-white shadow-sm' : 'text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent'">
+          <ion-icon name="speedometer-outline" class="mr-1"></ion-icon> Dashboard & Tasa
+        </button>
+        <button (click)="tab.set('matriz')"
+                class="px-4 py-2 text-xs font-semibold rounded-lg transition"
+                [ngClass]="tab() === 'matriz' ? 'bg-brand-primary text-white shadow-sm' : 'text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent'">
+          <ion-icon name="clipboard-outline" class="mr-1"></ion-icon> Registro de Incapacidades ({{ incapacidades.length }})
+        </button>
+        <button (click)="tab.set('analisis')"
+                class="px-4 py-2 text-xs font-semibold rounded-lg transition"
+                [ngClass]="tab() === 'analisis' ? 'bg-brand-primary text-white shadow-sm' : 'text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent'">
+          <ion-icon name="analytics-outline" class="mr-1"></ion-icon> Análisis & Plan de Acción
+        </button>
+      </div>
+
+      <!-- TAB 1: DASHBOARD DE AUSENTISMO -->
+      <div *ngIf="tab() === 'indicadores'" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Tasa Ausentismo -->
+          <div class="p-4 rounded-xl border border-dark-border bg-dark-secondary space-y-2">
+            <div class="flex items-center justify-between text-xs text-dark-text">
+              <span>Tasa de Ausentismo</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold"
+                    [ngClass]="tasaAusentismo <= 2.0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'">
+                Meta: &le; 2.0%
+              </span>
+            </div>
+            <div class="text-2xl font-bold"
+                 [ngClass]="tasaAusentismo <= 2.0 ? 'text-emerald-400' : 'text-rose-400'">
+              {{ tasaAusentismo }}%
+            </div>
+            <p class="text-[11px] text-dark-text">
+              (Días incapacidad / Días trabajo programados) * 100
+            </p>
+          </div>
+
+          <!-- Total Días Incapacidad -->
+          <div class="p-4 rounded-xl border border-dark-border bg-dark-secondary space-y-2">
+            <span class="text-xs text-dark-text">Días Perdidos por Incapacidad</span>
+            <div class="text-2xl font-bold text-amber-400">{{ totalDiasIncapacidad }} días</div>
+            <p class="text-[11px] text-dark-text">Sumatoria acumulada del año {{ anio() }}</p>
+          </div>
+
+          <!-- Costos Asumidos Empresa -->
+          <div class="p-4 rounded-xl border border-dark-border bg-dark-secondary space-y-2">
+            <span class="text-xs text-dark-text">Costos Asumidos Empresa</span>
+            <div class="text-2xl font-bold text-[rgb(var(--color-heading))]">
+              ${{ totalCostosEmpresa | number:'1.0-0' }}
+            </div>
+            <p class="text-[11px] text-dark-text">Primeros 2 días y costos directos</p>
+          </div>
+
+          <!-- Costos Asegurados -->
+          <div class="p-4 rounded-xl border border-dark-border bg-dark-secondary space-y-2">
+            <span class="text-xs text-dark-text">Costos Asegurados (EPS/ARL)</span>
+            <div class="text-2xl font-bold text-emerald-400">
+              ${{ totalCostosAsegurados | number:'1.0-0' }}
+            </div>
+            <p class="text-[11px] text-dark-text">Reclamados a seguridad social</p>
+          </div>
+        </div>
+
+        <!-- Parámetros base -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-dark-secondary/50 rounded-xl border border-dark-border text-xs">
+          <div class="flex items-center gap-2">
+            <span>Días laborales promedio/mes:</span>
+            <input type="number" [(ngModel)]="diasLaboralesMes" min="1" max="31"
+                   class="w-20 px-2 py-1 bg-dark-primary border border-dark-border rounded text-center text-xs text-[rgb(var(--color-heading))]">
+          </div>
+          <div class="flex items-center gap-2">
+            <span>Total trabajadores promedio:</span>
+            <input type="number" [(ngModel)]="numTrabajadores" min="1"
+                   class="w-20 px-2 py-1 bg-dark-primary border border-dark-border rounded text-center text-xs text-[rgb(var(--color-heading))]">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: REGISTRO DE INCAPACIDADES -->
+      <div *ngIf="tab() === 'matriz'" class="space-y-3">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por trabajador, documento, sede o diagnóstico..."
+                 class="w-full sm:w-80 px-3 py-1.5 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]">
+          <div class="flex items-center gap-2">
+            <button (click)="exportarExcel()" [disabled]="exportandoExcel() || incapacidades.length === 0"
+                    title="Descargar matriz de incapacidades en Excel (.xlsx)"
+                    class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white transition flex items-center gap-1.5 shadow-sm">
+              <ion-icon [name]="exportandoExcel() ? 'sync-outline' : 'download-outline'"
+                        [class.animate-spin]="exportandoExcel()"></ion-icon>
+              <span>{{ exportandoExcel() ? 'Generando...' : 'Exportar Excel' }}</span>
+            </button>
+            <button (click)="openNuevo()"
+                    class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-primary text-white hover:bg-blue-600 transition flex items-center gap-1.5 shadow-sm">
+              <ion-icon name="add-circle-outline"></ion-icon> Registrar Incapacidad
+            </button>
+          </div>
+        </div>
+
+
+        <div class="overflow-x-auto rounded-xl border border-dark-border bg-dark-secondary">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text font-semibold uppercase text-[10px]">
+              <tr>
+                <th class="py-2.5 px-3">Sede</th>
+                <th class="py-2.5 px-3">Mes</th>
+                <th class="py-2.5 px-3">Cédula</th>
+                <th class="py-2.5 px-3">Trabajador</th>
+                <th class="py-2.5 px-3">Tipo Evento</th>
+                <th class="py-2.5 px-3">Fechas (Inicio - Fin)</th>
+                <th class="py-2.5 px-3">Días</th>
+                <th class="py-2.5 px-3">Diagnóstico CIE-10</th>
+                <th class="py-2.5 px-3 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-dark-border/40 text-[rgb(var(--color-heading))]">
+              <tr *ngFor="let item of filteredIncapacidades" class="hover:bg-dark-accent/40">
+                <td class="py-2.5 px-3 text-dark-text font-medium">{{ item.sede?.nombre || '—' }}</td>
+                <td class="py-2.5 px-3 font-semibold text-brand-primary">{{ mesesNombres[item.mes - 1] }}</td>
+                <td class="py-2.5 px-3 font-mono text-dark-text">{{ item.trabajador_documento }}</td>
+                <td class="py-2.5 px-3 font-medium">{{ item.trabajador_nombre }}</td>
+                <td class="py-2.5 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-semibold"
+                        [ngClass]="{
+                          'bg-rose-500/10 text-rose-400': item.tipo_evento === 'A.T.',
+                          'bg-amber-500/10 text-amber-400': item.tipo_evento === 'E.L.',
+                          'bg-blue-500/10 text-blue-400': item.tipo_evento === 'E.G.'
+                        }">
+                    {{ item.tipo_evento }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-dark-text">{{ item.fecha_inicial }} al {{ item.fecha_final }}</td>
+                <td class="py-2.5 px-3 font-bold text-amber-400">{{ item.dias_incapacidad }} d</td>
+                <td class="py-2.5 px-3">
+                  <span class="font-mono text-brand-primary">{{ item.codigo_cie10 || '—' }}</span>
+                  <p class="text-[10px] text-dark-text truncate max-w-xs">{{ item.diagnostico || 'General' }}</p>
+                </td>
+                <td class="py-2.5 px-3 text-right">
+                  <button (click)="openEditar(item)" class="p-1 hover:text-brand-primary" title="Editar"><ion-icon name="create-outline"></ion-icon></button>
+                  <button (click)="eliminar(item)" class="p-1 hover:text-rose-400" title="Eliminar"><ion-icon name="trash-outline"></ion-icon></button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredIncapacidades.length === 0">
+                <td colspan="9" class="text-center py-8 text-dark-text">No hay incapacidades registradas para {{ anio() }}.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: ANÁLISIS & PLAN DE ACCIÓN -->
+      <app-indicadores-analisis-planes *ngIf="tab() === 'analisis'"
+        [empresaId]="empresaId()!" [anio]="anio()" tipoIndicador="AUSENTISMO" tituloIndicador="Ausentismo Laboral">
+      </app-indicadores-analisis-planes>
+    </ng-container>
+  </ng-container>
+</div>
+
+<!-- MODAL INCAPACIDAD CON CARGA DE TRABAJADORES POR SEDE -->
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+     (click)="closeModal()">
+  <div class="relative w-full max-w-2xl bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto"
+       (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between border-b border-dark-border pb-3">
+      <h3 class="text-sm font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+        <ion-icon name="clipboard" class="text-brand-primary"></ion-icon>
+        {{ editingItem ? 'Editar Registro de Incapacidad' : 'Registrar Incapacidad' }}
+      </h3>
+      <button (click)="closeModal()" class="text-dark-text hover:text-rose-400 transition">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+      <!-- 1. Sede -->
+      <div class="sm:col-span-2">
+        <label class="block text-dark-text mb-1 font-medium">Sede de la Empresa *</label>
+        <select [ngModel]="form.sede_id" (ngModelChange)="onSedeChange($event)" class="form-input">
+          <option [ngValue]="null">— Seleccione una sede —</option>
+          <option *ngFor="let s of sedes" [ngValue]="s.id">{{ s.nombre }}<span *ngIf="s.municipio"> · {{ s.municipio }}</span></option>
+        </select>
+        <p *ngIf="!form.sede_id" class="text-[10px] text-amber-400 mt-1">
+          Seleccione la sede para cargar el listado de trabajadores activos registrados.
+        </p>
+      </div>
+
+      <!-- 2. Selección de Trabajador Registrado por Sede -->
+      <div class="sm:col-span-2 space-y-1.5 p-3 rounded-xl border border-dark-border bg-dark-primary/40">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-[rgb(var(--color-heading))] flex items-center gap-1.5">
+            <ion-icon name="people-outline" class="text-brand-primary"></ion-icon> Trabajador registrado *
+          </span>
+          <span class="text-[10px] text-brand-primary/80 font-mono">Solo trabajadores registrados</span>
+        </div>
+
+        <!-- Trabajador Seleccionado (Card Verde) -->
+        <div *ngIf="trabajadorSeleccionado" class="flex items-center gap-2 p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+          <ion-icon name="person-circle-outline" class="text-emerald-400 text-xl flex-shrink-0"></ion-icon>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-[rgb(var(--color-heading))]">{{ trabajadorSeleccionado.nombre }}</p>
+            <p class="text-[10px] text-dark-text">
+              C.C. {{ trabajadorSeleccionado.documento }} · Cargo: {{ trabajadorSeleccionado.cargo || 'Sin cargo' }}
+              <span *ngIf="trabajadorSeleccionado.area_trabajo"> · Área: {{ trabajadorSeleccionado.area_trabajo }}</span>
+              <span *ngIf="trabajadorSeleccionado.eps"> · EPS: {{ trabajadorSeleccionado.eps }}</span>
+              <span *ngIf="trabajadorSeleccionado.arl"> · ARL: {{ trabajadorSeleccionado.arl }}</span>
+            </p>
+          </div>
+          <button type="button" (click)="clearTrabajadorSelection()" class="p-1 text-dark-text hover:text-red-400 transition" title="Cambiar trabajador">
+            <ion-icon name="close-circle-outline" class="text-base"></ion-icon>
+          </button>
+        </div>
+
+        <!-- Input de búsqueda -->
+        <div *ngIf="!trabajadorSeleccionado" class="relative">
+          <input [(ngModel)]="queryTrabajador" type="text"
+                 [placeholder]="form.sede_id ? (trabajadoresSede.length > 0 ? 'Buscar trabajador por nombre o cédula...' : 'No hay trabajadores activos registrados en esta sede') : 'Seleccione una sede primero para listar trabajadores'"
+                 [disabled]="!form.sede_id || trabajadoresSede.length === 0"
+                 class="form-input disabled:opacity-50 disabled:cursor-not-allowed">
+          
+          <!-- Lista desplegable filtrada -->
+          <div *ngIf="queryTrabajador && trabajadoresFiltrados.length > 0"
+               class="absolute z-10 w-full mt-1 bg-dark-secondary border border-dark-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
+            <button *ngFor="let t of trabajadoresFiltrados" type="button" (click)="onTrabajadorSelect(t)"
+                    class="w-full text-left px-3 py-2 hover:bg-dark-accent transition flex items-center gap-2 border-b border-dark-border/30 last:border-0">
+              <ion-icon name="person-outline" class="text-dark-text"></ion-icon>
+              <div class="flex-1">
+                <p class="text-xs font-medium text-[rgb(var(--color-heading))]">{{ t.nombre }}</p>
+                <p class="text-[10px] text-dark-text">
+                  C.C. {{ t.documento }} · {{ t.cargo || 'Sin cargo' }}
+                  <span *ngIf="t.eps"> · {{ t.eps }}</span>
+                </p>
+              </div>
+            </button>
+          </div>
+          <p *ngIf="queryTrabajador && trabajadoresFiltrados.length === 0" class="text-[10px] text-amber-400 mt-1 flex items-center gap-1">
+            <ion-icon name="alert-circle-outline"></ion-icon> No se encontró ningún trabajador que coincida en esta sede. Regístrelo en Empresas > Trabajadores.
+          </p>
+          <p *ngIf="form.sede_id && trabajadoresSede.length === 0" class="text-[10px] text-amber-400/90 mt-1 flex items-center gap-1">
+            <ion-icon name="information-circle-outline"></ion-icon> Esta sede aún no tiene trabajadores activos registrados. Regístrelos en Empresas > Trabajadores.
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. Parámetros del Evento -->
+      <div>
+        <label class="block text-dark-text mb-1">Mes del Evento *</label>
+        <select [(ngModel)]="form.mes" class="form-input">
+          <option *ngFor="let m of mesesNombres; let idx = index" [value]="idx + 1">{{ m }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-dark-text mb-1">Tipo de Evento *</label>
+        <select [(ngModel)]="form.tipo_evento" class="form-input">
+          <option value="E.G.">E.G. (Enfermedad General)</option>
+          <option value="A.T.">A.T. (Accidente de Trabajo)</option>
+          <option value="E.L.">E.L. (Enfermedad Laboral)</option>
+        </select>
+      </div>
+
+      <!-- 4. Fechas y Días de Incapacidad -->
+      <div>
+        <label class="block text-dark-text mb-1">Fecha Inicial *</label>
+        <input type="date" [(ngModel)]="form.fecha_inicial" (change)="onFechasChange()" class="form-input">
+      </div>
+      <div>
+        <label class="block text-dark-text mb-1">Fecha Final *</label>
+        <input type="date" [(ngModel)]="form.fecha_final" (change)="onFechasChange()" class="form-input">
+      </div>
+      <div>
+        <label class="block text-dark-text mb-1">Días de Incapacidad</label>
+        <input type="number" [(ngModel)]="form.dias_incapacidad" class="form-input" min="1">
+      </div>
+      <!-- Selector Inteligente CIE-10 (Catálogo de 12.422 códigos + Frecuentes SST) -->
+      <div class="sm:col-span-2">
+        <app-cie10-selector [(codigo)]="form.codigo_cie10" [(diagnostico)]="form.diagnostico"
+                            label="Diagnóstico y Código CIE-10 (Incapacidad)" [required]="true">
+        </app-cie10-selector>
+      </div>
+
+      <!-- 5. Costos Económicos -->
+      <div>
+        <label class="block text-dark-text mb-1">Costos Asumidos Empresa ($)</label>
+        <input type="number" [(ngModel)]="form.costos_asumidos_empresa" class="form-input" placeholder="0">
+      </div>
+      <div>
+        <label class="block text-dark-text mb-1">Costos Asegurados ARL/EPS ($)</label>
+        <input type="number" [(ngModel)]="form.costos_asegurados_eps" class="form-input" placeholder="0">
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 pt-3 border-t border-dark-border">
+      <button (click)="closeModal()" class="px-3.5 py-1.5 text-xs rounded-lg border border-dark-border text-dark-text hover:bg-dark-accent transition">Cancelar</button>
+      <button (click)="guardarIncapacidad()" class="px-4 py-1.5 text-xs rounded-lg bg-brand-primary text-white hover:bg-blue-600 transition font-semibold">Guardar Incapacidad</button>
+    </div>
+  </div>
+</div>

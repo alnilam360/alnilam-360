@@ -46,6 +46,10 @@
               [ngClass]="tab() === 'parametros' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
         <ion-icon name="settings-outline"></ion-icon> Parámetros
       </button>
+      <button (click)="tab.set('analisis')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+              [ngClass]="tab() === 'analisis' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
+        <ion-icon name="document-text-outline"></ion-icon> Análisis y Planes
+      </button>
     </div>
 
     <!-- Sin empresa (admin) -->
@@ -58,11 +62,13 @@
     <!-- Contenido -->
     <ng-container *ngIf="empresaId()">
       <app-matriz-casos *ngIf="tab() === 'matriz'"
-        [empresaId]="empresaId()" [anio]="anio()" [filtroInicial]="filtroMatriz()"></app-matriz-casos>
+        [empresaId]="empresaId()" [anio]="anio()" [filtroInicial]="filtroMatriz()" [empresaNombre]="nombreEmpresa()"></app-matriz-casos>
       <app-indicadores-dashboard *ngIf="tab() === 'indicadores'"
         [empresaId]="empresaId()" [anio]="anio()" [empresaNombre]="nombreEmpresa()" (drill)="onDrill($event)"></app-indicadores-dashboard>
       <app-parametros-mensuales *ngIf="tab() === 'parametros'"
         [empresaId]="empresaId()" [anio]="anio()"></app-parametros-mensuales>
+      <app-indicadores-analisis-planes *ngIf="tab() === 'analisis'"
+        [empresaId]="empresaId()!" [anio]="anio()" tipoIndicador="AT" tituloIndicador="Accidentalidad (AT)"></app-indicadores-analisis-planes>
     </ng-container>
 
   </ng-container>

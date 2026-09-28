@@ -122,15 +122,48 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.modulosPermitidos = [...this.modulosPermitidos, ...phvaIds];
       }
 
-      this.menuItems = this.allMenuItems.filter(item => {
-        if (item.isSectionLabel || item.isUtility) return true;
-        return this.modulosPermitidos.includes(item.id);
-      });
+      const allowedSet = new Set<string>(this.modulosPermitidos);
+
+      // Filtrar el árbol de navegación completo respetando submódulos y ramas permitidas
+      this.menuItems = this.filterMenuTree(this.allMenuItems, allowedSet);
     } catch (error) {
       console.error('Error loading permisos for sidebar:', error);
       this.menuItems = this.allMenuItems;
     }
   }
+
+  /**
+   * Filtra recursivamente los nodos del menú:
+   * Un nodo se mantiene si está explícitamente en el set permitido O si alguno de sus hijos/descendientes tiene permiso.
+   */
+  private filterMenuTree(nodes: MenuItemNode[], allowedIds: Set<string>): MenuItemNode[] {
+    const result: MenuItemNode[] = [];
+
+    for (const node of nodes) {
+      if (node.isSectionLabel) {
+        result.push(node);
+        continue;
+      }
+
+      let filteredChildren: MenuItemNode[] | undefined;
+      if (node.children && node.children.length > 0) {
+        filteredChildren = this.filterMenuTree(node.children, allowedIds);
+      }
+
+      const hasAllowedChildren = !!filteredChildren && filteredChildren.length > 0;
+      const isNodeAllowed = allowedIds.has(node.id);
+
+      if (isNodeAllowed || hasAllowedChildren) {
+        result.push({
+          ...node,
+          children: filteredChildren
+        });
+      }
+    }
+
+    return result;
+  }
+
 
   private checkScreenSize(): void {
     this.isMobile = window.innerWidth < 768;

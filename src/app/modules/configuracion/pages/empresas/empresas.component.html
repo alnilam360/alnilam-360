@@ -465,6 +465,10 @@
             </p>
           </div>
           <div class="flex items-center gap-1 ml-2">
+            <button (click)="openTrabajadoresModal(sede)" title="Ver trabajadores"
+              class="p-1.5 rounded text-dark-text hover:text-emerald-400 hover:bg-dark-accent transition-all duration-200">
+              <ion-icon name="people-outline" class="text-base"></ion-icon>
+            </button>
             <button (click)="openSedeFormModal(sede)" title="Editar sede"
               class="p-1.5 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
               <ion-icon name="create-outline" class="text-base"></ion-icon>
@@ -582,3 +586,12 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Gestión de Trabajadores por Sede -->
+<app-trabajadores
+  *ngIf="showTrabajadoresModal && selectedSedeForTrabajadores"
+  [empresaId]="selectedEmpresa!.id!"
+  [sedeId]="selectedSedeForTrabajadores.id!"
+  [sedeNombre]="selectedSedeForTrabajadores.nombre + ' — ' + selectedEmpresa!.nombre"
+  (cerrar)="closeTrabajadoresModal()">
+</app-trabajadores>

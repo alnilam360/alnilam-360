@@ -145,13 +145,18 @@ export class UsuariosComponent implements OnInit {
     }
 
     async deleteUsuario(id: string): Promise<void> {
+        if (!confirm('¿Está seguro de eliminar este usuario? Se revocarán inmediatamente todos sus accesos y credenciales de ingreso al sistema.')) {
+            return;
+        }
         try {
             await this.usuariosService.deleteUsuario(id);
             await this.loadData();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting usuario:', error);
+            alert('Error al eliminar el usuario: ' + (error.message || error));
         }
     }
+
 
     async toggleEstado(usuario: Usuario): Promise<void> {
         try {

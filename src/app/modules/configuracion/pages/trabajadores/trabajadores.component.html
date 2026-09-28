@@ -1,0 +1,351 @@
+<!-- Contenedor Principal: Si es modal usa overlay, si es página usa layout estándar -->
+<ng-container *ngIf="isModal">
+  <!-- Overlay backdrop (Modo Modal desde Sedes de Empresas) -->
+  <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+    (click)="cerrar.emit()">
+    <div class="relative w-full max-w-5xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+      (click)="$event.stopPropagation()">
+      <ng-container *ngTemplateOutlet="trabajadoresContent"></ng-container>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="!isModal">
+  <!-- Modo Página Completa (/configuracion/trabajadores) -->
+  <div class="space-y-6">
+    <!-- Header de Página -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+          <ion-icon name="people-circle-outline" class="text-brand-primary text-2xl"></ion-icon>
+          Gestión de Trabajadores
+        </h1>
+        <p class="text-xs text-dark-text mt-0.5">
+          Directorio oficial de trabajadores, afiliaciones a Seguridad Social (EPS, ARL, Pensión) y asignación por sede
+        </p>
+      </div>
+
+      <!-- Selectores de Empresa y Sede -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div *ngIf="esAdmin && empresas.length > 1" class="min-w-[180px]">
+          <select [ngModel]="empresaId" (ngModelChange)="onEmpresaChange($event)"
+            class="w-full px-3 py-1.5 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <option *ngFor="let emp of empresas" [value]="emp.id">{{ emp.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="min-w-[160px]">
+          <select [ngModel]="filtroSedeId" (ngModelChange)="onFiltroSedeChange($event)"
+            class="w-full px-3 py-1.5 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+            <option value="">Todas las Sedes ({{ sedes.length }})</option>
+            <option *ngFor="let s of sedes" [value]="s.id">{{ s.nombre }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido en Card Principal -->
+    <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+      <ng-container *ngTemplateOutlet="trabajadoresContent"></ng-container>
+    </div>
+  </div>
+</ng-container>
+
+<!-- Template Reutilizable de Contenido de Trabajadores -->
+<ng-template #trabajadoresContent>
+  <!-- Header Bar -->
+  <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+    <div>
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">
+        {{ isModal ? 'Trabajadores de la Sede' : 'Directorio de Personal' }}
+      </h3>
+      <p *ngIf="sedeNombre" class="text-xs text-dark-text mt-0.5">{{ sedeNombre }}</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-400">
+        {{ countActivos }} activos
+      </span>
+      <span *ngIf="countRetirados > 0"
+        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-500/20 text-red-400">
+        {{ countRetirados }} retirados
+      </span>
+      <button *ngIf="isModal" (click)="cerrar.emit()"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200"
+        title="Cerrar modal" aria-label="Cerrar modal">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-dark-primary/30">
+    <div class="relative flex-1 w-full sm:max-w-md">
+      <ion-icon name="search-outline"
+        class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></ion-icon>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por nombre, documento, cargo o sede..."
+        class="w-full pl-9 pr-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200">
+    </div>
+    <button (click)="openFormModal()"
+      class="w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm"
+      title="Registrar nuevo trabajador en el sistema">
+      <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
+      <span>Agregar Trabajador</span>
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="px-4 pb-4 max-h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar">
+    <div *ngIf="loading" class="flex items-center justify-center py-12">
+      <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    </div>
+
+    <div *ngIf="!loading && filteredTrabajadores.length === 0"
+      class="flex flex-col items-center justify-center py-12 text-center border border-dashed border-dark-border rounded-xl my-4">
+      <ion-icon name="people-outline" class="text-3xl text-dark-text mb-2"></ion-icon>
+      <p class="text-xs text-dark-text font-medium">{{ searchQuery ? 'No se encontraron trabajadores que coincidan con la búsqueda' : 'No hay trabajadores registrados' }}</p>
+      <p class="text-[11px] text-dark-text/70 mt-1">{{ searchQuery ? 'Pruebe con otro documento, nombre o cargo' : 'Haga clic en "Agregar Trabajador" para registrar la primera ficha' }}</p>
+    </div>
+
+    <div *ngIf="!loading && filteredTrabajadores.length > 0" class="overflow-x-auto mt-2">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+          <tr>
+            <th class="px-3 py-2.5 font-semibold">Documento</th>
+            <th class="px-3 py-2.5 font-semibold">Nombre</th>
+            <th *ngIf="!isModal" class="px-3 py-2.5 font-semibold">Sede</th>
+            <th class="px-3 py-2.5 font-semibold">Edad</th>
+            <th class="px-3 py-2.5 font-semibold">Cargo / Área</th>
+            <th class="px-3 py-2.5 font-semibold">Seguridad Social</th>
+            <th class="px-3 py-2.5 font-semibold">Teléfono</th>
+            <th class="px-3 py-2.5 font-semibold text-center">Estado</th>
+            <th class="px-3 py-2.5 font-semibold text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-dark-border">
+          <tr *ngFor="let t of filteredTrabajadores"
+            class="hover:bg-dark-primary/40 transition-colors duration-150"
+            [class.opacity-60]="!t.activo">
+            <td class="px-3 py-2 font-mono text-[11px] font-semibold text-[rgb(var(--color-heading))]">
+              {{ t.documento }}
+            </td>
+            <td class="px-3 py-2">
+              <span class="font-medium text-[rgb(var(--color-heading))]">{{ t.nombre }}</span>
+              <span *ngIf="t.fecha_ingreso" class="block text-[10px] text-dark-text">
+                Ingreso: {{ t.fecha_ingreso | date:'dd/MM/yyyy' }}
+              </span>
+            </td>
+            <td *ngIf="!isModal" class="px-3 py-2 text-dark-text">
+              <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-medium">
+                {{ t.sede?.nombre || 'Sede asignada' }}
+              </span>
+            </td>
+            <td class="px-3 py-2 text-dark-text">
+              <span *ngIf="t.fecha_nacimiento">
+                {{ calcEdad(t.fecha_nacimiento) }} años
+              </span>
+              <span *ngIf="!t.fecha_nacimiento" class="text-dark-text/40">—</span>
+            </td>
+            <td class="px-3 py-2 text-dark-text">
+              <span class="block text-[rgb(var(--color-heading))]">{{ t.cargo || 'Sin cargo' }}</span>
+              <span *ngIf="t.area_trabajo" class="text-[10px] text-dark-text/80">{{ t.area_trabajo }}</span>
+            </td>
+            <td class="px-3 py-2 text-dark-text text-[11px]">
+              <div class="flex flex-col gap-0.5">
+                <span *ngIf="t.eps" class="text-blue-400">EPS: {{ t.eps }}</span>
+                <span *ngIf="t.arl" class="text-emerald-400">ARL: {{ t.arl }}</span>
+                <span *ngIf="t.fondo_pensiones" class="text-amber-400">FP: {{ t.fondo_pensiones }}</span>
+                <span *ngIf="!t.eps && !t.arl && !t.fondo_pensiones" class="text-dark-text/40 text-[10px]">Sin afiliar</span>
+              </div>
+            </td>
+            <td class="px-3 py-2 text-dark-text">
+              {{ t.telefono || '—' }}
+            </td>
+            <td class="px-3 py-2 text-center">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium cursor-pointer transition-colors"
+                [class.bg-emerald-500/20]="t.activo" [class.text-emerald-400]="t.activo"
+                [class.bg-red-500/20]="!t.activo" [class.text-red-400]="!t.activo"
+                (click)="toggleActivo(t)"
+                [title]="t.activo ? 'Clic para marcar como inactivo' : 'Clic para reactivar'">
+                {{ t.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="px-3 py-2 text-center">
+              <div class="flex items-center justify-center gap-1">
+                <button (click)="openFormModal(t)"
+                  class="p-1.5 rounded-lg text-dark-text hover:text-blue-400 hover:bg-dark-accent transition-all duration-200"
+                  title="Editar trabajador" aria-label="Editar trabajador">
+                  <ion-icon name="create-outline" class="text-sm"></ion-icon>
+                </button>
+                <button (click)="deleteTrabajador(t.id!, t.nombre)"
+                  class="p-1.5 rounded-lg text-dark-text hover:text-red-400 hover:bg-dark-accent transition-all duration-200"
+                  title="Eliminar trabajador" aria-label="Eliminar trabajador">
+                  <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Modal Formulario Trabajador -->
+<div *ngIf="showFormModal"
+  class="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+  (click)="closeFormModal()">
+  <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">
+        {{ selectedTrabajador ? 'Editar Trabajador' : 'Nuevo Trabajador' }}
+      </h3>
+      <button (click)="closeFormModal()"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200"
+        title="Cerrar formulario" aria-label="Cerrar formulario">
+        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      </button>
+    </div>
+
+    <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <form class="space-y-4">
+        <!-- Sede (si no está en modo modal fijo) -->
+        <div *ngIf="!sedeId && sedes.length > 0">
+          <label class="block text-xs font-medium text-dark-text mb-1">
+            Sede de Trabajo <span class="text-red-400">*</span>
+          </label>
+          <select [(ngModel)]="form.sede_id" name="t_sede_id" class="form-input">
+            <option value="">-- Seleccionar Sede --</option>
+            <option *ngFor="let s of sedes" [value]="s.id">{{ s.nombre }} ({{ s.municipio || s.direccion }})</option>
+          </select>
+        </div>
+
+        <!-- Identificación -->
+        <div>
+          <h4 class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="person-outline" class="text-sm text-brand-primary"></ion-icon>
+            Identificación
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">Documento <span class="text-red-400">*</span></label>
+              <input type="text" [(ngModel)]="form.documento" name="t_documento" placeholder="Ej: 1234567890"
+                class="form-input">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">Nombre Completo <span class="text-red-400">*</span></label>
+              <input type="text" [(ngModel)]="form.nombre" name="t_nombre" placeholder="Nombre y apellidos"
+                class="form-input">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">Fecha de Nacimiento</label>
+              <input type="date" [(ngModel)]="form.fecha_nacimiento" name="t_nacimiento" class="form-input">
+              <p *ngIf="form.fecha_nacimiento" class="text-[10px] text-brand-primary mt-1">
+                Edad: {{ calcEdad(form.fecha_nacimiento) }} años
+              </p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">Teléfono</label>
+              <input type="tel" [(ngModel)]="form.telefono" name="t_telefono" placeholder="Ej: 3001234567"
+                class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Información Laboral -->
+        <div>
+          <h4 class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="briefcase-outline" class="text-sm text-brand-primary"></ion-icon>
+            Información Laboral
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">Fecha de Ingreso</label>
+              <input type="date" [(ngModel)]="form.fecha_ingreso" name="t_ingreso" class="form-input">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">Cargo</label>
+              <input type="text" [(ngModel)]="form.cargo" name="t_cargo" placeholder="Ej: Operario de planta"
+                class="form-input">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">Área de Trabajo</label>
+              <input type="text" [(ngModel)]="form.area_trabajo" name="t_area" placeholder="Ej: Producción"
+                class="form-input">
+            </div>
+            <div class="flex items-end">
+              <label class="flex items-center gap-3 cursor-pointer pb-2">
+                <input type="checkbox" [(ngModel)]="form.activo" name="t_activo" class="form-checkbox">
+                <span class="text-xs text-[rgb(var(--color-heading))]">Trabajador activo</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seguridad Social -->
+        <div>
+          <h4 class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
+            <ion-icon name="shield-checkmark-outline" class="text-sm text-brand-primary"></ion-icon>
+            Seguridad Social
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">
+                EPS <span class="text-[10px] text-brand-primary font-normal">({{ epsList().length }})</span>
+              </label>
+              <select [(ngModel)]="form.eps" name="t_eps" class="form-input">
+                <option value="">-- Seleccionar EPS --</option>
+                <option *ngIf="form.eps && !isItemInList(form.eps, epsList())" [value]="form.eps">
+                  {{ form.eps }} (Actual)
+                </option>
+                <option *ngFor="let item of epsList()" [value]="item.nombre">
+                  {{ item.nombre }} {{ item.regimen ? '• ' + item.regimen : '' }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">
+                ARL <span class="text-[10px] text-brand-primary font-normal">({{ arlList().length }})</span>
+              </label>
+              <select [(ngModel)]="form.arl" name="t_arl" class="form-input">
+                <option value="">-- Seleccionar ARL --</option>
+                <option *ngIf="form.arl && !isItemInList(form.arl, arlList())" [value]="form.arl">
+                  {{ form.arl }} (Actual)
+                </option>
+                <option *ngFor="let item of arlList()" [value]="item.nombre">
+                  {{ item.nombre }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-dark-text mb-1">
+                Fondo de Pensiones <span class="text-[10px] text-brand-primary font-normal">({{ pensionesList().length }})</span>
+              </label>
+              <select [(ngModel)]="form.fondo_pensiones" name="t_pensiones" class="form-input">
+                <option value="">-- Seleccionar Fondo --</option>
+                <option *ngIf="form.fondo_pensiones && !isItemInList(form.fondo_pensiones, pensionesList())" [value]="form.fondo_pensiones">
+                  {{ form.fondo_pensiones }} (Actual)
+                </option>
+                <option *ngFor="let item of pensionesList()" [value]="item.nombre">
+                  {{ item.nombre }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+      <button (click)="closeFormModal()"
+        class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        Cancelar
+      </button>
+      <button (click)="saveTrabajador()" [disabled]="!form.documento || !form.nombre"
+        class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ selectedTrabajador ? 'Guardar Cambios' : 'Registrar Trabajador' }}
+      </button>
+    </div>
+  </div>
+</div>

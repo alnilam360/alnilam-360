@@ -78,6 +78,49 @@ export interface Sede {
     updated_at?: string;
 }
 
+export interface Trabajador {
+    id?: string;
+    empresa_id: string;
+    sede_id: string;
+    documento: string;
+    nombre: string;
+    fecha_nacimiento?: string | null;
+    fecha_ingreso?: string | null;
+    cargo?: string | null;
+    area_trabajo?: string | null;
+    eps?: string | null;
+    arl?: string | null;
+    fondo_pensiones?: string | null;
+    telefono?: string | null;
+    activo: boolean;
+    created_at?: string;
+    updated_at?: string;
+    // Join embebido (opcional)
+    sede?: Partial<Sede> | null;
+}
+
+/** Calcula edad en años a partir de fecha ISO. */
+export function calcularEdad(fechaNacimiento: string | null | undefined): number | null {
+    if (!fechaNacimiento) return null;
+    const hoy = new Date();
+    const nac = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const mes = hoy.getMonth() - nac.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+}
+
+export interface CatalogoSeguridadSocial {
+    id?: string;
+    tipo: 'EPS' | 'ARL' | 'PENSION';
+    codigo?: string | null;
+    nombre: string;
+    sigla?: string | null;
+    regimen?: string | null;
+    orden: number;
+    activo: boolean;
+}
+
 export interface Usuario {
     id?: string;
     auth_id?: string;
@@ -111,7 +154,11 @@ export interface RolPermiso {
     rol_id: string;
     modulo_id: string;
     puede_ver: boolean;
+    puede_crear?: boolean;
+    puede_editar?: boolean;
+    puede_eliminar?: boolean;
     created_at?: string;
+    updated_at?: string;
 }
 
 export interface UsuarioSede {
@@ -132,4 +179,14 @@ export interface Municipio {
     nombre: string;
     codigo: string;
     departamento_id: string;
+}
+
+export interface CatalogoCie10 {
+    id?: string;
+    codigo: string;
+    descripcion: string;
+    capitulo?: string | null;
+    es_frecuente: boolean;
+    activo: boolean;
+    created_at?: string;
 }

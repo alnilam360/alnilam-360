@@ -32,6 +32,10 @@ export class EmpresasComponent implements OnInit {
   selectedEmpresa: Empresa | null = null;
   selectedSede: Sede | null = null;
 
+  // Trabajadores por sede
+  showTrabajadoresModal = false;
+  selectedSedeForTrabajadores: Sede | null = null;
+
   formEmpresa: Partial<Empresa> = this.getEmptyEmpresa();
   formSede: Partial<Sede> = this.getEmptySede();
 
@@ -397,8 +401,24 @@ export class EmpresasComponent implements OnInit {
       if (this.selectedEmpresa?.id) {
         await this.loadSedes(this.selectedEmpresa.id);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting sede:', error);
+      const msg = error?.message || '';
+      if (msg.includes('violates foreign key constraint') && msg.includes('trabajadores')) {
+        alert('No se puede eliminar: la sede tiene trabajadores registrados. Elimine o reasigne los trabajadores primero.');
+      }
     }
+  }
+
+  // ==================== TRABAJADORES MODAL ====================
+
+  openTrabajadoresModal(sede: Sede): void {
+    this.selectedSedeForTrabajadores = sede;
+    this.showTrabajadoresModal = true;
+  }
+
+  closeTrabajadoresModal(): void {
+    this.showTrabajadoresModal = false;
+    this.selectedSedeForTrabajadores = null;
   }
 }

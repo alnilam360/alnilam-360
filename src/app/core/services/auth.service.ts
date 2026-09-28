@@ -69,21 +69,38 @@ export class AuthService implements OnDestroy {
             throw this.mapAuthError(error);
         }
 
-        // Emitir estado autenticado INMEDIATAMENTE (sin esperar perfil)
+        // VALIDACIÓN DE SEGURIDAD ESTRICTA:
+        // Verificar que el usuario exista en la tabla de usuarios autorizados (public.usuarios)
+        const perfil = await this.loadUserProfile(data.user.id, data.user.email);
+
+        if (!perfil) {
+            console.error('[AuthService] Intento de acceso bloqueado: Usuario sin registro en public.usuarios (eliminado).');
+            await this.sb.client.auth.signOut();
+            this._authState$.next({ ...INITIAL_AUTH_STATE, isLoading: false, isReady: true });
+            throw new Error('Acceso denegado: El usuario no está registrado en el sistema o ha sido eliminado.');
+        }
+
+        if (perfil.estado === false) {
+            console.error('[AuthService] Intento de acceso bloqueado: Cuenta inactiva.');
+            await this.sb.client.auth.signOut();
+            this._authState$.next({ ...INITIAL_AUTH_STATE, isLoading: false, isReady: true });
+            throw new Error('Acceso denegado: Tu cuenta de usuario se encuentra inactiva. Contacta al administrador.');
+        }
+
+        // Emitir estado autenticado con el perfil verificado
         this._authState$.next({
             user: data.user,
             session: data.session,
-            perfil: null,
+            perfil,
             isLoading: false,
             isReady: true
         });
         this.markReady();
-
-        // Cargar perfil en background
-        this.loadProfileInBackground(data.user.id, data.session);
+        this.emitProfile(perfil);
 
         return data.user;
     }
+
 
     async signUp(email: string, password: string): Promise<User | null> {
         const { data, error } = await this.sb.client.auth.signUp({ email, password });
@@ -222,25 +239,40 @@ export class AuthService implements OnDestroy {
     }
 
     /**
-     * Carga perfil sin bloquear. Si falla, no rompe nada.
+     * Carga perfil y valida autorización. Si el usuario fue eliminado o está inactivo,
+     * se invalida la sesión de inmediato y se expulsa al usuario al login.
      */
     private loadProfileInBackground(authUserId: string, session: Session): void {
-        this.loadUserProfile(authUserId, session.user.email ?? null).then(perfil => {
-            if (perfil) {
-                this._authState$.next({
-                    user: session.user,
-                    session,
-                    perfil,
-                    isLoading: false,
-                    isReady: true
-                });
+        this.loadUserProfile(authUserId, session.user.email ?? null).then(async perfil => {
+            if (!perfil) {
+                console.warn('[AuthService] ⚠️ Sesión no autorizada: Usuario no existe en public.usuarios (eliminado). Cerrando sesión...');
+                await this.signOut();
+                this.emitProfile(null);
+                return;
             }
+
+            if (perfil.estado === false) {
+                console.warn('[AuthService] ⚠️ Sesión no autorizada: Usuario inactivo en public.usuarios. Cerrando sesión...');
+                await this.signOut();
+                this.emitProfile(null);
+                return;
+            }
+
+            this._authState$.next({
+                user: session.user,
+                session,
+                perfil,
+                isLoading: false,
+                isReady: true
+            });
             this.emitProfile(perfil);
-        }).catch(err => {
-            console.warn('[AuthService] Error cargando perfil (no bloqueante):', err);
+        }).catch(async err => {
+            console.warn('[AuthService] Error cargando perfil:', err);
+            await this.signOut();
             this.emitProfile(null);
         });
     }
+
 
     private emitProfile(perfil: Usuario | null): void {
         this.profileEmitted = true;

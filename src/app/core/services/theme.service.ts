@@ -26,9 +26,22 @@ export class ThemeService {
     this.themeSubject.next(theme);
     localStorage.setItem(this.storageKey, theme);
 
+    const root = this.document.documentElement;
     const body = this.document.body;
-    body.classList.remove('theme-dark', 'theme-light');
-    body.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+
+    root.classList.remove('theme-dark', 'theme-light', 'ion-palette-dark');
+    body.classList.remove('theme-dark', 'theme-light', 'ion-palette-dark');
+
+    const themeClass = theme === 'dark' ? 'theme-dark' : 'theme-light';
+    root.classList.add(themeClass);
+    body.classList.add(themeClass);
+
+    if (theme === 'dark') {
+      root.classList.add('ion-palette-dark');
+      body.classList.add('ion-palette-dark');
+    }
+
+    root.setAttribute('data-theme', theme);
     body.setAttribute('data-theme', theme);
   }
 }

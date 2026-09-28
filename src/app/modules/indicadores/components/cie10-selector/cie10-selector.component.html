@@ -1,0 +1,90 @@
+<div class="space-y-1.5 text-xs">
+  <div class="flex items-center justify-between">
+    <label class="block text-dark-text font-medium">
+      {{ label }} <span *ngIf="required" class="text-rose-400">*</span>
+    </label>
+    <button type="button" (click)="toggleModoManual()"
+            class="text-[10px] px-2 py-0.5 rounded-full transition border border-dark-border"
+            [ngClass]="modoManual ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'bg-dark-accent text-dark-text hover:text-brand-primary'">
+      {{ modoManual ? '← Buscar en Catálogo CIE-10' : 'Entrada manual' }}
+    </button>
+  </div>
+
+  <!-- MODO CATÁLOGO CIE-10 (BÚSQUEDA ASISTIDA) -->
+  <ng-container *ngIf="!modoManual">
+    <!-- 1. DIAGNÓSTICO SELECCIONADO (Tarjeta resumen) -->
+    <div *ngIf="codigo" class="flex items-center gap-2.5 p-2.5 bg-brand-primary/10 border border-brand-primary/30 rounded-lg">
+      <span class="px-2 py-1 bg-brand-primary text-white font-mono font-bold text-xs rounded shadow-sm">
+        {{ codigo }}
+      </span>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold text-[rgb(var(--color-heading))] truncate">{{ diagnostico }}</p>
+        <p class="text-[10px] text-dark-text">Clasificación Internacional de Enfermedades (CIE-10)</p>
+      </div>
+      <button type="button" (click)="limpiar()" class="p-1 text-dark-text hover:text-rose-400 transition" title="Cambiar diagnóstico">
+        <ion-icon name="close-circle-outline" class="text-base"></ion-icon>
+      </button>
+    </div>
+
+    <!-- 2. CAMPO DE BÚSQUEDA Y DROPDOWN -->
+    <div *ngIf="!codigo" class="relative">
+      <div class="relative">
+        <input type="text" [(ngModel)]="query"
+               (focus)="onFocus()"
+               (blur)="onBlur()"
+               (input)="onSearchChange()"
+               placeholder="Buscar por código (ej: M545, G560) o nombre (ej: lumbago, túnel, esguince)..."
+               class="form-input pr-8">
+        <div class="absolute right-2.5 top-2 text-dark-text pointer-events-none">
+          <ion-icon *ngIf="!buscando" name="search-outline"></ion-icon>
+          <div *ngIf="buscando" class="w-3.5 h-3.5 border-2 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+
+      <!-- DROPDOWN DE RESULTADOS -->
+      <div *ngIf="mostrarDropdown && resultados.length > 0"
+           class="absolute z-20 w-full mt-1 bg-dark-secondary border border-dark-border rounded-xl shadow-2xl max-h-56 overflow-y-auto divide-y divide-dark-border/40">
+        <div class="px-3 py-1.5 bg-dark-primary/60 text-[10px] font-semibold text-dark-text uppercase tracking-wider flex items-center justify-between">
+          <span>{{ query.trim() ? 'Resultados (' + resultados.length + ')' : 'Diagnósticos Frecuentes en SST' }}</span>
+          <span class="text-[9px] text-brand-primary">12.422 Códigos</span>
+        </div>
+        <button *ngFor="let item of resultados" type="button"
+                (mousedown)="seleccionar(item)"
+                class="w-full text-left px-3 py-2 hover:bg-dark-accent transition flex items-center gap-2 group">
+          <span class="font-mono font-bold text-brand-primary text-xs px-1.5 py-0.5 bg-dark-primary rounded border border-dark-border">
+            {{ item.codigo }}
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs text-[rgb(var(--color-heading))] group-hover:text-brand-primary truncate">
+              {{ item.descripcion }}
+            </p>
+          </div>
+          <span *ngIf="item.es_frecuente" class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/15 text-emerald-400 font-medium">
+            Frecuente SST
+          </span>
+        </button>
+      </div>
+
+      <div *ngIf="mostrarDropdown && !buscando && query.trim() && resultados.length === 0"
+           class="absolute z-20 w-full mt-1 p-3 bg-dark-secondary border border-dark-border rounded-xl text-center text-xs text-dark-text shadow-xl">
+        No se encontraron diagnósticos para "{{ query }}". Puede usar "Entrada manual".
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- MODO ENTRADA MANUAL -->
+  <ng-container *ngIf="modoManual">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 bg-dark-primary/30 border border-dark-border rounded-lg">
+      <div>
+        <label class="block text-[10px] text-dark-text mb-0.5">Código CIE-10</label>
+        <input type="text" [ngModel]="codigo" (ngModelChange)="onManualCodigoChange($event)"
+               placeholder="Ej: M545" class="form-input font-mono">
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-[10px] text-dark-text mb-0.5">Descripción del Diagnóstico</label>
+        <input type="text" [ngModel]="diagnostico" (ngModelChange)="onManualDiagnosticoChange($event)"
+               placeholder="Nombre de la enfermedad o lesión" class="form-input">
+      </div>
+    </div>
+  </ng-container>
+</div>

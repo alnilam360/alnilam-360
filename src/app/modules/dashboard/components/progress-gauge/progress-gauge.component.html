@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between mb-3 sm:mb-4">
     <div>
-      <h3 class="text-base sm:text-lg font-semibold text-white">Cumplimiento SST</h3>
+      <h3 class="text-base sm:text-lg font-semibold text-[rgb(var(--color-heading))]">Cumplimiento SST</h3>
       <p class="text-xs sm:text-sm text-dark-text">{{ description }}</p>
     </div>
     <button class="p-1.5 rounded-lg hover:bg-dark-accent text-dark-text hidden sm:block">
@@ -21,7 +21,7 @@
           cy="50"
           r="40"
           fill="none"
-          stroke="#313442"
+          stroke="rgb(var(--color-dark-border))"
           stroke-width="8"
           stroke-linecap="round"
           stroke-dasharray="188.4"
@@ -72,7 +72,7 @@
       <div *ngFor="let detail of details" class="text-center">
         <p class="text-[10px] sm:text-xs text-dark-text mb-0.5 sm:mb-1">{{ detail.label }}</p>
         <div class="flex items-center justify-center gap-0.5 sm:gap-1">
-          <span class="text-sm sm:text-base md:text-lg font-semibold text-white">{{ detail.value }}</span>
+          <span class="text-sm sm:text-base md:text-lg font-semibold text-[rgb(var(--color-heading))]">{{ detail.value }}</span>
           <ion-icon 
             *ngIf="detail.trend === 'up'"
             name="trending-up-outline" 

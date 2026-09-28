@@ -1,14 +1,25 @@
 <div class="space-y-4">
 
   <!-- Barra superior -->
-  <div class="flex items-center justify-between gap-2">
-    <p class="text-xs text-dark-text">Registro de casos de accidentes e incidentes</p>
-    <button (click)="abrirWizard()"
-            class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25">
-      <ion-icon name="add-outline" class="text-lg"></ion-icon>
-      <span>Reportar caso</span>
-    </button>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <p class="text-xs text-dark-text">Registro de casos de accidentes e incidentes de trabajo</p>
+    <div class="flex items-center gap-2">
+      <button (click)="exportarExcel()" [disabled]="exportandoExcel() || casos().length === 0"
+              title="Descargar matriz filtrada en archivo Excel (.xlsx)"
+              class="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs sm:text-sm rounded-xl font-medium transition-all shadow-md shadow-emerald-600/20">
+        <ion-icon [name]="exportandoExcel() ? 'sync-outline' : 'download-outline'"
+                  [class.animate-spin]="exportandoExcel()" class="text-base"></ion-icon>
+        <span>{{ exportandoExcel() ? 'Generando...' : 'Exportar Excel' }}</span>
+      </button>
+
+      <button (click)="abrirWizard()"
+              class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs sm:text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25">
+        <ion-icon name="add-outline" class="text-base"></ion-icon>
+        <span>Reportar caso</span>
+      </button>
+    </div>
   </div>
+
 
   <!-- Filtros -->
   <div class="bg-dark-secondary border border-dark-border rounded-xl p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">

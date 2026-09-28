@@ -115,10 +115,18 @@ export class UsuariosService {
     }
 
     async deleteUsuario(id: string): Promise<void> {
-        const { error } = await this.sb.client
-            .from('usuarios')
-            .delete()
-            .eq('id', id);
-        if (error) throw error;
+        try {
+            // Intentar primero vía RPC segura que elimina atómicamente de public.usuarios y auth.users
+            const { data, error } = await this.sb.client.rpc('eliminar_usuario', { p_usuario_id: id });
+            if (error) throw error;
+        } catch (rpcError) {
+            console.warn('Fallback a delete directo sobre public.usuarios (el trigger en DB sincroniza con auth.users):', rpcError);
+            const { error } = await this.sb.client
+                .from('usuarios')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+        }
     }
 }
+

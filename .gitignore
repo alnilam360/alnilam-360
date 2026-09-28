@@ -71,3 +71,13 @@ Thumbs.db
 
 .vercel
 .env*.local
+.mcp.json
+
+# Local agent artifacts & external tools
+.agent/
+agent/
+.kiro/
+
+# Data sheets & Excel
+*.xlsx
+*.xls

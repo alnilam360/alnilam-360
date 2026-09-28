@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
             <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">Configuración de Roles</h2>
-            <p class="text-xs text-dark-text mt-0.5">Administre los roles y permisos de acceso a los módulos</p>
+            <p class="text-xs text-dark-text mt-0.5">Administre los roles y configure permisos detallados de lectura, creación, modificación y eliminación por módulo</p>
         </div>
         <button (click)="openModal()"
             class="flex items-center gap-2 px-3 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
@@ -43,7 +43,7 @@
                     </th>
                     <th>Descripción</th>
                     <th>Empresa</th>
-                    <th class="text-center">Módulos</th>
+                    <th class="text-center">Permisos Asignados</th>
                 </tr>
             </ng-template>
 
@@ -52,7 +52,7 @@
                 <tr>
                     <td class="text-center">
                         <div class="flex items-center justify-center gap-1">
-                            <button (click)="openModal(rol)" title="Editar rol"
+                            <button (click)="openModal(rol)" title="Editar rol y permisos"
                                 class="p-1 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
                                 <ion-icon name="create-outline" class="text-base"></ion-icon>
                             </button>
@@ -78,7 +78,11 @@
                         <span class="text-xs text-[rgb(var(--color-heading))]">{{ getEmpresaNombre(rol) }}</span>
                     </td>
                     <td class="text-center">
-                        <p-tag [value]="'Configurado'" severity="info"></p-tag>
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                            <p-tag [value]="(rolesPermisosSummary[rol.id]?.total || 0) + ' módulos'" severity="info"></p-tag>
+                            <p-tag *ngIf="rolesPermisosSummary[rol.id]?.escritura"
+                                [value]="rolesPermisosSummary[rol.id]?.escritura + ' con escritura'" severity="success"></p-tag>
+                        </div>
                     </td>
                 </tr>
             </ng-template>
@@ -101,38 +105,45 @@
 
 <!-- Modal Crear/Editar Rol -->
 <div *ngIf="showModal"
-    class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+    class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-sm p-3 sm:p-4"
     (click)="closeModal()">
-    <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    <div class="relative w-full max-w-5xl my-4 sm:my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]"
         (click)="$event.stopPropagation()">
 
         <!-- Modal Header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
-            <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">
-                {{ selectedRol ? 'Editar Rol' : 'Nuevo Rol' }}
-            </h3>
+        <div class="flex items-center justify-between px-5 py-3.5 border-b border-dark-border bg-dark-primary/60">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-brand-primary/20 flex items-center justify-center text-brand-primary">
+                    <ion-icon name="shield-checkmark" class="text-lg"></ion-icon>
+                </div>
+                <div>
+                    <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">
+                        {{ selectedRol ? 'Editar Rol y Matriz de Permisos' : 'Nuevo Rol y Asignación de Permisos' }}
+                    </h3>
+                    <p class="text-[11px] text-dark-text">Defina el alcance del rol y las operaciones permitidas por módulo</p>
+                </div>
+            </div>
             <button (click)="closeModal()"
                 class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
-                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+                <ion-icon name="close-outline" class="text-xl"></ion-icon>
             </button>
         </div>
 
-        <!-- Modal Body -->
-        <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
-            <form class="space-y-5">
+        <!-- Modal Body (Scrollable) -->
+        <div class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-5">
+            <form class="space-y-5" (submit)="$event.preventDefault()">
 
                 <!-- Sección: Información del Rol -->
-                <div class="form-section">
-                    <h4
-                        class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-                        <ion-icon name="shield-outline" class="text-base text-brand-primary"></ion-icon>
-                        Información del Rol
+                <div class="p-4 rounded-xl bg-dark-primary/40 border border-dark-border/70">
+                    <h4 class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[rgb(var(--color-heading))] mb-3">
+                        <ion-icon name="information-circle-outline" class="text-sm text-brand-primary"></ion-icon>
+                        Información General
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                         <div class="form-group">
                             <label class="block text-xs font-medium text-dark-text mb-1">Nombre del Rol *</label>
                             <input type="text" [(ngModel)]="formRol.nombre" name="nombre"
-                                placeholder="Ej: Administrador, Coordinador SST..." class="form-input">
+                                placeholder="Ej: Administrador, Coordinador SST, Auditor..." class="form-input">
                         </div>
                         <div class="form-group">
                             <label class="block text-xs font-medium text-dark-text mb-1">Empresa *</label>
@@ -144,49 +155,220 @@
                         <div class="form-group md:col-span-2">
                             <label class="block text-xs font-medium text-dark-text mb-1">Descripción</label>
                             <textarea [(ngModel)]="formRol.descripcion" name="descripcion" rows="2"
-                                placeholder="Descripción breve del rol y sus responsabilidades..."
+                                placeholder="Describa el alcance de este rol dentro del sistema..."
                                 class="form-input resize-none"></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sección: Permisos de Módulos -->
-                <div class="form-section">
-                    <div class="flex items-center justify-between mb-3 pb-1.5 border-b border-dark-border">
-                        <h4 class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))]">
-                            <ion-icon name="key-outline" class="text-base text-brand-primary"></ion-icon>
-                            Permisos de Acceso a Módulos
-                        </h4>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" [checked]="allSelected" [indeterminate]="someSelected"
-                                (change)="toggleSelectAll($any($event.target).checked)" class="form-checkbox">
-                            <span class="text-xs text-dark-text">Seleccionar todos</span>
-                        </label>
+                <!-- Sección: Matriz Granular de Permisos -->
+                <div class="p-4 rounded-xl bg-dark-primary/40 border border-dark-border/70 space-y-3">
+                    <!-- Toolbar Superior de la Matriz -->
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-3 border-b border-dark-border/60">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <ion-icon name="key-outline" class="text-base text-brand-primary"></ion-icon>
+                                <h4 class="text-xs font-semibold uppercase tracking-wider text-[rgb(var(--color-heading))]">
+                                    Matriz de Permisos por Módulo y Submódulos
+                                </h4>
+                            </div>
+                            <p class="text-[11px] text-dark-text mt-0.5">
+                                Granularidad por operaciones: <strong>Lectura (Ver)</strong>, <strong>Crear</strong>, <strong>Modificar</strong> y <strong>Borrar</strong>.
+                            </p>
+                        </div>
+
+                        <!-- Métricas y Atajos Globales -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="flex items-center gap-1.5 text-[11px] bg-dark-secondary px-2.5 py-1 rounded-lg border border-dark-border text-dark-text mr-1">
+                                <span>Ver: <strong class="text-blue-400">{{ activosVerCount }}</strong>/{{ totalModulosCount }}</span>
+                                <span class="text-dark-border">|</span>
+                                <span>Escritura: <strong class="text-emerald-400">{{ activosEscrituraCount }}</strong></span>
+                            </div>
+
+                            <button type="button" (click)="setAllGlobal('full')"
+                                class="px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition-all flex items-center gap-1">
+                                <ion-icon name="checkmark-done-outline"></ion-icon>
+                                <span>Acceso Total</span>
+                            </button>
+                            <button type="button" (click)="setAllGlobal('readonly')"
+                                class="px-2.5 py-1 text-xs font-medium rounded-md bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 border border-blue-500/30 transition-all flex items-center gap-1">
+                                <ion-icon name="eye-outline"></ion-icon>
+                                <span>Solo Lectura</span>
+                            </button>
+                            <button type="button" (click)="setAllGlobal('none')"
+                                class="px-2.5 py-1 text-xs font-medium rounded-md bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/30 transition-all flex items-center gap-1">
+                                <ion-icon name="close-outline"></ion-icon>
+                                <span>Limpiar</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <p class="text-xs text-dark-text mb-3">
-                        Seleccione los módulos del menú a los que este rol tendrá acceso:
-                    </p>
+                    <!-- Buscador rápido y control de colapso -->
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="relative flex-1 max-w-sm">
+                            <ion-icon name="search-outline"
+                                class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-sm z-10"></ion-icon>
+                            <input type="text" [(ngModel)]="moduloSearchTerm" name="moduloSearchTerm"
+                                placeholder="Filtrar módulos o submódulos..."
+                                class="w-full pl-8 pr-7 py-1.5 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary">
+                            <button *ngIf="moduloSearchTerm" type="button" (click)="moduloSearchTerm = ''"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-dark-text hover:text-white">
+                                <ion-icon name="close-circle" class="text-sm"></ion-icon>
+                            </button>
+                        </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <label *ngFor="let modulo of modulosPermisos"
-                            class="flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer"
-                            [class.border-brand-primary]="modulo.puede_ver"
-                            [class.bg-brand-primary/5]="modulo.puede_ver" [class.border-dark-border]="!modulo.puede_ver"
-                            [class.bg-dark-primary]="!modulo.puede_ver"
-                            [class.hover:border-brand-primary/50]="!modulo.puede_ver">
-                            <input type="checkbox" [(ngModel)]="modulo.puede_ver" [name]="'modulo_' + modulo.id"
-                                class="form-checkbox">
-                            <div class="flex items-center gap-2 flex-1">
-                                <ion-icon [name]="modulo.icon" class="text-lg"
-                                    [class.text-brand-primary]="modulo.puede_ver"
-                                    [class.text-dark-text]="!modulo.puede_ver"></ion-icon>
-                                <span class="text-sm" [class.text-white]="modulo.puede_ver"
-                                    [class.text-dark-text]="!modulo.puede_ver">
-                                    {{ modulo.label }}
-                                </span>
-                            </div>
-                        </label>
+                        <button type="button" (click)="toggleExpandAll()"
+                            class="text-[11px] text-dark-text hover:text-[rgb(var(--color-heading))] flex items-center gap-1 py-1 px-2 rounded hover:bg-dark-accent transition-colors">
+                            <ion-icon [name]="isAllExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+                            <span>{{ isAllExpanded ? 'Colapsar todo' : 'Expandir todo' }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Tabla de la Matriz de Permisos -->
+                    <div class="overflow-x-auto border border-dark-border/80 rounded-xl bg-dark-secondary/60">
+                        <table class="w-full text-left border-collapse permissions-table">
+                            <thead>
+                                <tr class="border-b border-dark-border bg-dark-accent/60 text-[11px] font-semibold text-dark-text uppercase tracking-wider">
+                                    <th class="py-2.5 px-3">Módulo / Submódulo</th>
+                                    <th class="py-2.5 px-3 text-center w-20">
+                                        <span class="text-blue-400">Ver</span>
+                                        <span class="block text-[9px] lowercase font-normal opacity-70">(lectura)</span>
+                                    </th>
+                                    <th class="py-2.5 px-3 text-center w-20">
+                                        <span class="text-emerald-400">Crear</span>
+                                        <span class="block text-[9px] lowercase font-normal opacity-70">(nuevo)</span>
+                                    </th>
+                                    <th class="py-2.5 px-3 text-center w-20">
+                                        <span class="text-amber-400">Modificar</span>
+                                        <span class="block text-[9px] lowercase font-normal opacity-70">(editar)</span>
+                                    </th>
+                                    <th class="py-2.5 px-3 text-center w-20">
+                                        <span class="text-red-400">Borrar</span>
+                                        <span class="block text-[9px] lowercase font-normal opacity-70">(eliminar)</span>
+                                    </th>
+                                    <th class="py-2.5 px-3 text-center w-28">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-dark-border/40 text-xs">
+                                <tr *ngFor="let item of filteredModulos"
+                                    class="hover:bg-dark-accent/30 transition-colors group"
+                                    [class.bg-slate-800/35]="item.level === 0"
+                                    [class.bg-slate-900/10]="item.level > 0">
+
+                                    <!-- Columna Jerarquía: Módulo / Submódulo -->
+                                    <td class="py-2 px-3">
+                                        <div class="flex items-center gap-2"
+                                            [style.padding-left.rem]="item.level * 1.5">
+
+                                            <!-- Botón expandir si tiene hijos -->
+                                            <button *ngIf="item.hasChildren" type="button"
+                                                (click)="toggleExpandItem(item, $event)"
+                                                class="w-5 h-5 flex items-center justify-center rounded hover:bg-dark-accent text-dark-text hover:text-white transition-colors flex-shrink-0">
+                                                <ion-icon [name]="item.expanded ? 'chevron-down-outline' : 'chevron-forward-outline'" class="text-xs"></ion-icon>
+                                            </button>
+                                            <!-- Espaciador si no tiene hijos pero está en subnivel -->
+                                            <span *ngIf="!item.hasChildren && item.level > 0" class="w-5 flex-shrink-0 flex items-center justify-center text-dark-text/40">
+                                                └─
+                                            </span>
+                                            <span *ngIf="!item.hasChildren && item.level === 0" class="w-5 flex-shrink-0"></span>
+
+                                            <!-- Icono -->
+                                            <div class="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                                                [class.bg-brand-primary/20]="item.puede_ver"
+                                                [class.text-brand-primary]="item.puede_ver"
+                                                [class.bg-dark-accent]="!item.puede_ver"
+                                                [class.text-dark-text]="!item.puede_ver">
+                                                <ion-icon [name]="item.icon" class="text-sm"></ion-icon>
+                                            </div>
+
+                                            <!-- Label y badges -->
+                                            <div class="flex flex-col min-w-0">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="truncate font-medium"
+                                                        [class.text-[rgb(var(--color-heading))]]="item.puede_ver"
+                                                        [class.text-dark-text]="!item.puede_ver"
+                                                        [class.font-semibold]="item.level === 0">
+                                                        {{ item.label }}
+                                                    </span>
+
+                                                    <!-- Badges de contexto -->
+                                                    <span *ngIf="item.level === 0 && item.hasChildren"
+                                                        class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 font-semibold uppercase">
+                                                        Grupo
+                                                    </span>
+                                                    <span *ngIf="item.level === 2"
+                                                        class="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-300 font-medium">
+                                                        Detalle
+                                                    </span>
+                                                </div>
+
+                                                <span *ngIf="item.route" class="text-[10px] text-dark-text/60 truncate font-mono">
+                                                    {{ item.route }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Switch/Checkbox Ver (Lectura) -->
+                                    <td class="py-2 px-3 text-center">
+                                        <label class="inline-flex items-center justify-center cursor-pointer p-1">
+                                            <input type="checkbox" [(ngModel)]="item.puede_ver"
+                                                [name]="'ver_' + item.id"
+                                                (change)="onVerChange(item)"
+                                                class="form-checkbox check-ver">
+                                        </label>
+                                    </td>
+
+                                    <!-- Checkbox Crear -->
+                                    <td class="py-2 px-3 text-center">
+                                        <label class="inline-flex items-center justify-center cursor-pointer p-1">
+                                            <input type="checkbox" [(ngModel)]="item.puede_crear"
+                                                [name]="'crear_' + item.id"
+                                                (change)="onAccionChange(item)"
+                                                class="form-checkbox check-crear">
+                                        </label>
+                                    </td>
+
+                                    <!-- Checkbox Modificar -->
+                                    <td class="py-2 px-3 text-center">
+                                        <label class="inline-flex items-center justify-center cursor-pointer p-1">
+                                            <input type="checkbox" [(ngModel)]="item.puede_editar"
+                                                [name]="'editar_' + item.id"
+                                                (change)="onAccionChange(item)"
+                                                class="form-checkbox check-editar">
+                                        </label>
+                                    </td>
+
+                                    <!-- Checkbox Borrar -->
+                                    <td class="py-2 px-3 text-center">
+                                        <label class="inline-flex items-center justify-center cursor-pointer p-1">
+                                            <input type="checkbox" [(ngModel)]="item.puede_eliminar"
+                                                [name]="'eliminar_' + item.id"
+                                                (change)="onAccionChange(item)"
+                                                class="form-checkbox check-eliminar">
+                                        </label>
+                                    </td>
+
+                                    <!-- Acciones Rápidas de Fila -->
+                                    <td class="py-2 px-3 text-center">
+                                        <div class="inline-flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                                            <button type="button" (click)="setRowFull(item)" title="Otorgar acceso completo"
+                                                class="px-1.5 py-0.5 text-[10px] rounded bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
+                                                Todo
+                                            </button>
+                                            <button type="button" (click)="setRowReadOnly(item)" title="Solo ver"
+                                                class="px-1.5 py-0.5 text-[10px] rounded bg-blue-500/15 text-blue-400 hover:bg-blue-500/25">
+                                                Ver
+                                            </button>
+                                            <button type="button" (click)="setRowNone(item)" title="Quitar permisos"
+                                                class="px-1.5 py-0.5 text-[10px] rounded bg-red-500/15 text-red-400 hover:bg-red-500/25">
+                                                0
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -194,15 +376,21 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
-            <button (click)="closeModal()"
-                class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
-                Cancelar
-            </button>
-            <button (click)="saveRol()"
-                class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
-                {{ selectedRol ? 'Guardar Cambios' : 'Crear Rol' }}
-            </button>
+        <div class="flex items-center justify-between px-5 py-3 border-t border-dark-border bg-dark-primary/60">
+            <div class="text-[11px] text-dark-text hidden sm:block">
+                <span>{{ activosVerCount }} módulos visibles configurados</span>
+            </div>
+            <div class="flex items-center gap-2 ml-auto">
+                <button (click)="closeModal()" type="button"
+                    class="px-3.5 py-2 text-xs font-medium rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+                    Cancelar
+                </button>
+                <button (click)="saveRol()" type="button"
+                    class="px-4 py-2 text-xs font-medium rounded-lg bg-brand-primary hover:bg-blue-600 text-white transition-all duration-200 shadow-lg shadow-brand-primary/25 flex items-center gap-1.5">
+                    <ion-icon name="save-outline" class="text-sm"></ion-icon>
+                    <span>{{ selectedRol ? 'Guardar Cambios' : 'Crear Rol' }}</span>
+                </button>
+            </div>
         </div>
     </div>
-</div>
+</div>

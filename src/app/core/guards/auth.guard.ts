@@ -23,10 +23,20 @@ export class AuthGuard implements CanActivate {
 
         const state = this.authService.currentAuthState;
 
-        if (state.session && state.user) {
-            return true;
+        if (!state.session || !state.user) {
+            return this.router.createUrlTree(['/auth']);
         }
 
-        return this.router.createUrlTree(['/auth']);
+        // VALIDACIÓN ESTRICTA: El usuario debe existir en public.usuarios y estar activo
+        const perfil = await this.authService.waitForProfile(5000);
+
+        if (!perfil || perfil.estado === false) {
+            console.warn('[AuthGuard] Acceso denegado: El usuario no tiene perfil activo o fue eliminado. Forzando logout.');
+            await this.authService.signOut();
+            return this.router.createUrlTree(['/auth']);
+        }
+
+        return true;
     }
 }
+

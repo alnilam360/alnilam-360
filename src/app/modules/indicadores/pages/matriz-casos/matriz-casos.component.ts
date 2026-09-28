@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { MatrizAtCasoService } from '../../../../core/services/matriz-at-caso.service';
+import { IndicadoresExcelService } from '../../../../core/services/indicadores-excel.service';
 import {
   MatrizAtCaso, FiltrosCaso, SedeLite, Gravedad, TipoEvento, EstadoCaso,
 } from '../../../../core/models/matriz-at.model';
@@ -15,6 +16,7 @@ export class MatrizCasosComponent implements OnInit {
   get empresaId() { return this._empresaId; }
 
   @Input() anio = new Date().getFullYear();
+  @Input() empresaNombre = '';
   @Input() filtroInicial: FiltrosCaso = {};
 
   readonly casos = signal<MatrizAtCaso[]>([]);
@@ -23,6 +25,7 @@ export class MatrizCasosComponent implements OnInit {
   readonly wizardOpen = signal(false);
   readonly casoEditar = signal<MatrizAtCaso | null>(null);
   readonly detalle = signal<MatrizAtCaso | null>(null);
+  readonly exportandoExcel = signal(false);
 
   sedes: SedeLite[] = [];
   areas: string[] = [];
@@ -40,7 +43,11 @@ export class MatrizCasosComponent implements OnInit {
     estado: '' as '' | EstadoCaso,
   };
 
-  constructor(public svc: MatrizAtCasoService) {}
+  constructor(
+    public svc: MatrizAtCasoService,
+    private excelSvc: IndicadoresExcelService
+  ) {}
+
 
   async ngOnInit(): Promise<void> {
     this.iniciado = true;
@@ -123,4 +130,22 @@ export class MatrizCasosComponent implements OnInit {
       default: return 'bg-dark-accent text-dark-text';
     }
   }
+
+  async exportarExcel(): Promise<void> {
+    try {
+      this.exportandoExcel.set(true);
+      await this.excelSvc.exportarMatrizCasos(
+        this.casos(),
+        this.sedes,
+        this.empresaNombre,
+        this.anio
+      );
+    } catch (err: any) {
+      console.error('Error exportando matriz de casos:', err);
+      alert('Ocurrió un error al exportar la matriz a Excel: ' + (err?.message || err));
+    } finally {
+      this.exportandoExcel.set(false);
+    }
+  }
 }
+

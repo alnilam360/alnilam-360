@@ -42,26 +42,16 @@
                   [ngClass]="form.tipo_evento === 'incidente_casi_accidente' ? 'bg-cyan-600 text-white' : 'text-dark-text'">Incidente / casi-accidente</button>
         </div>
 
-        <label class="block">
-          <span class="text-[11px] text-dark-text">Trabajador *</span>
-          <input [(ngModel)]="form.trabajador_nombre" type="text" placeholder="Nombre completo"
-                 class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
-        </label>
-
+        <!-- Sede (mueve primero para cargar trabajadores) -->
         <div class="grid grid-cols-2 gap-3">
           <label class="block">
-            <span class="text-[11px] text-dark-text">Documento</span>
-            <input [(ngModel)]="form.trabajador_documento" type="text"
-                   class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+            <span class="text-[11px] text-dark-text">Sede</span>
+            <select [ngModel]="form.sede_id" (ngModelChange)="onSedeChange($event)"
+                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+              <option [ngValue]="null">— Sede —</option>
+              <option *ngFor="let s of sedes" [ngValue]="s.id">{{ s.nombre }}<span *ngIf="s.municipio"> · {{ s.municipio }}</span></option>
+            </select>
           </label>
-          <label class="block">
-            <span class="text-[11px] text-dark-text">Cargo</span>
-            <input [(ngModel)]="form.trabajador_cargo" type="text"
-                   class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
-          </label>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
           <label class="block">
             <span class="text-[11px] text-dark-text">Vinculación</span>
             <select [(ngModel)]="form.trabajador_vinculacion"
@@ -69,14 +59,57 @@
               <option *ngFor="let v of vinculaciones" [value]="v">{{ v }}</option>
             </select>
           </label>
-          <label class="block">
-            <span class="text-[11px] text-dark-text">Sede</span>
-            <select [(ngModel)]="form.sede_id"
-                    class="w-full mt-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
-              <option [ngValue]="null">— Sede —</option>
-              <option *ngFor="let s of sedes" [ngValue]="s.id">{{ s.nombre }}<span *ngIf="s.municipio"> · {{ s.municipio }}</span></option>
-            </select>
-          </label>
+        </div>
+
+        <!-- Trabajador: Selección obligatoria por sede -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] text-dark-text font-medium flex items-center gap-1.5">
+              <ion-icon name="people-outline" class="text-brand-primary"></ion-icon> Trabajador registrado *
+            </span>
+            <span class="text-[10px] text-brand-primary/80 font-mono">Solo trabajadores registrados</span>
+          </div>
+
+          <!-- Trabajador seleccionado -->
+          <div *ngIf="trabajadorSeleccionado" class="flex items-center gap-2 p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+            <ion-icon name="person-circle-outline" class="text-emerald-400 text-lg flex-shrink-0"></ion-icon>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-medium text-[rgb(var(--color-heading))]">{{ trabajadorSeleccionado.nombre }}</p>
+              <p class="text-[10px] text-dark-text">
+                C.C. {{ trabajadorSeleccionado.documento }} · {{ trabajadorSeleccionado.cargo || 'Sin cargo' }}
+                <span *ngIf="trabajadorSeleccionado.area_trabajo"> · {{ trabajadorSeleccionado.area_trabajo }}</span>
+              </p>
+            </div>
+            <button type="button" (click)="clearTrabajadorSelection()" class="p-1 text-dark-text hover:text-red-400 transition" title="Cambiar trabajador">
+              <ion-icon name="close-circle-outline" class="text-base"></ion-icon>
+            </button>
+          </div>
+
+          <!-- Búsqueda -->
+          <div *ngIf="!trabajadorSeleccionado" class="relative">
+            <input [(ngModel)]="queryTrabajador" type="text"
+                   [placeholder]="form.sede_id ? (trabajadoresSede.length > 0 ? 'Buscar trabajador registrado por nombre o documento...' : 'No hay trabajadores registrados en esta sede') : 'Seleccione una sede primero para listar trabajadores'"
+                   [disabled]="!form.sede_id || trabajadoresSede.length === 0"
+                   class="w-full px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary disabled:opacity-50">
+            <!-- Dropdown resultados -->
+            <div *ngIf="queryTrabajador && trabajadoresFiltrados.length > 0"
+                 class="absolute z-10 w-full mt-1 bg-dark-secondary border border-dark-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
+              <button *ngFor="let t of trabajadoresFiltrados" type="button" (click)="onTrabajadorSelect(t)"
+                      class="w-full text-left px-3 py-2 hover:bg-dark-accent transition flex items-center gap-2 border-b border-dark-border/30 last:border-0">
+                <ion-icon name="person-outline" class="text-dark-text"></ion-icon>
+                <div class="flex-1">
+                  <p class="text-xs text-[rgb(var(--color-heading))]">{{ t.nombre }}</p>
+                  <p class="text-[10px] text-dark-text">C.C. {{ t.documento }} · {{ t.cargo || '—' }}</p>
+                </div>
+              </button>
+            </div>
+            <p *ngIf="queryTrabajador && trabajadoresFiltrados.length === 0" class="text-[10px] text-amber-400 mt-1 flex items-center gap-1">
+              <ion-icon name="alert-circle-outline"></ion-icon> No se encontró. Si no está registrado en la sede, créelo primero en Empresas > Trabajadores.
+            </p>
+            <p *ngIf="form.sede_id && trabajadoresSede.length === 0" class="text-[10px] text-amber-400/90 mt-1 flex items-center gap-1">
+              <ion-icon name="information-circle-outline"></ion-icon> Esta sede aún no tiene trabajadores activos registrados. Diríjase a Empresas > Trabajadores para crearlos.
+            </p>
+          </div>
         </div>
 
         <label class="block">

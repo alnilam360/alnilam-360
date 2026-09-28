@@ -81,9 +81,15 @@ export class RolesService {
 
     /**
      * Guarda los permisos de un rol.
-     * Elimina todos los permisos existentes y los reinserta.
+     * Elimina todos los permisos existentes y los reinserta con soporte granular CRUD.
      */
-    async savePermisos(rolId: string, permisos: { modulo_id: string; puede_ver: boolean }[]): Promise<void> {
+    async savePermisos(rolId: string, permisos: {
+        modulo_id: string;
+        puede_ver: boolean;
+        puede_crear?: boolean;
+        puede_editar?: boolean;
+        puede_eliminar?: boolean;
+    }[]): Promise<void> {
         // Eliminar permisos existentes
         const { error: deleteError } = await this.sb.client
             .from('roles_permisos')
@@ -91,13 +97,17 @@ export class RolesService {
             .eq('rol_id', rolId);
         if (deleteError) throw deleteError;
 
-        // Insertar solo los que tienen puede_ver = true
+        // Insertar los que tienen al menos un permiso activo
         const permisosActivos = permisos
-            .filter(p => p.puede_ver)
+            .filter(p => p.puede_ver || p.puede_crear || p.puede_editar || p.puede_eliminar)
             .map(p => ({
                 rol_id: rolId,
                 modulo_id: p.modulo_id,
-                puede_ver: true
+                puede_ver: !!p.puede_ver,
+                puede_crear: !!p.puede_crear,
+                puede_editar: !!p.puede_editar,
+                puede_eliminar: !!p.puede_eliminar,
+                updated_at: new Date().toISOString()
             }));
 
         if (permisosActivos.length > 0) {
@@ -109,7 +119,7 @@ export class RolesService {
     }
 
     /**
-     * Obtiene los módulos permitidos para el rol del usuario actual.
+     * Obtiene los módulos permitidos (con acceso de lectura) para el rol del usuario actual.
      */
     async getModulosPermitidos(rolId: string): Promise<string[]> {
         const { data, error } = await this.sb.client
@@ -119,5 +129,22 @@ export class RolesService {
             .eq('puede_ver', true);
         if (error) throw error;
         return (data || []).map(p => p.modulo_id);
+    }
+
+    /**
+     * Retorna un mapa indexado por modulo_id con las facultades CRUD asignadas.
+     */
+    async getPermisosMap(rolId: string): Promise<Record<string, { ver: boolean; crear: boolean; editar: boolean; eliminar: boolean }>> {
+        const permisos = await this.getPermisosByRol(rolId);
+        const map: Record<string, { ver: boolean; crear: boolean; editar: boolean; eliminar: boolean }> = {};
+        for (const p of permisos) {
+            map[p.modulo_id] = {
+                ver: p.puede_ver,
+                crear: !!p.puede_crear,
+                editar: !!p.puede_editar,
+                eliminar: !!p.puede_eliminar
+            };
+        }
+        return map;
     }
 }

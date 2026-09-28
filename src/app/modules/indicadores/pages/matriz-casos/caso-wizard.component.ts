@@ -2,10 +2,12 @@ import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular
 import { Capacitor } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { MatrizAtCasoService } from '../../../../core/services/matriz-at-caso.service';
+import { TrabajadoresService } from '../../../../core/services/trabajadores.service';
 import {
   CatalogoItemAt, SedeLite, Gravedad, TipoEvento, Metodologia, Vinculacion,
   MatrizAtCaso, DIAS_CARGADOS_MUERTE,
 } from '../../../../core/models/matriz-at.model';
+import { Trabajador } from '../../../../core/models/models';
 
 interface AccionForm {
   id?: string;
@@ -48,6 +50,11 @@ export class CasoWizardComponent implements OnInit {
   // Filtros de búsqueda para catálogos FURAT (listas largas)
   q = { agente: '', mecanismo: '', parte: '' };
 
+  // Trabajadores registrados para la sede seleccionada
+  trabajadoresSede: Trabajador[] = [];
+  trabajadorSeleccionado: Trabajador | null = null;
+  queryTrabajador = '';
+
   archivo: File | null = null;
   previewUrl: string | null = null;
 
@@ -81,7 +88,7 @@ export class CasoWizardComponent implements OnInit {
     { k: 'espina_pescado', l: 'Espina de pescado (Ishikawa)' },
   ];
 
-  constructor(private svc: MatrizAtCasoService) {}
+  constructor(private svc: MatrizAtCasoService, private trabajadoresService: TrabajadoresService) {}
 
   async ngOnInit(): Promise<void> {
     try {
@@ -110,6 +117,20 @@ export class CasoWizardComponent implements OnInit {
       // datetime-local necesita 'YYYY-MM-DDTHH:mm' local
       fecha_hora_evento: this.aLocal(c.fecha_hora_evento),
     };
+
+    if (c.sede_id) {
+      this.onSedeChange(c.sede_id).then(() => {
+        if (c.trabajador_id) {
+          this.trabajadorSeleccionado = this.trabajadoresSede.find(t => t.id === c.trabajador_id) || null;
+        } else if (c.trabajador_documento) {
+          this.trabajadorSeleccionado = this.trabajadoresSede.find(t => t.documento === c.trabajador_documento) || null;
+          if (this.trabajadorSeleccionado) {
+            this.form.trabajador_id = this.trabajadorSeleccionado.id;
+          }
+        }
+      });
+    }
+
     if (c.investigacion) {
       const iv = c.investigacion;
       this.investigacion = {
@@ -141,8 +162,71 @@ export class CasoWizardComponent implements OnInit {
   }
 
   // ── Navegación ──
-  avanzar(): void { if (this.paso() < 4) this.paso.set(this.paso() + 1); }
+  avanzar(): void {
+    if (this.paso() === 1) {
+      if (!this.form.sede_id) {
+        this.error.set('Debe seleccionar la sede donde ocurrió el evento.');
+        return;
+      }
+      if (!this.form.trabajador_id) {
+        this.error.set('Debe seleccionar un trabajador registrado en la sede seleccionada.');
+        return;
+      }
+      if (!this.form.fecha_hora_evento) {
+        this.error.set('La fecha y hora del evento son requeridas.');
+        return;
+      }
+    }
+    this.error.set(null);
+    if (this.paso() < 4) this.paso.set(this.paso() + 1);
+  }
   retroceder(): void { if (this.paso() > 1) this.paso.set(this.paso() - 1); }
+
+  // ── Trabajadores por sede ──
+  async onSedeChange(sedeId: string | null): Promise<void> {
+    this.form.sede_id = sedeId;
+    this.trabajadoresSede = [];
+    this.trabajadorSeleccionado = null;
+    this.form.trabajador_id = null;
+    this.queryTrabajador = '';
+    if (sedeId) {
+      try {
+        this.trabajadoresSede = await this.trabajadoresService.getActivosBySede(sedeId);
+      } catch (e) {
+        console.error('Error cargando trabajadores de sede:', e);
+      }
+    }
+  }
+
+  get trabajadoresFiltrados(): Trabajador[] {
+    if (!this.queryTrabajador.trim()) return this.trabajadoresSede;
+    const q = this.queryTrabajador.toLowerCase();
+    return this.trabajadoresSede.filter(t =>
+      t.nombre.toLowerCase().includes(q) ||
+      t.documento.toLowerCase().includes(q)
+    );
+  }
+
+  onTrabajadorSelect(t: Trabajador): void {
+    this.trabajadorSeleccionado = t;
+    this.form.trabajador_id = t.id;
+    this.form.trabajador_nombre = t.nombre;
+    this.form.trabajador_documento = t.documento;
+    this.form.trabajador_cargo = t.cargo || null;
+    if (t.area_trabajo && !this.form.area_proceso) {
+      this.form.area_proceso = t.area_trabajo;
+    }
+    this.queryTrabajador = '';
+    this.error.set(null);
+  }
+
+  clearTrabajadorSelection(): void {
+    this.trabajadorSeleccionado = null;
+    this.form.trabajador_id = null;
+    this.form.trabajador_nombre = '';
+    this.form.trabajador_documento = null;
+    this.form.trabajador_cargo = null;
+  }
 
   get esMortal(): boolean { return this.form.clasificacion_gravedad === 'mortal'; }
 
@@ -205,8 +289,17 @@ export class CasoWizardComponent implements OnInit {
 
   async guardar(): Promise<void> {
     this.error.set(null);
+    if (!this.form.sede_id) {
+      this.error.set('Debe seleccionar la sede donde ocurrió el evento.');
+      return;
+    }
+    if (!this.form.trabajador_id) {
+      this.error.set('Debe seleccionar un trabajador registrado en la sede. No se permite el registro sin trabajador de catálogo.');
+      return;
+    }
     const payload: Partial<MatrizAtCaso> = {
       sede_id: this.form.sede_id ?? null,
+      trabajador_id: this.form.trabajador_id ?? null,
       tipo_evento: this.form.tipo_evento as TipoEvento,
       fecha_hora_evento: new Date(this.form.fecha_hora_evento!).toISOString(),
       trabajador_nombre: this.form.trabajador_nombre ?? '',

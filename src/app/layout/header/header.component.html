@@ -31,7 +31,8 @@
       <ion-icon [name]="currentTheme === 'dark' ? 'sunny-outline' : 'moon-outline'" class="text-xl"></ion-icon>
     </button>
 
-    <!-- Notifications -->
+    <!-- Notifications (Deshabilitado temporalmente) -->
+    <!--
     <div class="relative">
       <button (click)="toggleNotifications()"
         class="p-2 rounded-lg text-dark-text hover-theme-text hover-theme-bg transition-all duration-200 relative">
@@ -42,7 +43,6 @@
         </span>
       </button>
 
-      <!-- Notifications Dropdown -->
       <div *ngIf="showNotifications"
         class="notifications-dropdown absolute right-0 top-full mt-2 w-[calc(100vw-1.5rem)] sm:w-80 max-w-sm bg-dark-secondary border border-dark-border rounded-xl shadow-xl overflow-hidden"
         [class.-right-2]="isMobile">
@@ -73,6 +73,7 @@
         </div>
       </div>
     </div>
+    -->
 
     <!-- User Menu -->
     <div class="relative">
@@ -97,20 +98,20 @@
           <p class="text-xs text-dark-text">{{ userRole }}</p>
         </div>
         <div class="py-2">
-          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
+          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover-theme-text transition-colors duration-200 cursor-pointer">
             <ion-icon name="person-outline" class="text-lg"></ion-icon>
             <span class="text-sm">Mi Perfil</span>
           </a>
-          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
+          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover-theme-text transition-colors duration-200 cursor-pointer">
             <ion-icon name="settings-outline" class="text-lg"></ion-icon>
             <span class="text-sm">Configuración</span>
           </a>
           <a (click)="toggleTheme()"
-            class="flex sm:hidden items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
+            class="flex sm:hidden items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover-theme-text transition-colors duration-200 cursor-pointer">
             <ion-icon [name]="currentTheme === 'dark' ? 'sunny-outline' : 'moon-outline'" class="text-lg"></ion-icon>
             <span class="text-sm">Cambiar Tema</span>
           </a>
-          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover:text-white transition-colors duration-200 cursor-pointer">
+          <a class="flex items-center gap-3 px-4 py-2.5 text-dark-text hover:bg-dark-accent hover-theme-text transition-colors duration-200 cursor-pointer">
             <ion-icon name="help-circle-outline" class="text-lg"></ion-icon>
             <span class="text-sm">Ayuda</span>
           </a>

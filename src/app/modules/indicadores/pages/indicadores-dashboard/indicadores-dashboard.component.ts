@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, computed, effect, signal } from '@angular/core';
 import { MatrizAtIndicadoresService } from '../../../../core/services/matriz-at-indicadores.service';
 import { TenantService } from '../../../../core/services/tenant.service';
+import { IndicadoresExcelService } from '../../../../core/services/indicadores-excel.service';
 import { MESES_LABELS, ValorIndicador, ConteoEtiqueta } from '../../../../core/models/matriz-at.model';
 
 type Periodo = 'mes' | 'trim' | 'anio';
@@ -78,7 +79,13 @@ export class IndicadoresDashboardComponent implements OnInit {
     ],
   }));
 
-  constructor(public srv: MatrizAtIndicadoresService, private tenant: TenantService) {
+  readonly exportandoExcel = signal<boolean>(false);
+
+  constructor(
+    public srv: MatrizAtIndicadoresService,
+    private tenant: TenantService,
+    private excelSvc: IndicadoresExcelService
+  ) {
     // El período local controla también los agregados del servicio (Bird/Pareto/área/cuerpo).
     effect(() => this.srv.setPeriodo(this.periodo(), this.mesSel(), this.trimSel()));
   }
@@ -100,4 +107,25 @@ export class IndicadoresDashboardComponent implements OnInit {
   imprimir(): void {
     window.print();
   }
+
+  async exportarExcel(): Promise<void> {
+    try {
+      this.exportandoExcel.set(true);
+      await this.excelSvc.exportarIndicadoresAt({
+        empresaNombre: this.empresaNombre,
+        anio: this.anio,
+        mensuales: this.srv.indicadoresMensuales(),
+        anual: this.srv.indicadorAnual(),
+        agrupaciones: this.srv.agrupaciones(),
+        diasSinAt: this.srv.diasSinAccidentes(),
+        constanteK: this.srv.constanteK()
+      });
+    } catch (err: any) {
+      console.error('Error exportando indicadores a Excel:', err);
+      alert('Error al exportar indicadores a Excel: ' + (err?.message || err));
+    } finally {
+      this.exportandoExcel.set(false);
+    }
+  }
 }
+

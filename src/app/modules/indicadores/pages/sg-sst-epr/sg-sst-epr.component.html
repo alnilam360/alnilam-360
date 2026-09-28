@@ -1,0 +1,184 @@
+<div class="p-4 space-y-5">
+  <div *ngIf="inicializando()" class="flex items-center justify-center py-16">
+    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!inicializando()">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">
+          4. Indicadores SG-SST (Estructura, Proceso y Resultado)
+        </h2>
+        <p class="text-xs text-dark-text mt-0.5">Evaluación del Sistema de Gestión SST · Decreto 1072/2015 · Meta: 80%</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <select *ngIf="esAdmin()" [ngModel]="empresaId()" (ngModelChange)="empresaId.set($event); cargarItems()"
+                class="px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          <option [ngValue]="null">— Empresa —</option>
+          <option *ngFor="let e of empresas()" [ngValue]="e.id">{{ e.nombre }}</option>
+        </select>
+        <select [ngModel]="anio()" (ngModelChange)="anio.set(+$event); cargarItems()"
+                class="px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="inline-flex rounded-xl bg-dark-secondary border border-dark-border p-1">
+      <button (click)="tab.set('indicadores')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+              [ngClass]="tab() === 'indicadores' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
+        <ion-icon name="stats-chart-outline"></ion-icon> Tablero % Cumplimiento
+      </button>
+      <button (click)="tab.set('evaluacion')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+              [ngClass]="tab() === 'evaluacion' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
+        <ion-icon name="checkbox-outline"></ion-icon> Evaluación E-P-R (24 ítems)
+      </button>
+      <button (click)="tab.set('analisis')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+              [ngClass]="tab() === 'analisis' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
+        <ion-icon name="document-text-outline"></ion-icon> Análisis y Planes
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <ng-container *ngIf="empresaId()">
+      <!-- TAB 1: TABLERO DE CUMPLIMIENTO -->
+      <div *ngIf="tab() === 'indicadores'" class="space-y-4">
+        <!-- 4 Tarjetas de Cumplimiento -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="p-4 rounded-xl bg-dark-secondary border border-dark-border">
+            <span class="text-xs text-dark-text font-medium">Cumplimiento Global SG-SST</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold" [ngClass]="pctGlobal >= 80 ? 'text-emerald-400' : 'text-amber-400'">
+                {{ pctGlobal }}%
+              </span>
+              <span class="text-[10px] text-dark-text">Meta: &ge; 80%</span>
+            </div>
+            <div class="w-full bg-dark-primary rounded-full h-1.5 mt-2">
+              <div class="bg-brand-primary h-1.5 rounded-full" [style.width.%]="pctGlobal"></div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-dark-secondary border border-dark-border">
+            <span class="text-xs text-dark-text font-medium">Indicadores de Estructura</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold text-brand-primary">{{ pctEstructura }}%</span>
+              <span class="text-[10px] text-dark-text">11 ítems</span>
+            </div>
+            <div class="w-full bg-dark-primary rounded-full h-1.5 mt-2">
+              <div class="bg-blue-500 h-1.5 rounded-full" [style.width.%]="pctEstructura"></div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-dark-secondary border border-dark-border">
+            <span class="text-xs text-dark-text font-medium">Indicadores de Proceso</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold text-amber-400">{{ pctProceso }}%</span>
+              <span class="text-[10px] text-dark-text">7 ítems</span>
+            </div>
+            <div class="w-full bg-dark-primary rounded-full h-1.5 mt-2">
+              <div class="bg-amber-500 h-1.5 rounded-full" [style.width.%]="pctProceso"></div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-dark-secondary border border-dark-border">
+            <span class="text-xs text-dark-text font-medium">Indicadores de Resultado</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-2xl font-bold text-emerald-400">{{ pctResultado }}%</span>
+              <span class="text-[10px] text-dark-text">6 ítems</span>
+            </div>
+            <div class="w-full bg-dark-primary rounded-full h-1.5 mt-2">
+              <div class="bg-emerald-500 h-1.5 rounded-full" [style.width.%]="pctResultado"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-dark-secondary/50 border border-dark-border text-xs text-dark-text space-y-1">
+          <p class="font-semibold text-[rgb(var(--color-heading))]">Interpretación del Indicador:</p>
+          <p>La empresa cumple con un <b>{{ pctGlobal }}%</b> de los ítems evaluados de los indicadores de estructura, proceso y resultado del SG-SST.</p>
+          <p class="font-medium" [ngClass]="pctGlobal >= 80 ? 'text-emerald-400' : 'text-rose-400'">
+            Estado de meta: {{ pctGlobal >= 80 ? 'CUMPLE LA META (>= 80%)' : 'NO CUMPLE LA META (< 80%)' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- TAB 2: EVALUACIÓN DE ÍTEMS -->
+      <div *ngIf="tab() === 'evaluacion'" class="space-y-3">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-1.5">
+            <button (click)="filtroCategoria = 'Todos'"
+                    class="px-2.5 py-1 text-xs rounded-md"
+                    [ngClass]="filtroCategoria === 'Todos' ? 'bg-brand-primary text-white' : 'bg-dark-secondary text-dark-text'">
+              Todos (24)
+            </button>
+            <button (click)="filtroCategoria = 'Estructura'"
+                    class="px-2.5 py-1 text-xs rounded-md"
+                    [ngClass]="filtroCategoria === 'Estructura' ? 'bg-blue-600 text-white' : 'bg-dark-secondary text-dark-text'">
+              Estructura (11)
+            </button>
+            <button (click)="filtroCategoria = 'Proceso'"
+                    class="px-2.5 py-1 text-xs rounded-md"
+                    [ngClass]="filtroCategoria === 'Proceso' ? 'bg-amber-600 text-white' : 'bg-dark-secondary text-dark-text'">
+              Proceso (7)
+            </button>
+            <button (click)="filtroCategoria = 'Resultado'"
+                    class="px-2.5 py-1 text-xs rounded-md"
+                    [ngClass]="filtroCategoria === 'Resultado' ? 'bg-emerald-600 text-white' : 'bg-dark-secondary text-dark-text'">
+              Resultado (6)
+            </button>
+          </div>
+
+          <button (click)="guardarEvaluacion()"
+                  class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow">
+            <ion-icon name="save-outline"></ion-icon> Guardar Calificación
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-dark-border bg-dark-secondary">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text font-semibold uppercase text-[10px]">
+              <tr>
+                <th class="py-2.5 px-3 w-16">Tipo</th>
+                <th class="py-2.5 px-3">Ítem / Criterio SG-SST</th>
+                <th class="py-2.5 px-3 w-40">Calificación</th>
+                <th class="py-2.5 px-3 w-56">Observaciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-dark-border/40 text-[rgb(var(--color-heading))]">
+              <tr *ngFor="let it of filteredItems" class="hover:bg-dark-accent/40">
+                <td class="py-2.5 px-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-semibold"
+                        [ngClass]="{
+                          'bg-blue-500/10 text-blue-400': it.categoria === 'Estructura',
+                          'bg-amber-500/10 text-amber-400': it.categoria === 'Proceso',
+                          'bg-emerald-500/10 text-emerald-400': it.categoria === 'Resultado'
+                        }">
+                    {{ it.id }}
+                  </span>
+                </td>
+                <td class="py-2.5 px-3">{{ it.descripcion }}</td>
+                <td class="py-2.5 px-3">
+                  <select [(ngModel)]="it.estado" class="form-input text-xs py-1">
+                    <option value="Cumple">Cumple</option>
+                    <option value="No Cumple">No Cumple</option>
+                    <option value="No Aplica">No Aplica</option>
+                  </select>
+                </td>
+                <td class="py-2.5 px-3">
+                  <input type="text" [(ngModel)]="it.observacion" placeholder="Evidencia / Soporte..."
+                         class="form-input text-xs py-1">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: ANÁLISIS & PLAN DE ACCIÓN -->
+      <app-indicadores-analisis-planes *ngIf="tab() === 'analisis'"
+        [empresaId]="empresaId()!" [anio]="anio()" tipoIndicador="EPR" tituloIndicador="Estructura, Proceso y Resultado">
+      </app-indicadores-analisis-planes>
+    </ng-container>
+  </ng-container>
+</div>

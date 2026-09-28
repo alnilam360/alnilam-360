@@ -230,6 +230,55 @@ textarea.form-input {
         outline: none;
         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
     }
+
+    // Variantes temáticas CRUD
+    &.check-crear {
+        &:checked {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+        &:hover:not(:checked) {
+            border-color: #10b981;
+        }
+        &:focus {
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+        }
+    }
+
+    &.check-editar {
+        &:checked {
+            background-color: #f59e0b;
+            border-color: #f59e0b;
+        }
+        &:hover:not(:checked) {
+            border-color: #f59e0b;
+        }
+        &:focus {
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+        }
+    }
+
+    &.check-eliminar {
+        &:checked {
+            background-color: #ef4444;
+            border-color: #ef4444;
+        }
+        &:hover:not(:checked) {
+            border-color: #ef4444;
+        }
+        &:focus {
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+        }
+    }
+}
+
+.permissions-table {
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(8px);
+    }
 }
 
 .custom-scrollbar {
@@ -249,4 +298,4 @@ textarea.form-input {
             background: rgb(var(--color-dark-text));
         }
     }
-}
+}

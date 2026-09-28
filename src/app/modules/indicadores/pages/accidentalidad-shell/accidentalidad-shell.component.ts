@@ -4,7 +4,7 @@ import { TenantService } from '../../../../core/services/tenant.service';
 import { Empresa } from '../../../../core/models/models';
 import { FiltrosCaso } from '../../../../core/models/matriz-at.model';
 
-type Tab = 'matriz' | 'indicadores' | 'parametros';
+type Tab = 'matriz' | 'indicadores' | 'parametros' | 'analisis';
 
 @Component({
   selector: 'app-accidentalidad-shell',
@@ -19,7 +19,6 @@ export class AccidentalidadShellComponent implements OnInit {
   readonly anio = signal<number>(new Date().getFullYear());
   readonly tab = signal<Tab>('indicadores');
   readonly filtroMatriz = signal<FiltrosCaso>({});
-  /** Este módulo solo cubre accidentalidad; otras rutas de indicadores siguen pendientes. */
   readonly soportado = signal(true);
 
   readonly aniosDisponibles: number[] = [];
@@ -30,10 +29,11 @@ export class AccidentalidadShellComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    const tipo = this.route.snapshot.data['tipo'];
-    this.soportado.set(tipo === 'matriz' || tipo === 'indicadores');
-    this.tab.set(tipo === 'matriz' ? 'matriz' : 'indicadores');
-    if (!this.soportado()) { this.inicializando.set(false); return; }
+    const tipo = this.route.snapshot.data['tipo'] || this.route.snapshot.data['tab'];
+    if (tipo === 'matriz' || tipo === 'indicadores' || tipo === 'parametros' || tipo === 'analisis') {
+      this.tab.set(tipo);
+    }
+    this.soportado.set(true);
 
     this.esAdmin.set(await this.tenant.isAdministrador());
     this.empresas.set(await this.tenant.listarEmpresasDisponibles());

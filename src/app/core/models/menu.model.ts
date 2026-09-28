@@ -55,7 +55,17 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'VERIFICAR',
     phvaGroup: 'V',
     children: [
-      { id: 'indicadores-resultados', label: 'Indicadores y Resultados', icon: 'stats-chart-outline', route: '/indicadores/accidentalidad/indicadores' },
+      {
+        id: 'indicadores-grupo',
+        label: 'Matriz de Indicadores',
+        icon: 'stats-chart-outline',
+        children: [
+          { id: 'ind-accidentalidad', label: '1. Accidentalidad (AT)', icon: 'bandage-outline', route: '/indicadores/accidentalidad' },
+          { id: 'ind-enfermedad-laboral', label: '2. Enfermedad Laboral (EL)', icon: 'medkit-outline', route: '/indicadores/enfermedad-laboral' },
+          { id: 'ind-ausentismo', label: '3. Ausentismo Laboral', icon: 'time-outline', route: '/indicadores/ausentismo' },
+          { id: 'ind-sg-sst', label: '4. Estructura, Proceso y Resultado', icon: 'pie-chart-outline', route: '/indicadores/sg-sst' }
+        ]
+      },
       { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'checkbox-outline', route: '/auditorias/programacion' },
       { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/indicadores/accidentalidad/matriz' },
       { id: 'cumplimiento-legal', label: 'Cumplimiento Legal', icon: 'shield-checkmark-outline', route: '/documentos/catalogos/matriz-requisitos' },
@@ -97,7 +107,8 @@ export const MENU_ITEMS: MenuItem[] = [
     children: [
       { id: 'conf-empresas', label: 'Empresas', icon: 'business-outline', route: '/configuracion/empresas' },
       { id: 'conf-roles', label: 'Roles', icon: 'shield-outline', route: '/configuracion/roles' },
-      { id: 'conf-usuarios', label: 'Usuarios', icon: 'people-outline', route: '/configuracion/usuarios' }
+      { id: 'conf-usuarios', label: 'Usuarios', icon: 'people-outline', route: '/configuracion/usuarios' },
+      { id: 'conf-trabajadores', label: 'Trabajadores', icon: 'people-circle-outline', route: '/configuracion/trabajadores' }
     ]
   },
   {

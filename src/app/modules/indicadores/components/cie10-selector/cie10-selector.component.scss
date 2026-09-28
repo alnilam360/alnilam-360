@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  background-color: rgb(var(--color-dark-primary));
+  border: 1px solid rgb(var(--color-dark-border));
+  border-radius: 0.5rem;
+  color: rgb(var(--color-heading));
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--brand-primary, #3b82f6);
+  }
+}

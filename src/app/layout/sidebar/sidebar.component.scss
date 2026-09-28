@@ -8,6 +8,8 @@
 
 .menu-item {
   position: relative;
+  width: 100%;
+  text-align: left;
   font-size: 0.875rem;
   letter-spacing: 0.01em;
   padding-top: 0.5rem;
@@ -53,11 +55,11 @@
 }
 
 .menu-item.has-active .phva-badge {
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+  box-shadow: 0 0 0 2px rgb(var(--color-brand-primary) / 0.3);
 }
 
 .submenu {
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 1px solid rgb(var(--color-dark-border));
   margin-left: 1.25rem;
   padding-left: 0.5rem;
 
@@ -98,11 +100,11 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgb(var(--color-dark-border));
     border-radius: 2px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgb(var(--color-dark-text));
     }
   }
 }
