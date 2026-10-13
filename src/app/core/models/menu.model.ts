@@ -60,6 +60,7 @@ export const MENU_ITEMS: MenuItem[] = [
         label: 'Matriz de Indicadores',
         icon: 'stats-chart-outline',
         children: [
+          { id: 'ind-matriz-consolidada', label: '0. Matriz de Indicadores', icon: 'grid-outline', route: '/indicadores/matriz-indicadores' },
           { id: 'ind-accidentalidad', label: '1. Accidentalidad (AT)', icon: 'bandage-outline', route: '/indicadores/accidentalidad' },
           { id: 'ind-enfermedad-laboral', label: '2. Enfermedad Laboral (EL)', icon: 'medkit-outline', route: '/indicadores/enfermedad-laboral' },
           { id: 'ind-ausentismo', label: '3. Ausentismo Laboral', icon: 'time-outline', route: '/indicadores/ausentismo' },

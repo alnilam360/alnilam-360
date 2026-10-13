@@ -173,7 +173,7 @@ const routes: Routes = [
       {
         path: 'personal',
         children: [
-          { path: 'empleados', loadChildren: () => import('./modules/personal/personal.module').then(m => m.PersonalModule), data: { tipo: 'empleados' } },
+          { path: 'empleados', redirectTo: '/configuracion/trabajadores', pathMatch: 'full' },
           { path: 'roles', loadChildren: () => import('./modules/personal/personal.module').then(m => m.PersonalModule), data: { tipo: 'roles' } },
           { path: 'brigadas', loadChildren: () => import('./modules/personal/personal.module').then(m => m.PersonalModule), data: { tipo: 'brigadas' } },
           { path: 'asignaciones', loadChildren: () => import('./modules/personal/personal.module').then(m => m.PersonalModule), data: { tipo: 'asignaciones' } },

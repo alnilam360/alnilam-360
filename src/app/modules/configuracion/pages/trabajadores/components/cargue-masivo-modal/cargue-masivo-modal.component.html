@@ -1,0 +1,716 @@
+<!-- Backdrop Modal -->
+<div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-md p-3 sm:p-6"
+  (click)="cerrar.emit()">
+
+  <!-- Card Modal Container -->
+  <div
+    class="relative w-full max-w-6xl my-4 sm:my-6 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+    (click)="$event.stopPropagation()">
+
+    <!-- Header Modal -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-dark-border bg-dark-primary/40">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-brand-primary/15 border border-brand-primary/30 flex items-center justify-center text-brand-primary">
+          <ion-icon name="cloud-upload-outline" class="text-2xl"></ion-icon>
+        </div>
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+            Cargue Masivo de Trabajadores por Sede
+            <span class="text-[11px] font-normal px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              Archivo Plano CSV / TXT / Excel
+            </span>
+          </h2>
+          <p class="text-xs text-dark-text mt-0.5">
+            Ingreso y actualización masiva de personal con asignación por sede, seguridad social y validación en tiempo real
+          </p>
+        </div>
+      </div>
+
+      <!-- Acciones de Cabecera: Tabs y Cerrar -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center bg-dark-primary border border-dark-border rounded-lg p-0.5 text-xs">
+          <button type="button"
+            class="px-3 py-1 rounded-md font-medium transition-all duration-200"
+            [class.bg-brand-primary]="tabActiva() === 'cargue'"
+            [class.text-white]="tabActiva() === 'cargue'"
+            [class.text-dark-text]="tabActiva() !== 'cargue'"
+            (click)="setTab('cargue')">
+            Cargue Activo
+          </button>
+          <button type="button"
+            class="px-3 py-1 rounded-md font-medium transition-all duration-200"
+            [class.bg-brand-primary]="tabActiva() === 'historial'"
+            [class.text-white]="tabActiva() === 'historial'"
+            [class.text-dark-text]="tabActiva() !== 'historial'"
+            (click)="setTab('historial')">
+            Bitácora / Historial
+          </button>
+        </div>
+
+        <button type="button" (click)="cerrar.emit()"
+          class="p-2 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200"
+          title="Cerrar modal" aria-label="Cerrar modal">
+          <ion-icon name="close-outline" class="text-xl"></ion-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Alerta o Error -->
+    <div *ngIf="errorMensaje()" class="px-5 py-2.5 bg-red-500/15 border-b border-red-500/30 text-red-400 text-xs flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <ion-icon name="alert-circle-outline" class="text-base"></ion-icon>
+        <span>{{ errorMensaje() }}</span>
+      </div>
+      <button (click)="errorMensaje.set(null)" class="text-red-400 hover:text-red-300">
+        <ion-icon name="close-circle-outline"></ion-icon>
+      </button>
+    </div>
+
+    <!-- Indicador de Progreso Global -->
+    <div *ngIf="procesandoArchivo() || simulandoCargue() || ejecutandoCargue()">
+      <p-progressBar mode="indeterminate" [style]="{ height: '3px' }"></p-progressBar>
+    </div>
+
+    <!-- CUERPO PRINCIPAL DEL MODAL (Scrollable) -->
+    <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5 custom-scrollbar">
+
+      <!-- ==================================================================== -->
+      <!-- TAB 1: CARGUE MASIVO ACTIVO                                         -->
+      <!-- ==================================================================== -->
+      <ng-container *ngIf="tabActiva() === 'cargue'">
+
+        <!-- SECCIÓN 1: SELECTORES DE DESTINO Y MODO -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 rounded-xl bg-dark-primary/40 border border-dark-border">
+          <!-- Sede Destino -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-semibold text-[rgb(var(--color-heading))] flex items-center gap-1.5">
+                <ion-icon name="business-outline" class="text-brand-primary text-sm"></ion-icon>
+                Sede Destino del Cargue <span class="text-red-400">*</span>
+              </label>
+              <!-- Selector o indicador de empresa si hay más de 1 empresa -->
+              <span *ngIf="empresas && empresas.length > 1 && esAdmin" class="text-[10px] text-brand-primary font-medium">
+                Multi-empresa
+              </span>
+            </div>
+
+            <!-- Selector de Empresa para Administrador si hay más de 1 empresa -->
+            <div *ngIf="empresas && empresas.length > 1 && esAdmin" class="mb-2">
+              <select
+                [ngModel]="empresaSeleccionadaId()"
+                (ngModelChange)="onEmpresaModalChange($event)"
+                class="w-full px-2.5 py-1.5 text-[11px] bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+                <option *ngFor="let emp of empresas" [value]="emp.id">Empresa: {{ emp.nombre }}</option>
+              </select>
+            </div>
+
+            <!-- Selector de Sede -->
+            <div class="relative">
+              <select
+                [ngModel]="sedeSeleccionadaId()"
+                (ngModelChange)="onSedeChange($event)"
+                [disabled]="cargandoSedes() || sedesList().length === 0"
+                class="w-full px-3 py-2 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium disabled:opacity-60 disabled:cursor-not-allowed">
+                <option value="" disabled>
+                  {{ cargandoSedes() ? 'Cargando sedes...' : (sedesList().length === 0 ? '-- No hay sedes disponibles --' : '-- Seleccione la sede --') }}
+                </option>
+                <option *ngFor="let s of sedesList()" [value]="s.id">
+                  {{ s.nombre }}{{ s.municipio ? ' (' + s.municipio + ')' : '' }}
+                </option>
+              </select>
+            </div>
+
+            <p *ngIf="sedesList().length > 0" class="text-[10px] text-dark-text mt-1">
+              Todos los trabajadores procesados se vincularán o reasignarán a esta sede.
+            </p>
+            <p *ngIf="!cargandoSedes() && sedesList().length === 0" class="text-[10px] text-amber-400 mt-1 flex items-center gap-1">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              No se encontraron sedes. Cree una sede primero en el módulo de Empresas.
+            </p>
+          </div>
+
+          <!-- Modo de Procesamiento (2 Columnas en lg) -->
+          <div class="lg:col-span-2">
+            <label class="block text-xs font-semibold text-[rgb(var(--color-heading))] mb-1.5 flex items-center gap-1.5">
+              <ion-icon name="git-branch-outline" class="text-brand-primary text-sm"></ion-icon>
+              Estrategia de Sincronización
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div
+                *ngFor="let opc of opcionesModo"
+                (click)="setModo(opc.valor === 'insertar_actualizar' ? 'insertar_actualizar' : 'solo_nuevos')"
+                class="cursor-pointer p-2.5 rounded-lg border text-xs transition-all duration-200 select-none flex items-start gap-2.5"
+                [class.border-brand-primary]="modoCargue() === opc.valor"
+                [class.bg-brand-primary-5]="modoCargue() === opc.valor"
+                [class.border-dark-border]="modoCargue() !== opc.valor"
+                [class.bg-dark-secondary]="modoCargue() !== opc.valor">
+                <input
+                  type="radio"
+                  name="modo_cargue"
+                  [value]="opc.valor"
+                  [checked]="modoCargue() === opc.valor"
+                  class="mt-0.5 text-brand-primary focus:ring-0">
+                <div>
+                  <div class="font-semibold text-[rgb(var(--color-heading))]">{{ opc.titulo }}</div>
+                  <div class="text-[10px] text-dark-text mt-0.5 leading-snug">{{ opc.desc }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: ZONA DRAG & DROP / DESCARGA DE PLANTILLAS -->
+        <div *ngIf="filasValidadas().length === 0" class="space-y-3">
+          <div
+            class="relative border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 flex flex-col items-center justify-center gap-3 cursor-pointer"
+            [class.border-brand-primary]="arrastrandoArchivo()"
+            [class.bg-brand-primary-5]="arrastrandoArchivo()"
+            [class.border-dark-border]="!arrastrandoArchivo()"
+            [class.bg-dark-primary-20]="!arrastrandoArchivo()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+            (click)="fileInput.click()">
+
+            <input
+              #fileInput
+              type="file"
+              accept=".csv,.txt,.xlsx,.xls"
+              class="hidden"
+              (change)="onFileInputChange($event)">
+
+            <div class="w-14 h-14 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary">
+              <ion-icon name="document-text-outline" class="text-3xl"></ion-icon>
+            </div>
+
+            <div>
+              <p class="text-sm font-semibold text-[rgb(var(--color-heading))]">
+                Arrastra tu archivo plano aquí o <span class="text-brand-primary underline">haz clic para explorar</span>
+              </p>
+              <p class="text-xs text-dark-text mt-1">
+                Formatos compatibles: <strong>.CSV</strong> (delimitado por coma o punto y coma), <strong>.TXT</strong> (tabulaciones/pipes), <strong>.XLSX</strong> o <strong>.XLS</strong>
+              </p>
+            </div>
+
+            <div class="flex items-center gap-3 text-[11px] text-dark-text/80 mt-1">
+              <span class="flex items-center gap-1">
+                <ion-icon name="checkmark-circle-outline" class="text-emerald-400"></ion-icon>
+                Codificación UTF-8 / ANSI
+              </span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <ion-icon name="checkmark-circle-outline" class="text-emerald-400"></ion-icon>
+                Hasta 5.000 filas por cargue
+              </span>
+              <span>•</span>
+              <span class="flex items-center gap-1">
+                <ion-icon name="checkmark-circle-outline" class="text-emerald-400"></ion-icon>
+                Auto-detección de columnas
+              </span>
+            </div>
+          </div>
+
+          <!-- Banner para descargar plantilla guía -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs">
+            <div class="flex items-center gap-2.5">
+              <ion-icon name="information-circle-outline" class="text-blue-400 text-lg flex-shrink-0"></ion-icon>
+              <span class="text-blue-300">
+                ¿No tienes el formato estándar? Descarga la plantilla oficial con encabezados mapeados y ejemplos de EPS/ARL.
+              </span>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                (click)="descargarPlantilla('csv')"
+                class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-dark-secondary hover:bg-dark-accent border border-dark-border text-[rgb(var(--color-heading))] rounded-lg text-xs font-medium transition-all duration-200">
+                <ion-icon name="download-outline"></ion-icon>
+                <span>Descargar CSV</span>
+              </button>
+              <button
+                type="button"
+                (click)="descargarPlantilla('xlsx')"
+                class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition-all duration-200 shadow-sm">
+                <ion-icon name="document-outline"></ion-icon>
+                <span>Descargar Excel</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: PREVISUALIZACIÓN Y AUDITORÍA REACTIVA -->
+        <div *ngIf="filasValidadas().length > 0" class="space-y-4">
+
+          <!-- Barra de Archivo Cargado + Métricas KPI -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 bg-dark-primary/60 border border-dark-border rounded-xl">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <ion-icon name="document-attach-outline" class="text-xl"></ion-icon>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+                  <span>{{ archivoSeleccionado()?.name }}</span>
+                  <span class="text-[10px] text-dark-text font-normal">
+                    ({{ ((archivoSeleccionado()?.size || 0) / 1024).toFixed(1) }} KB)
+                  </span>
+                </div>
+                <div class="text-[11px] text-dark-text mt-0.5">
+                  Destino: <strong class="text-brand-primary">{{ getSedeNombre(sedeSeleccionadaId()) }}</strong> •
+                  Modo: <strong>{{ modoCargue() === 'insertar_actualizar' ? 'Upsert (Actualizar + Agregar)' : 'Solo nuevos' }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                (click)="revalidarFilas()"
+                class="px-2.5 py-1.5 text-xs bg-dark-secondary hover:bg-dark-accent border border-dark-border text-dark-text hover:text-[rgb(var(--color-heading))] rounded-lg transition-all"
+                title="Re-ejecutar validación local">
+                <ion-icon name="refresh-outline" class="align-middle"></ion-icon>
+              </button>
+              <button
+                type="button"
+                (click)="limpiarArchivo()"
+                class="px-3 py-1.5 text-xs bg-dark-secondary hover:bg-red-500/20 border border-dark-border text-red-400 rounded-lg transition-all flex items-center gap-1">
+                <ion-icon name="trash-outline"></ion-icon>
+                <span>Cambiar archivo</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tarjetas KPI de Auditoría -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <!-- Total -->
+            <div
+              (click)="filtroEstado.set('todos')"
+              class="cursor-pointer p-2.5 rounded-xl border text-center transition-all select-none"
+              [class.border-brand-primary]="filtroEstado() === 'todos'"
+              [class.bg-brand-primary-5]="filtroEstado() === 'todos'"
+              [class.border-dark-border]="filtroEstado() !== 'todos'"
+              [class.bg-dark-secondary]="filtroEstado() !== 'todos'">
+              <span class="block text-base font-extrabold text-[rgb(var(--color-heading))]">
+                {{ resumen().total }}
+              </span>
+              <span class="text-[10px] text-dark-text uppercase tracking-wider font-semibold">Total Filas</span>
+            </div>
+
+            <!-- Válidos -->
+            <div
+              (click)="filtroEstado.set('validos')"
+              class="cursor-pointer p-2.5 rounded-xl border text-center transition-all select-none"
+              [class.border-emerald-500]="filtroEstado() === 'validos'"
+              [class.bg-emerald-500-10]="filtroEstado() === 'validos'"
+              [class.border-dark-border]="filtroEstado() !== 'validos'"
+              [class.bg-dark-secondary]="filtroEstado() !== 'validos'">
+              <span class="block text-base font-extrabold text-emerald-400">
+                {{ resumen().validos }}
+              </span>
+              <span class="text-[10px] text-emerald-400/80 uppercase tracking-wider font-semibold">Válidos</span>
+            </div>
+
+            <!-- Nuevos -->
+            <div
+              (click)="filtroEstado.set('nuevos')"
+              class="cursor-pointer p-2.5 rounded-xl border text-center transition-all select-none"
+              [class.border-blue-500]="filtroEstado() === 'nuevos'"
+              [class.bg-blue-500-10]="filtroEstado() === 'nuevos'"
+              [class.border-dark-border]="filtroEstado() !== 'nuevos'"
+              [class.bg-dark-secondary]="filtroEstado() !== 'nuevos'">
+              <span class="block text-base font-extrabold text-blue-400">
+                {{ resumen().nuevos }}
+              </span>
+              <span class="text-[10px] text-blue-400/80 uppercase tracking-wider font-semibold">Nuevos</span>
+            </div>
+
+            <!-- Actualizaciones -->
+            <div
+              (click)="filtroEstado.set('actualizaciones')"
+              class="cursor-pointer p-2.5 rounded-xl border text-center transition-all select-none"
+              [class.border-cyan-500]="filtroEstado() === 'actualizaciones'"
+              [class.bg-cyan-500-10]="filtroEstado() === 'actualizaciones'"
+              [class.border-dark-border]="filtroEstado() !== 'actualizaciones'"
+              [class.bg-dark-secondary]="filtroEstado() !== 'actualizaciones'">
+              <span class="block text-base font-extrabold text-cyan-400">
+                {{ resumen().actualizaciones }}
+              </span>
+              <span class="text-[10px] text-cyan-400/80 uppercase tracking-wider font-semibold">Misma Sede</span>
+            </div>
+
+            <!-- Traslados -->
+            <div
+              (click)="filtroEstado.set('traslados')"
+              class="cursor-pointer p-2.5 rounded-xl border text-center transition-all select-none"
+              [class.border-amber-500]="filtroEstado() === 'traslados'"
+              [class.bg-amber-500-10]="filtroEstado() === 'traslados'"
+              [class.border-dark-border]="filtroEstado() !== 'traslados'"
+              [class.bg-dark-secondary]="filtroEstado() !== 'traslados'">
+              <span class="block text-base font-extrabold text-amber-400">
+                {{ resumen().traslados }}
+              </span>
+              <span class="text-[10px] text-amber-400/80 uppercase tracking-wider font-semibold">Traslados</span>
+            </div>
+
+            <!-- Rechazados / Errores -->
+            <div
+              (click)="filtroEstado.set('rechazados')"
+              class="cursor-pointer p-2.5 rounded-xl border text-center transition-all select-none"
+              [class.border-red-500]="filtroEstado() === 'rechazados'"
+              [class.bg-red-500-10]="filtroEstado() === 'rechazados'"
+              [class.border-dark-border]="filtroEstado() !== 'rechazados'"
+              [class.bg-dark-secondary]="filtroEstado() !== 'rechazados'">
+              <span class="block text-base font-extrabold text-red-400">
+                {{ resumen().rechazados }}
+              </span>
+              <span class="text-[10px] text-red-400/80 uppercase tracking-wider font-semibold">Rechazados</span>
+            </div>
+          </div>
+
+          <!-- Toolbar de Filtro y Búsqueda sobre Filas -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+            <div class="relative w-full sm:max-w-xs">
+              <ion-icon name="search-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-sm"></ion-icon>
+              <input
+                type="text"
+                [ngModel]="busquedaTexto()"
+                (ngModelChange)="busquedaTexto.set($event)"
+                placeholder="Buscar por cédula, nombre o EPS..."
+                class="w-full pl-8 pr-3 py-1.5 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary">
+            </div>
+
+            <div class="text-[11px] text-dark-text flex items-center gap-2">
+              <span>Mostrando {{ filasFiltradas().length }} de {{ filasValidadas().length }} filas</span>
+              <span *ngIf="filtroEstado() !== 'todos'"
+                class="cursor-pointer text-brand-primary underline"
+                (click)="filtroEstado.set('todos')">
+                (ver todos)
+              </span>
+            </div>
+          </div>
+
+          <!-- TABLA PRIMENG DE PREVISUALIZACIÓN -->
+          <div class="border border-dark-border rounded-xl overflow-hidden shadow-sm">
+            <p-table
+              [value]="filasFiltradas()"
+              [paginator]="true"
+              [rows]="10"
+              [rowsPerPageOptions]="[10, 25, 50, 100]"
+              [showCurrentPageReport]="true"
+              currentPageReportTemplate="{first} - {last} de {totalRecords}"
+              styleClass="p-datatable-sm"
+              [scrollable]="true"
+              scrollHeight="340px">
+
+              <ng-template pTemplate="header">
+                <tr class="bg-dark-primary/60 text-dark-text uppercase text-[10px]">
+                  <th style="width: 50px" class="text-center">#</th>
+                  <th style="width: 110px">Documento</th>
+                  <th style="min-width: 180px">Nombre Completo</th>
+                  <th style="width: 100px">Nacimiento / Edad</th>
+                  <th style="min-width: 140px">Cargo / Área</th>
+                  <th style="min-width: 150px">Seguridad Social</th>
+                  <th style="width: 130px" class="text-center">Estado Auditoría</th>
+                  <th style="min-width: 160px">Observación / Diagnóstico</th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-f>
+                <tr
+                  class="hover:bg-dark-primary/40 transition-colors text-xs border-b border-dark-border"
+                  [class.bg-red-500-5]="f.estado === 'rechazado'"
+                  [class.bg-amber-500-5]="f.estado === 'traslado'">
+
+                  <td class="text-center font-mono text-[10px] text-dark-text">
+                    {{ f.fila }}
+                  </td>
+
+                  <td class="font-mono text-[11px] font-semibold text-[rgb(var(--color-heading))]">
+                    {{ f.documento }}
+                  </td>
+
+                  <td>
+                    <span class="font-medium text-[rgb(var(--color-heading))]">{{ f.nombre }}</span>
+                    <span *ngIf="f.fecha_ingreso" class="block text-[10px] text-dark-text">
+                      Ingreso: {{ f.fecha_ingreso }}
+                    </span>
+                  </td>
+
+                  <td class="text-dark-text text-[11px]">
+                    <span *ngIf="f.fecha_nacimiento">
+                      {{ f.fecha_nacimiento }}
+                      <span *ngIf="f.edadCalculada !== null" class="block text-[10px] text-dark-text/70">
+                        ({{ f.edadCalculada }} años)
+                      </span>
+                    </span>
+                    <span *ngIf="!f.fecha_nacimiento" class="text-dark-text/40">—</span>
+                  </td>
+
+                  <td class="text-dark-text text-[11px]">
+                    <span class="block text-[rgb(var(--color-heading))]">{{ f.cargo || '—' }}</span>
+                    <span *ngIf="f.area_trabajo" class="text-[10px] text-dark-text/80">{{ f.area_trabajo }}</span>
+                  </td>
+
+                  <td class="text-[10px] text-dark-text">
+                    <div class="flex flex-col gap-0.5">
+                      <span *ngIf="f.eps" class="text-blue-400">EPS: {{ f.eps }}</span>
+                      <span *ngIf="f.arl" class="text-emerald-400">ARL: {{ f.arl }}</span>
+                      <span *ngIf="f.fondo_pensiones" class="text-amber-400">FP: {{ f.fondo_pensiones }}</span>
+                      <span *ngIf="!f.eps && !f.arl && !f.fondo_pensiones" class="text-dark-text/40">—</span>
+                    </div>
+                  </td>
+
+                  <td class="text-center">
+                    <p-tag
+                      [severity]="getEstadoSeverity(f.estado)"
+                      [value]="getEstadoLabel(f.estado)">
+                    </p-tag>
+                    <span *ngIf="f.cambiaSede" class="block text-[9px] text-amber-400 mt-0.5">
+                      Desde: {{ f.sedeActualNombre }}
+                    </span>
+                  </td>
+
+                  <td class="text-[11px]">
+                    <!-- Errores -->
+                    <div *ngIf="f.errores.length > 0" class="text-red-400 space-y-0.5">
+                      <div *ngFor="let err of f.errores" class="flex items-start gap-1">
+                        <ion-icon name="close-circle" class="text-xs flex-shrink-0 mt-0.5"></ion-icon>
+                        <span>{{ err }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Advertencias -->
+                    <div *ngIf="f.advertencias.length > 0 && f.errores.length === 0" class="text-amber-400 space-y-0.5">
+                      <div *ngFor="let adv of f.advertencias" class="flex items-start gap-1">
+                        <ion-icon name="alert-circle" class="text-xs flex-shrink-0 mt-0.5"></ion-icon>
+                        <span>{{ adv }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Estado OK -->
+                    <span *ngIf="f.errores.length === 0 && f.advertencias.length === 0" class="text-emerald-400/80 text-[10px] flex items-center gap-1">
+                      <ion-icon name="checkmark-outline"></ion-icon>
+                      Listo para persistir
+                    </span>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="8" class="text-center py-6 text-dark-text text-xs">
+                    No hay filas que coincidan con el filtro aplicado.
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+
+          <!-- RESUMEN FINAL TRAS EJECUCIÓN (Si ya se ejecutó o simuló) -->
+          <div *ngIf="resultadoFinal() as res" class="p-4 rounded-xl border transition-all"
+            [class.bg-emerald-500-10]="!res.simulado && res.rechazados === 0"
+            [class.border-emerald-500-30]="!res.simulado && res.rechazados === 0"
+            [class.bg-blue-500-10]="res.simulado"
+            [class.border-blue-500-30]="res.simulado"
+            [class.bg-amber-500-10]="!res.simulado && res.rechazados > 0"
+            [class.border-amber-500-30]="!res.simulado && res.rechazados > 0">
+
+            <div class="flex items-center gap-2 mb-2 font-bold text-xs"
+              [class.text-emerald-400]="!res.simulado && res.rechazados === 0"
+              [class.text-blue-400]="res.simulado"
+              [class.text-amber-400]="!res.simulado && res.rechazados > 0">
+              <ion-icon [name]="res.simulado ? 'flask-outline' : (res.rechazados > 0 ? 'warning-outline' : 'checkmark-done-circle-outline')" class="text-base"></ion-icon>
+              <span>
+                {{ res.simulado ? 'Simulación en Servidor Exitosa (Sin cambios en base de datos)' : 'Cargue Masivo Aplicado en Base de Datos' }}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+              <div>Total procesadas: <strong>{{ res.total }}</strong></div>
+              <div class="text-emerald-400">Insertadas: <strong>+{{ res.insertados }}</strong></div>
+              <div class="text-blue-400">Actualizadas: <strong>{{ res.actualizados }}</strong></div>
+              <div class="text-amber-400">Trasladadas: <strong>{{ res.trasladados }}</strong></div>
+              <div class="text-red-400">Rechazadas: <strong>{{ res.rechazados }}</strong></div>
+            </div>
+
+            <p *ngIf="res.simulado" class="text-[11px] text-blue-300 mt-2">
+              Verifique los números. Si todo coincide con lo esperado, presione "Confirmar y Aplicar en Base de Datos" a continuación.
+            </p>
+          </div>
+
+        </div>
+
+      </ng-container>
+
+      <!-- ==================================================================== -->
+      <!-- TAB 2: BITÁCORA / HISTORIAL DE CARGUES                              -->
+      <!-- ==================================================================== -->
+      <ng-container *ngIf="tabActiva() === 'historial'">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-[rgb(var(--color-heading))]">
+                Bitácora de Cargues Masivos — Sede: {{ getSedeNombre(sedeSeleccionadaId()) }}
+              </h3>
+              <p class="text-xs text-dark-text">
+                Registro inmutable de archivos cargados, auditoría de usuarios y balances de inserción
+              </p>
+            </div>
+            <button
+              type="button"
+              (click)="cargarHistorial()"
+              class="px-3 py-1.5 text-xs bg-dark-secondary hover:bg-dark-accent border border-dark-border text-dark-text hover:text-[rgb(var(--color-heading))] rounded-lg transition-all flex items-center gap-1.5">
+              <ion-icon name="refresh-outline"></ion-icon>
+              <span>Actualizar</span>
+            </button>
+          </div>
+
+          <div *ngIf="cargandoHistorial()" class="flex items-center justify-center py-12">
+            <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+          </div>
+
+          <div *ngIf="!cargandoHistorial() && historial().length === 0" class="text-center py-12 border border-dashed border-dark-border rounded-xl">
+            <ion-icon name="file-tray-outline" class="text-3xl text-dark-text mb-2"></ion-icon>
+            <p class="text-xs text-dark-text font-medium">No hay registros de cargues masivos previos en esta sede.</p>
+          </div>
+
+          <div *ngIf="!cargandoHistorial() && historial().length > 0" class="border border-dark-border rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+                <tr>
+                  <th class="px-3 py-2.5">Fecha y Hora</th>
+                  <th class="px-3 py-2.5">Archivo</th>
+                  <th class="px-3 py-2.5">Modo</th>
+                  <th class="px-3 py-2.5 text-center">Total</th>
+                  <th class="px-3 py-2.5 text-center text-emerald-400">Nuevos</th>
+                  <th class="px-3 py-2.5 text-center text-blue-400">Actualizados</th>
+                  <th class="px-3 py-2.5 text-center text-amber-400">Traslados</th>
+                  <th class="px-3 py-2.5 text-center text-red-400">Rechazados</th>
+                  <th class="px-3 py-2.5 text-center">Detalle</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-dark-border">
+                <tr *ngFor="let h of historial()" class="hover:bg-dark-primary/40 transition-colors">
+                  <td class="px-3 py-2 text-dark-text">
+                    {{ h.created_at | date:'dd/MM/yyyy HH:mm' }}
+                  </td>
+                  <td class="px-3 py-2 font-mono text-[11px] font-medium text-[rgb(var(--color-heading))]">
+                    {{ h.archivo_nombre }}
+                  </td>
+                  <td class="px-3 py-2 text-dark-text">
+                    <span class="px-2 py-0.5 rounded text-[10px]"
+                      [class.bg-blue-500-10]="h.modo === 'insertar_actualizar'"
+                      [class.text-blue-400]="h.modo === 'insertar_actualizar'"
+                      [class.bg-cyan-500-10]="h.modo === 'solo_nuevos'"
+                      [class.text-cyan-400]="h.modo === 'solo_nuevos'">
+                      {{ h.modo === 'insertar_actualizar' ? 'Upsert' : 'Solo Nuevos' }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-center font-bold text-[rgb(var(--color-heading))]">{{ h.total_filas }}</td>
+                  <td class="px-3 py-2 text-center text-emerald-400 font-semibold">+{{ h.insertados }}</td>
+                  <td class="px-3 py-2 text-center text-blue-400 font-semibold">{{ h.actualizados }}</td>
+                  <td class="px-3 py-2 text-center text-amber-400 font-semibold">{{ h.trasladados }}</td>
+                  <td class="px-3 py-2 text-center text-red-400 font-semibold">{{ h.rechazados }}</td>
+                  <td class="px-3 py-2 text-center">
+                    <button
+                      *ngIf="h.detalle && h.detalle.length > 0"
+                      type="button"
+                      (click)="verDetalleHistorial(h)"
+                      class="px-2 py-1 text-[11px] rounded bg-dark-secondary hover:bg-dark-accent border border-dark-border text-brand-primary font-medium transition-all">
+                      Ver {{ h.detalle.length }} incidencias
+                    </button>
+                    <span *ngIf="!h.detalle || h.detalle.length === 0" class="text-dark-text/40 text-[10px]">
+                      Sin incidencias
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Modal Interno de Detalle de Incidencias de Historial -->
+          <div *ngIf="historialDetalleSeleccionado() as hDetalle"
+            class="p-4 bg-dark-primary/80 border border-dark-border rounded-xl space-y-3">
+            <div class="flex items-center justify-between border-b border-dark-border pb-2">
+              <h4 class="text-xs font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+                <ion-icon name="list-outline" class="text-brand-primary"></ion-icon>
+                Incidencias de Cargue: {{ hDetalle.archivo_nombre }} ({{ hDetalle.created_at | date:'dd/MM/yyyy HH:mm' }})
+              </h4>
+              <button (click)="cerrarDetalleHistorial()" class="text-dark-text hover:text-[rgb(var(--color-heading))] text-xs">
+                Cerrar
+              </button>
+            </div>
+            <div class="max-h-60 overflow-y-auto custom-scrollbar">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-dark-secondary text-dark-text text-[10px] uppercase">
+                  <tr>
+                    <th class="px-2 py-1.5">Fila</th>
+                    <th class="px-2 py-1.5">Documento</th>
+                    <th class="px-2 py-1.5">Estado</th>
+                    <th class="px-2 py-1.5">Motivo</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-dark-border">
+                  <tr *ngFor="let d of hDetalle.detalle">
+                    <td class="px-2 py-1.5 font-mono text-[10px]">{{ d.fila }}</td>
+                    <td class="px-2 py-1.5 font-mono text-[11px] font-semibold text-[rgb(var(--color-heading))]">{{ d.documento }}</td>
+                    <td class="px-2 py-1.5">
+                      <span class="px-1.5 py-0.5 rounded text-[10px]"
+                        [class.bg-red-500-15]="d.estado === 'rechazado'"
+                        [class.text-red-400]="d.estado === 'rechazado'"
+                        [class.bg-zinc-500-15]="d.estado === 'omitido'"
+                        [class.text-dark-text]="d.estado === 'omitido'">
+                        {{ d.estado }}
+                      </span>
+                    </td>
+                    <td class="px-2 py-1.5 text-dark-text">{{ d.motivo }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <!-- FOOTER MODAL CON BOTONES DE ACCIÓN -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3 border-t border-dark-border bg-dark-primary/60">
+      <div class="text-[11px] text-dark-text">
+        <span *ngIf="filasValidadas().length > 0">
+          <strong class="text-[rgb(var(--color-heading))]">{{ resumen().validos }}</strong> de {{ resumen().total }} filas listas para aplicar
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button
+          type="button"
+          (click)="cerrar.emit()"
+          class="flex-1 sm:flex-none px-4 py-2 text-xs rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+          Cancelar
+        </button>
+
+        <!-- Botón de Simulación -->
+        <button
+          *ngIf="filasValidadas().length > 0 && tabActiva() === 'cargue'"
+          type="button"
+          (click)="simular()"
+          [disabled]="simulandoCargue() || ejecutandoCargue() || resumen().validos === 0"
+          class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs rounded-lg bg-dark-secondary hover:bg-dark-accent border border-brand-primary/40 text-brand-primary font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+          <ion-icon name="flask-outline"></ion-icon>
+          <span>{{ simulandoCargue() ? 'Simulando...' : 'Simular en DB' }}</span>
+        </button>
+
+        <!-- Botón de Aplicación Real -->
+        <button
+          *ngIf="filasValidadas().length > 0 && tabActiva() === 'cargue'"
+          type="button"
+          (click)="aplicarCargue()"
+          [disabled]="simulandoCargue() || ejecutandoCargue() || resumen().validos === 0"
+          class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-xs rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-semibold transition-all duration-200 shadow-lg shadow-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed">
+          <ion-icon name="cloud-upload-outline"></ion-icon>
+          <span>{{ ejecutandoCargue() ? 'Aplicando Cargue...' : 'Confirmar y Aplicar' }}</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

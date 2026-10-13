@@ -4,6 +4,7 @@ import { SeguridadSocialService } from '../../../../core/services/seguridad-soci
 import { SedesService } from '../../../../core/services/sedes.service';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { Trabajador, calcularEdad, CatalogoSeguridadSocial, Empresa, Sede } from '../../../../core/models/models';
+import { ResultadoCargueBackend } from '../../../../core/models/cargue-trabajadores.model';
 
 @Component({
   selector: 'app-trabajadores',
@@ -37,31 +38,43 @@ export class TrabajadoresComponent implements OnInit {
   searchQuery = '';
 
   showFormModal = false;
+  showCargueMasivoModal = false;
   selectedTrabajador: Trabajador | null = null;
   form: Partial<Trabajador> = this.getEmptyForm();
+
+  async openCargueMasivoModal(): Promise<void> {
+    if (this.sedes.length === 0 && this.empresaId) {
+      await this.loadSedes();
+    }
+    this.showCargueMasivoModal = true;
+  }
+
+  closeCargueMasivoModal(): void {
+    this.showCargueMasivoModal = false;
+  }
+
+  async onCargueMasivoCompletado(_resultado: ResultadoCargueBackend): Promise<void> {
+    await this.loadTrabajadores();
+  }
 
   async ngOnInit(): Promise<void> {
     this.isModal = !!this.sedeId;
     this.seguridadSocialService.cargarCatalogos();
 
-    if (this.isModal && this.sedeId) {
-      await this.loadTrabajadores();
-    } else {
-      // Modo Página autónoma
-      this.esAdmin = await this.tenantService.isAdministrador();
-      this.empresas = await this.tenantService.listarEmpresasDisponibles();
+    this.esAdmin = await this.tenantService.isAdministrador();
+    this.empresas = await this.tenantService.listarEmpresasDisponibles();
 
-      if (!this.empresaId) {
-        if (this.esAdmin && this.empresas.length > 0) {
-          this.empresaId = this.empresas[0].id!;
-        } else {
-          this.empresaId = (await this.tenantService.getEmpresaTenantId()) || '';
-        }
+    if (!this.empresaId) {
+      if (this.esAdmin && this.empresas.length > 0) {
+        this.empresaId = this.empresas[0].id!;
+      } else {
+        this.empresaId = (await this.tenantService.getEmpresaTenantId()) || '';
       }
-
-      await this.loadSedes();
-      await this.loadTrabajadores();
     }
+
+    // Siempre cargar las sedes de la empresa para tener el listado disponible en tabla y modales
+    await this.loadSedes();
+    await this.loadTrabajadores();
   }
 
   async onEmpresaChange(id: string): Promise<void> {

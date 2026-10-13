@@ -77,13 +77,23 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     // Suscribirse al auth state para filtrar menu por permisos del rol
     this.subscription.add(
-      this.authService.authState$.subscribe((state: AuthState) => {
+      this.authService.authState$.subscribe(async (state: AuthState) => {
+        if (state.perfil) {
+          const rolNombre = ((state.perfil as any).rol_data?.nombre || state.perfil.rol || '').toString().trim().toUpperCase();
+          if (rolNombre === 'ADMINISTRADOR' || rolNombre === 'ADMIN' || rolNombre === 'SUPERADMIN' || rolNombre === 'SUPER ADMIN') {
+            this.menuItems = this.allMenuItems;
+            this.expandParentsOfActiveRoute();
+            return;
+          }
+        }
+
         if (state.perfil?.rol_id) {
-          this.loadPermisosAndFilter(state.perfil.rol_id);
+          await this.loadPermisosAndFilter(state.perfil.rol_id);
         } else {
           // Sin rol asignado → mostrar todos los módulos
           this.menuItems = this.allMenuItems;
         }
+        this.expandParentsOfActiveRoute();
       })
     );
 
@@ -123,6 +133,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
       }
 
       const allowedSet = new Set<string>(this.modulosPermitidos);
+
+      // Si el rol tiene acceso al grupo de indicadores o a accidentalidad, incluir la matriz consolidada
+      if (allowedSet.has('indicadores-grupo') || allowedSet.has('ind-accidentalidad') || allowedSet.has('verificar')) {
+        allowedSet.add('ind-matriz-consolidada');
+      }
 
       // Filtrar el árbol de navegación completo respetando submódulos y ramas permitidas
       this.menuItems = this.filterMenuTree(this.allMenuItems, allowedSet);

@@ -23,8 +23,10 @@ import { Cie10SelectorComponent } from './components/cie10-selector/cie10-select
 import { EnfermedadLaboralComponent } from './pages/enfermedad-laboral/enfermedad-laboral.component';
 import { AusentismoComponent } from './pages/ausentismo/ausentismo.component';
 import { SgSstEprComponent } from './pages/sg-sst-epr/sg-sst-epr.component';
+import { MatrizIndicadoresComponent } from './pages/matriz-indicadores/matriz-indicadores.component';
 
 const routes: Routes = [
+  { path: 'matriz-indicadores', component: MatrizIndicadoresComponent },
   {
     path: 'accidentalidad',
     children: [
@@ -38,7 +40,7 @@ const routes: Routes = [
   { path: 'enfermedad-laboral', component: EnfermedadLaboralComponent },
   { path: 'ausentismo', component: AusentismoComponent },
   { path: 'sg-sst', component: SgSstEprComponent },
-  { path: '', redirectTo: 'accidentalidad', pathMatch: 'full' }
+  { path: '', redirectTo: 'matriz-indicadores', pathMatch: 'full' }
 ];
 
 @NgModule({
@@ -59,7 +61,8 @@ const routes: Routes = [
     Cie10SelectorComponent,
     EnfermedadLaboralComponent,
     AusentismoComponent,
-    SgSstEprComponent
+    SgSstEprComponent,
+    MatrizIndicadoresComponent
   ],
   imports: [
     CommonModule,

@@ -85,12 +85,21 @@
       <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por nombre, documento, cargo o sede..."
         class="w-full pl-9 pr-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200">
     </div>
-    <button (click)="openFormModal()"
-      class="w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm"
-      title="Registrar nuevo trabajador en el sistema">
-      <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
-      <span>Agregar Trabajador</span>
-    </button>
+    <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+      <button (click)="openCargueMasivoModal()"
+        class="w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm"
+        title="Cargue masivo de trabajadores por archivo plano (.csv, .txt, .xlsx)">
+        <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
+        <span>Cargue Masivo (Plano / Excel)</span>
+      </button>
+
+      <button (click)="openFormModal()"
+        class="w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm"
+        title="Registrar nuevo trabajador en el sistema">
+        <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
+        <span>Agregar Trabajador</span>
+      </button>
+    </div>
   </div>
 
   <!-- Table -->
@@ -349,3 +358,15 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Cargue Masivo de Trabajadores por Sede -->
+<app-cargue-masivo-modal
+  *ngIf="showCargueMasivoModal"
+  [empresaId]="empresaId || ''"
+  [sedeId]="sedeId || filtroSedeId"
+  [sedes]="sedes"
+  [empresas]="empresas"
+  [esAdmin]="esAdmin"
+  (cerrar)="closeCargueMasivoModal()"
+  (cargueCompletado)="onCargueMasivoCompletado($event)">
+</app-cargue-masivo-modal>

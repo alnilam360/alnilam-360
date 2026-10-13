@@ -7,6 +7,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { EmpresasComponent } from './pages/empresas/empresas.component';
 import { RolesComponent } from './pages/roles/roles.component';
 import { TrabajadoresComponent } from './pages/trabajadores/trabajadores.component';
+import { CargueMasivoModalComponent } from './pages/trabajadores/components/cargue-masivo-modal/cargue-masivo-modal.component';
 
 // PrimeNG
 import { TableModule } from 'primeng/table';
@@ -17,6 +18,8 @@ import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { CheckboxModule } from 'primeng/checkbox';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { TooltipModule } from 'primeng/tooltip';
 
 const routes: Routes = [
   { path: '', redirectTo: 'empresas', pathMatch: 'full' },
@@ -29,7 +32,8 @@ const routes: Routes = [
   declarations: [
     EmpresasComponent,
     RolesComponent,
-    TrabajadoresComponent
+    TrabajadoresComponent,
+    CargueMasivoModalComponent
   ],
   imports: [
     CommonModule,
@@ -45,7 +49,9 @@ const routes: Routes = [
     InputIconModule,
     TagModule,
     CheckboxModule,
-    AutoCompleteModule
+    AutoCompleteModule,
+    ProgressBarModule,
+    TooltipModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

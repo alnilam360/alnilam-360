@@ -1,0 +1,772 @@
+<div class="space-y-6">
+
+  <!-- ======================================================================== -->
+  <!-- HERO HEADER DEL MÓDULO                                                   -->
+  <!-- ======================================================================== -->
+  <div class="p-6 rounded-3xl bg-gradient-to-r from-dark-secondary via-dark-secondary to-brand-primary/10 border border-dark-border shadow-xl relative overflow-hidden">
+    <div class="absolute -right-8 -top-8 w-44 h-44 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 relative z-10">
+      <div>
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Módulo VERIFICAR · SG-SST
+          </span>
+          <span class="text-xs text-dark-text font-mono">
+            Res. 0312/2019 · Dec. 1072/2015 · GTC 3701
+          </span>
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-[rgb(var(--color-heading))] tracking-tight flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
+            <ion-icon name="grid-outline" class="text-2xl"></ion-icon>
+          </div>
+          0. Matriz de Indicadores
+        </h1>
+
+        <p class="text-xs sm:text-sm text-dark-text mt-2 max-w-3xl leading-relaxed">
+          Consolidado oficial de indicadores SG-SST: Accidente de Trabajo (AT), Enfermedad Laboral (EL), Ausentismo y Estándares E-P-R.
+        </p>
+      </div>
+
+      <!-- Barra de Acciones de Cabecera -->
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <!-- 1. Registrar Indicador -->
+        <button
+          type="button"
+          (click)="abrirNuevoIndicador()"
+          class="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-brand-primary to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-brand-primary/25 transition-all duration-200 transform hover:-translate-y-0.5 cursor-pointer">
+          <ion-icon name="add-circle-outline" class="text-base"></ion-icon>
+          <span>Registrar Indicador</span>
+        </button>
+
+        <!-- 2. Plantilla Estándar -->
+        <button
+          type="button"
+          (click)="inicializarPlantilla()"
+          [disabled]="inicializando() || cargando()"
+          class="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-dark-border bg-dark-primary hover:bg-dark-accent text-[rgb(var(--color-heading))] transition-all duration-200 disabled:opacity-50 cursor-pointer"
+          title="Cargar las fichas normativas estándar del SG-SST en este periodo">
+          <ion-icon name="layers-outline" [class.animate-spin]="inicializando()" class="text-base text-purple-400"></ion-icon>
+          <span>{{ inicializando() ? 'Cargando...' : 'Plantilla Estándar' }}</span>
+        </button>
+
+        <!-- 3. Exportar Excel -->
+        <button
+          type="button"
+          (click)="exportarExcel()"
+          [disabled]="exportando() || filas().length === 0"
+          class="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-200 shadow-md shadow-emerald-600/20 disabled:opacity-50 cursor-pointer"
+          title="Descargar matriz en formato Excel .xlsx">
+          <ion-icon name="document-text-outline" class="text-base"></ion-icon>
+          <span>{{ exportando() ? 'Generando...' : 'Exportar Excel' }}</span>
+        </button>
+
+        <!-- 4. Actualizar -->
+        <button
+          type="button"
+          (click)="cargarMatriz()"
+          [disabled]="cargando()"
+          class="p-2.5 rounded-xl border border-dark-border bg-dark-primary hover:bg-dark-accent text-dark-text hover:text-white transition-all duration-200 disabled:opacity-50 cursor-pointer"
+          title="Actualizar datos desde la base de datos">
+          <ion-icon name="sync-outline" [class.animate-spin]="cargando()" class="text-base"></ion-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- BARRA DE FILTROS SUPERIOR Y SELECTORES EN CASCADA                        -->
+  <!-- ======================================================================== -->
+  <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-lg space-y-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+      <!-- Selector de Empresa (Admin) -->
+      <div *ngIf="esAdmin() && empresas().length > 1">
+        <label class="block text-[11px] font-semibold text-dark-text mb-1">
+          Empresa
+        </label>
+        <select
+          [ngModel]="empresaId()"
+          (ngModelChange)="onEmpresaChange($event)"
+          class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+          <option *ngFor="let emp of empresas()" [value]="emp.id">{{ emp.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Selector de Sede -->
+      <div>
+        <label class="block text-[11px] font-semibold text-dark-text mb-1">
+          Sede de Trabajo
+        </label>
+        <select
+          [ngModel]="sedeId()"
+          (ngModelChange)="onSedeChange($event)"
+          class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+          <option value="">Todas las Sedes (Consolidado)</option>
+          <option *ngFor="let s of sedes()" [value]="s.id">{{ s.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Selector de Año -->
+      <div>
+        <label class="block text-[11px] font-semibold text-dark-text mb-1">
+          Año Fiscal / Medición
+        </label>
+        <select
+          [ngModel]="anio()"
+          (ngModelChange)="onAnioChange($event)"
+          class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+          <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
+        </select>
+      </div>
+
+      <!-- Selector de Periodo / Mes -->
+      <div>
+        <label class="block text-[11px] font-semibold text-dark-text mb-1">
+          Frecuencia / Mes de Medición
+        </label>
+        <select
+          [ngModel]="mes()"
+          (ngModelChange)="onMesChange($event)"
+          class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+          <option *ngFor="let m of mesesNombres" [value]="m.valor">{{ m.nombre }}</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- FILTROS EN CASCADA (TIPO -> NOMBRE INDICADOR) -->
+    <div class="pt-2 border-t border-dark-border/60 grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+
+      <!-- 1. SELECTOR DE TIPO -->
+      <div class="md:col-span-4">
+        <label class="block text-[11px] font-semibold text-[rgb(var(--color-heading))] mb-1 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-brand-primary inline-block"></span>
+          Tipo de Indicador (Filtro)
+        </label>
+        <select
+          [ngModel]="tipoSeleccionado()"
+          (ngModelChange)="onTipoChange($event)"
+          class="w-full px-3 py-2 text-xs bg-dark-primary border border-brand-primary/50 rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-semibold shadow-inner">
+          <option value="todos">-- Todos los Tipos --</option>
+          <option *ngFor="let t of tiposDisponibles" [value]="t">
+            {{ t }}
+          </option>
+        </select>
+      </div>
+
+      <!-- 2. SELECTOR NOMBRE DEL INDICADOR (Cascada) -->
+      <div class="md:col-span-5">
+        <label class="block text-[11px] font-semibold text-[rgb(var(--color-heading))] mb-1 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+          Nombre del Indicador
+        </label>
+        <select
+          [ngModel]="indicadorSeleccionadoNombre()"
+          (ngModelChange)="onIndicadorChange($event)"
+          class="w-full px-3 py-2 text-xs bg-dark-primary border border-emerald-500/50 rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-emerald-500 font-semibold shadow-inner">
+          <option value="todos">-- Todos los Indicadores --</option>
+          <option *ngFor="let ind of indicadoresCascada()" [value]="ind.nombre">
+            {{ ind.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <!-- 3. BÚSQUEDA RÁPIDA -->
+      <div class="md:col-span-3">
+        <div class="relative">
+          <ion-icon name="search-outline" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-sm"></ion-icon>
+          <input
+            type="text"
+            [ngModel]="busquedaTexto()"
+            (ngModelChange)="busquedaTexto.set($event)"
+            placeholder="Buscar por nombre o responsable..."
+            class="w-full pl-8 pr-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- TARJETAS KPI DE RESUMEN EJECUTIVO                                        -->
+  <!-- ======================================================================== -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+    <!-- Card 1: Total Indicadores -->
+    <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-md flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+        <ion-icon name="list-outline" class="text-2xl"></ion-icon>
+      </div>
+      <div>
+        <p class="text-[11px] font-medium text-dark-text uppercase tracking-wider">Total Indicadores</p>
+        <div class="flex items-baseline gap-1 mt-0.5">
+          <span class="text-2xl font-bold text-[rgb(var(--color-heading))]">{{ resumen().total }}</span>
+          <span class="text-xs text-dark-text">registrados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: En Cumplimiento -->
+    <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-md flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <ion-icon name="checkmark-done-circle-outline" class="text-2xl"></ion-icon>
+      </div>
+      <div>
+        <p class="text-[11px] font-medium text-dark-text uppercase tracking-wider">Cumplen la Meta</p>
+        <div class="flex items-baseline gap-1 mt-0.5">
+          <span class="text-2xl font-bold text-emerald-400">{{ resumen().cumplen }}</span>
+          <span class="text-xs text-dark-text">de {{ resumen().total }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: En Desviación -->
+    <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-md flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+        <ion-icon name="alert-circle-outline" class="text-2xl"></ion-icon>
+      </div>
+      <div>
+        <p class="text-[11px] font-medium text-dark-text uppercase tracking-wider">No Cumplen</p>
+        <div class="flex items-baseline gap-1 mt-0.5">
+          <span class="text-2xl font-bold text-rose-400">{{ resumen().noCumplen }}</span>
+          <span class="text-xs text-dark-text">en seguimiento</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Porcentaje Cumplimiento Global -->
+    <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-md flex flex-col justify-center">
+      <div class="flex items-center justify-between mb-1">
+        <p class="text-[11px] font-medium text-dark-text uppercase tracking-wider">Cumplimiento Global</p>
+        <span class="text-sm font-bold"
+          [class.text-emerald-400]="resumen().porcentajeCumplimiento >= 80"
+          [class.text-amber-400]="resumen().porcentajeCumplimiento >= 60 && resumen().porcentajeCumplimiento < 80"
+          [class.text-rose-400]="resumen().porcentajeCumplimiento < 60">
+          {{ resumen().porcentajeCumplimiento }}%
+        </span>
+      </div>
+      <div class="w-full h-2 rounded-full bg-dark-primary overflow-hidden">
+        <div
+          class="h-full rounded-full transition-all duration-500"
+          [style.width.%]="resumen().porcentajeCumplimiento"
+          [class.bg-emerald-500]="resumen().porcentajeCumplimiento >= 80"
+          [class.bg-amber-500]="resumen().porcentajeCumplimiento >= 60 && resumen().porcentajeCumplimiento < 80"
+          [class.bg-rose-500]="resumen().porcentajeCumplimiento < 60">
+        </div>
+      </div>
+      <p class="text-[10px] text-dark-text mt-1 text-right">
+        Meta sugerida: ≥ 80%
+      </p>
+    </div>
+
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- TABLA PRINCIPAL DE CONSULTA PROFESIONAL (Sin Fórmula)                    -->
+  <!-- ======================================================================== -->
+  <div class="matriz-table-card">
+
+    <!-- Header Superior de la Barra de Tabla -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-dark-border/80 bg-gradient-to-r from-dark-primary/60 via-dark-primary/40 to-dark-primary/60 flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary shadow-sm shadow-brand-primary/10">
+          <ion-icon name="analytics-outline" class="text-lg"></ion-icon>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-extrabold text-[rgb(var(--color-heading))] tracking-tight">
+              Matriz Oficial de Indicadores SG-SST
+            </h3>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/15 text-brand-primary border border-brand-primary/30">
+              Oficial
+            </span>
+          </div>
+          <p class="text-[11px] text-dark-text mt-0.5">
+            Seguimiento de desempeño y metas normativas del periodo
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-sm">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          {{ resumen().cumplen }} Cumplen
+        </span>
+
+        <span *ngIf="resumen().noCumplen > 0" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/25 shadow-sm">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+          {{ resumen().noCumplen }} En Desviación
+        </span>
+
+        <span class="px-3 py-1 rounded-xl text-xs font-semibold bg-dark-primary/90 border border-dark-border text-dark-text flex items-center gap-1.5 shadow-sm">
+          <ion-icon name="calendar-outline" class="text-xs text-brand-primary"></ion-icon>
+          <span class="font-medium text-[rgb(var(--color-heading))]">{{ mes() === 0 ? 'Año ' + anio() : mesesNombres[mes()].nombre + ' ' + anio() }}</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Spinner de carga -->
+    <div *ngIf="cargando()" class="py-16 flex flex-col items-center justify-center text-center">
+      <ion-spinner name="crescent" class="text-brand-primary text-3xl"></ion-spinner>
+      <p class="text-xs text-dark-text mt-2 font-medium">Cargando registros de la matriz...</p>
+    </div>
+
+    <!-- Tabla Moderna y Estilizada (Excluyendo Fórmula como fue indicado) -->
+    <div *ngIf="!cargando() && filas().length > 0" class="overflow-x-auto custom-scrollbar">
+      <table class="table-modern">
+        <thead>
+          <tr>
+            <th>
+              <div class="flex items-center gap-1.5">
+                <ion-icon name="grid-outline" class="text-xs text-brand-primary"></ion-icon>
+                <span>Tipo</span>
+              </div>
+            </th>
+            <th>
+              <div class="flex items-center gap-1.5">
+                <ion-icon name="document-text-outline" class="text-xs text-brand-primary"></ion-icon>
+                <span>Nombre del Indicador</span>
+              </div>
+            </th>
+            <th class="text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <ion-icon name="flag-outline" class="text-xs text-brand-primary"></ion-icon>
+                <span>Meta o límite</span>
+              </div>
+            </th>
+            <th class="text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <ion-icon name="person-outline" class="text-xs text-brand-primary"></ion-icon>
+                <span>Responsable</span>
+              </div>
+            </th>
+            <th class="text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <ion-icon name="time-outline" class="text-xs text-brand-primary"></ion-icon>
+                <span>Frecuencia</span>
+              </div>
+            </th>
+            <th class="text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <ion-icon name="calculator-outline" class="text-xs text-brand-primary"></ion-icon>
+                <span>Resultado</span>
+              </div>
+            </th>
+            <th class="text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <ion-icon name="shield-checkmark-outline" class="text-xs text-brand-primary"></ion-icon>
+                <span>Cumplimiento</span>
+              </div>
+            </th>
+            <th>
+              <div class="flex items-center gap-1.5">
+                <ion-icon name="people-outline" class="text-xs text-brand-primary"></ion-icon>
+                <span>Personal a Conocer</span>
+              </div>
+            </th>
+            <th class="text-center">
+              <span>Acciones</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let fila of filasFiltradas()" class="table-row-item group">
+
+            <!-- 1. Tipo (Badge ultra pulido con dot semántico y glow suave) -->
+            <td>
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[11px] font-bold shadow-sm backdrop-blur-sm"
+                [ngClass]="getTipoBadgeConfig(fila.tipo).badgeClass">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getTipoBadgeConfig(fila.tipo).dotClass"></span>
+                <ion-icon [name]="getTipoBadgeConfig(fila.tipo).icon" class="text-xs flex-shrink-0"></ion-icon>
+                <span class="whitespace-nowrap">{{ fila.tipo }}</span>
+              </div>
+            </td>
+
+            <!-- 2. Nombre del Indicador -->
+            <td class="min-w-[220px]">
+              <div class="font-bold text-sm text-[rgb(var(--color-heading))] tracking-tight group-hover:text-brand-primary transition-colors">
+                {{ fila.nombre }}
+              </div>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="inline-flex items-center gap-1 text-[10px] text-dark-text/80 font-medium bg-dark-primary/60 px-2 py-0.5 rounded-md border border-dark-border/50">
+                  <ion-icon name="shield-checkmark-outline" class="text-brand-primary text-[10px]"></ion-icon>
+                  <span>SG-SST Normativo</span>
+                </span>
+              </div>
+            </td>
+
+            <!-- 3. Meta o límite del indicador (Píldora benchmark con tipografía tabular) -->
+            <td class="text-center">
+              <div class="inline-flex flex-col items-center">
+                <div class="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-xl bg-dark-primary/70 border border-dark-border/80 text-xs font-mono font-bold text-[rgb(var(--color-heading))] shadow-inner tabular-data">
+                  <ion-icon name="flag-outline" class="text-dark-text text-[11px]"></ion-icon>
+                  <span>{{ fila.meta }}%</span>
+                </div>
+                <span class="text-[9px] uppercase tracking-wider text-dark-text/70 font-semibold mt-0.5">Objetivo</span>
+              </div>
+            </td>
+
+            <!-- 4. Responsable (Monograma avatar corporativo) -->
+            <td class="text-center">
+              <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-dark-primary/60 border border-dark-border/70 text-xs font-medium text-[rgb(var(--color-heading))] shadow-sm">
+                <div class="avatar-monogram">
+                  {{ getInicialesResponsable(fila.responsable) }}
+                </div>
+                <span class="font-semibold text-xs tracking-tight">{{ fila.responsable }}</span>
+              </div>
+            </td>
+
+            <!-- 5. Frecuencia de Medición -->
+            <td class="text-center">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border shadow-sm"
+                [ngClass]="getFrecuenciaBadgeConfig(fila.frecuencia).clase">
+                <ion-icon [name]="getFrecuenciaBadgeConfig(fila.frecuencia).icono" class="text-xs"></ion-icon>
+                <span>{{ fila.frecuencia }}</span>
+              </span>
+            </td>
+
+            <!-- 6. Resultado (Visualización ejecutiva con delta y micro barra de desempeño) -->
+            <td class="text-center">
+              <div class="flex flex-col items-center justify-center">
+                <div class="inline-flex items-center gap-2">
+                  <span class="text-sm font-mono font-extrabold text-[rgb(var(--color-heading))] tabular-data">
+                    {{ fila.resultado }}%
+                  </span>
+                  <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold border"
+                    [ngClass]="getDeltaResultado(fila).claseBadge">
+                    <ion-icon [name]="getDeltaResultado(fila).icono" class="text-[10px]"></ion-icon>
+                    <span>{{ getDeltaResultado(fila).texto }}</span>
+                  </span>
+                </div>
+                <!-- Mini barra de desempeño relativo -->
+                <div class="mini-progress-track" [title]="'Desempeño relativo: ' + getBarraProgreso(fila) + '%'">
+                  <div class="mini-progress-fill"
+                    [style.width.%]="getBarraProgreso(fila)"
+                    [class.bg-emerald-500]="fila.cumplimiento === 'CUMPLE'"
+                    [class.bg-rose-500]="fila.cumplimiento !== 'CUMPLE'">
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <!-- 7. Cumplimiento (Badge vibrante de alta visibilidad con pulso) -->
+            <td class="text-center">
+              <div [ngClass]="fila.cumplimiento === 'CUMPLE' ? 'badge-status-cumple' : 'badge-status-no-cumple'">
+                <span class="w-1.5 h-1.5 rounded-full"
+                  [class.bg-emerald-400]="fila.cumplimiento === 'CUMPLE'"
+                  [class.bg-rose-400]="fila.cumplimiento !== 'CUMPLE'"
+                  [class.animate-pulse]="true"></span>
+                <ion-icon [name]="fila.cumplimiento === 'CUMPLE' ? 'checkmark-circle' : 'alert-circle'" class="text-sm"></ion-icon>
+                <span>{{ fila.cumplimiento }}</span>
+              </div>
+            </td>
+
+            <!-- 8. Personal que debe conocer el resultado -->
+            <td>
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-dark-primary/50 border border-dark-border/70 text-xs text-dark-text max-w-[210px]"
+                [title]="fila.personalConocimiento">
+                <div class="w-5 h-5 rounded-md bg-dark-accent flex items-center justify-center text-dark-text flex-shrink-0 border border-dark-border/40">
+                  <ion-icon name="people-outline" class="text-xs"></ion-icon>
+                </div>
+                <span class="truncate font-medium text-[11px] text-[rgb(var(--color-heading))]">{{ fila.personalConocimiento }}</span>
+              </div>
+            </td>
+
+            <!-- 9. Acciones (Botones flotantes con microanimación) -->
+            <td class="text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <!-- Editar Indicador -->
+                <button
+                  type="button"
+                  (click)="abrirEdicionFila(fila)"
+                  class="p-2 rounded-xl bg-dark-primary hover:bg-brand-primary/20 text-brand-primary border border-dark-border hover:border-brand-primary/50 transition-all duration-150 cursor-pointer shadow-sm transform hover:-translate-y-0.5 hover:shadow-md"
+                  title="Editar ficha del indicador">
+                  <ion-icon name="create-outline" class="text-sm"></ion-icon>
+                </button>
+
+                <!-- Ir a Módulo si aplica -->
+                <button
+                  *ngIf="fila.moduloRuta"
+                  type="button"
+                  (click)="irAModulo(fila.moduloRuta)"
+                  class="p-2 rounded-xl bg-dark-primary hover:bg-dark-accent text-dark-text hover:text-white border border-dark-border transition-all duration-150 cursor-pointer shadow-sm transform hover:-translate-y-0.5 hover:shadow-md"
+                  title="Ir al módulo relacionado">
+                  <ion-icon name="open-outline" class="text-sm"></ion-icon>
+                </button>
+
+                <!-- Eliminar Indicador -->
+                <button
+                  type="button"
+                  (click)="eliminarFila(fila)"
+                  class="p-2 rounded-xl bg-dark-primary hover:bg-rose-500/20 text-rose-400 border border-dark-border hover:border-rose-500/50 transition-all duration-150 cursor-pointer shadow-sm transform hover:-translate-y-0.5 hover:shadow-md"
+                  title="Eliminar este indicador">
+                  <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                </button>
+              </div>
+            </td>
+
+          </tr>
+
+          <!-- Sin coincidencias -->
+          <tr *ngIf="filasFiltradas().length === 0">
+            <td colspan="9" class="py-12 text-center text-dark-text">
+              <ion-icon name="filter-outline" class="text-4xl mb-2 text-dark-text/40"></ion-icon>
+              <p class="text-sm font-semibold">No se encontraron indicadores con los filtros seleccionados.</p>
+              <p class="text-xs text-dark-text/70 mt-1">Pruebe seleccionando "Todos los Tipos" o limpie la búsqueda.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer de la Tabla con Datos de Estado -->
+    <div *ngIf="!cargando() && filas().length > 0" class="px-6 py-3.5 border-t border-dark-border bg-dark-primary/30 flex items-center justify-between flex-wrap gap-2 text-xs text-dark-text">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Normativa SG-SST: Res. 0312/2019 · Dec. 1072/2015</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span>Mostrando <strong class="text-[rgb(var(--color-heading))]">{{ filasFiltradas().length }}</strong> indicadores</span>
+        <span>•</span>
+        <span>Cumplimiento del Periodo: <strong class="text-emerald-400 font-bold">{{ resumen().porcentajeCumplimiento }}%</strong></span>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!cargando() && filas().length === 0" class="py-16 px-6 text-center">
+      <div class="w-16 h-16 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary mx-auto mb-4 shadow-lg shadow-brand-primary/10">
+        <ion-icon name="file-tray-stacked-outline" class="text-3xl"></ion-icon>
+      </div>
+      <h4 class="text-base font-bold text-[rgb(var(--color-heading))]">
+        No hay indicadores registrados en este periodo
+      </h4>
+      <p class="text-xs text-dark-text max-w-md mx-auto mt-1 mb-6 leading-relaxed">
+        Puede comenzar registrando un nuevo indicador o cargar la plantilla estándar con los 9 indicadores normativos.
+      </p>
+
+      <div class="flex items-center justify-center gap-3 flex-wrap">
+        <button
+          type="button"
+          (click)="abrirNuevoIndicador()"
+          class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-brand-primary hover:bg-blue-600 text-white shadow-lg shadow-brand-primary/25 transition-all cursor-pointer">
+          <ion-icon name="add-circle-outline" class="text-base"></ion-icon>
+          <span>Registrar Primer Indicador</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="inicializarPlantilla()"
+          [disabled]="inicializando()"
+          class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl border border-dark-border bg-dark-primary hover:bg-dark-accent text-[rgb(var(--color-heading))] transition-all cursor-pointer">
+          <ion-icon name="layers-outline" class="text-base text-purple-400"></ion-icon>
+          <span>Cargar Plantilla Estándar (9 Indicadores)</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- MODAL DE REGISTRO / EDICIÓN CON CASCADA REACTIVA BASADA EN SIGNALS       -->
+  <!-- ======================================================================== -->
+  <div
+    *ngIf="modalVisible()"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto"
+    (click)="cerrarModal()">
+
+    <div
+      class="relative w-full max-w-2xl bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col"
+      (click)="$event.stopPropagation()">
+
+      <!-- Cabecera del modal -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-dark-border bg-dark-primary/50">
+        <div>
+          <h3 class="text-sm sm:text-base font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+            <ion-icon [name]="modoEdicion() ? 'create-outline' : 'add-circle-outline'" class="text-brand-primary text-lg"></ion-icon>
+            {{ modoEdicion() ? 'Editar Indicador' : 'Registrar Nuevo Indicador' }}
+          </h3>
+          <p class="text-[11px] text-dark-text mt-0.5">
+            Diligencie los campos requeridos para la ficha técnica del indicador.
+          </p>
+        </div>
+        <button
+          (click)="cerrarModal()"
+          class="p-1.5 text-dark-text hover:text-white rounded-lg hover:bg-dark-accent transition-colors cursor-pointer">
+          <ion-icon name="close-outline" class="text-xl"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Contenido del formulario -->
+      <div class="p-6 space-y-4 text-xs overflow-y-auto custom-scrollbar flex-1">
+
+        <!-- 1. TIPO Y NOMBRE DEL INDICADOR (CASCADA REACTIVA POR SIGNALS) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Tipo (Lista) -->
+          <div>
+            <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+              Tipo *
+            </label>
+            <select
+              [ngModel]="tipoModal()"
+              (ngModelChange)="alCambiarTipoEnModal($event)"
+              class="w-full px-3 py-2.5 bg-dark-primary border border-dark-border rounded-xl text-[rgb(var(--color-heading))] font-semibold focus:outline-none focus:border-brand-primary">
+              <option *ngFor="let t of tiposDisponibles" [value]="t">
+                {{ t }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Nombre del Indicador (Lista dependiente del Tipo) -->
+          <div>
+            <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+              Nombre del Indicador *
+            </label>
+            <select
+              [ngModel]="nombreModal()"
+              (ngModelChange)="alCambiarNombreEnModal($event)"
+              class="w-full px-3 py-2.5 bg-dark-primary border border-dark-border rounded-xl text-[rgb(var(--color-heading))] font-bold focus:outline-none focus:border-brand-primary">
+              <option value="" disabled>-- Seleccione un indicador --</option>
+              <option *ngFor="let n of nombresDisponiblesModal()" [value]="n">
+                {{ n }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 2. FÓRMULA O MÉTODO DE CÁLCULO (CAMPO TEXTO) -->
+        <div>
+          <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+            Fórmula o Método de cálculo *
+          </label>
+          <textarea
+            rows="2"
+            [ngModel]="formulaModal()"
+            (ngModelChange)="formulaModal.set($event)"
+            placeholder="Fórmula matemática o método de cálculo..."
+            class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-xl text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary leading-relaxed"></textarea>
+        </div>
+
+        <!-- 3. RESPONSABLE Y FRECUENCIA -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Responsable de la Medición (Campo Texto) -->
+          <div>
+            <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+              Responsable de la Medición *
+            </label>
+            <input
+              type="text"
+              [ngModel]="responsableModal()"
+              (ngModelChange)="responsableModal.set($event)"
+              placeholder="Ej. Responsable SST, Talento Humano"
+              class="w-full px-3 py-2.5 bg-dark-primary border border-dark-border rounded-xl text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+          </div>
+
+          <!-- Frecuencia de Medición (Lista: solo Mensual o Anual) -->
+          <div>
+            <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+              Frecuencia de Medición *
+            </label>
+            <select
+              [ngModel]="frecuenciaModal()"
+              (ngModelChange)="frecuenciaModal.set($event)"
+              class="w-full px-3 py-2.5 bg-dark-primary border border-dark-border rounded-xl text-[rgb(var(--color-heading))] font-semibold focus:outline-none focus:border-brand-primary">
+              <option *ngFor="let frec of frecuenciasDisponibles" [value]="frec">
+                {{ frec }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. META, RESULTADO Y CUMPLIMIENTO -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-dark-primary/50 border border-dark-border">
+          <!-- Meta o límite del indicador (Numérico porcentual) -->
+          <div>
+            <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+              Meta o límite del indicador
+            </label>
+            <div class="relative">
+              <input
+                type="number"
+                step="any"
+                [ngModel]="metaModal()"
+                (ngModelChange)="metaModal.set($any($event))"
+                placeholder="0"
+                class="w-full pr-8 pl-3 py-2 bg-dark-primary border border-dark-border rounded-xl text-[rgb(var(--color-heading))] font-bold focus:outline-none focus:border-brand-primary">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-dark-text font-bold text-xs pointer-events-none">%</span>
+            </div>
+          </div>
+
+          <!-- Resultado (Numérico porcentual) -->
+          <div>
+            <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+              Resultado
+            </label>
+            <div class="relative">
+              <input
+                type="number"
+                step="any"
+                [ngModel]="resultadoModal()"
+                (ngModelChange)="resultadoModal.set($any($event))"
+                placeholder="0"
+                class="w-full pr-8 pl-3 py-2 bg-dark-primary border border-dark-border rounded-xl text-[rgb(var(--color-heading))] font-bold focus:outline-none focus:border-brand-primary">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-dark-text font-bold text-xs pointer-events-none">%</span>
+            </div>
+          </div>
+
+          <!-- Cumplimiento (Evaluación automática: Si resultado >= Meta cumple) -->
+          <div>
+            <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+              Cumplimiento
+            </label>
+            <div class="pt-0.5">
+              <div [ngClass]="cumplimientoModal() === 'CUMPLE' ? 'badge-status-cumple' : 'badge-status-no-cumple'" class="w-full">
+                <ion-icon [name]="cumplimientoModal() === 'CUMPLE' ? 'checkmark-circle' : 'alert-circle'" class="text-sm"></ion-icon>
+                <span>{{ cumplimientoModal() }}</span>
+              </div>
+              <p class="text-[10px] text-dark-text mt-1 text-center font-mono">
+                {{ resultadoModal() >= metaModal() ? 'Resultado ≥ Meta (Cumple)' : 'Resultado < Meta (No cumple)' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. PERSONAL QUE DEBE CONOCER EL RESULTADO (CAMPO ABIERTO) -->
+        <div>
+          <label class="block font-bold text-[rgb(var(--color-heading))] mb-1.5">
+            Personal que debe conocer el resultado *
+          </label>
+          <input
+            type="text"
+            [ngModel]="personalConocimientoModal()"
+            (ngModelChange)="personalConocimientoModal.set($event)"
+            placeholder="Ej. Gerencia y trabajadores, COPASST, Comité de Convivencia"
+            class="w-full px-3 py-2.5 bg-dark-primary border border-dark-border rounded-xl text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+        </div>
+
+      </div>
+
+      <!-- Pie del modal -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-dark-border bg-dark-primary/50">
+        <button
+          type="button"
+          (click)="cerrarModal()"
+          class="px-4 py-2 rounded-xl border border-dark-border text-dark-text hover:text-white hover:bg-dark-accent text-xs font-semibold cursor-pointer">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="guardarIndicador()"
+          [disabled]="guardando()"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-blue-600 text-white font-bold text-xs shadow-lg shadow-brand-primary/25 disabled:opacity-50 cursor-pointer">
+          <ion-icon name="checkmark-outline" class="text-base"></ion-icon>
+          <span>{{ guardando() ? 'Guardando...' : 'Guardar Indicador' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
