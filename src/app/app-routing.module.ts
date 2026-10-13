@@ -106,7 +106,7 @@ const routes: Routes = [
           {
             path: 'controlados',
             children: [
-              { path: 'politicas', loadChildren: () => import('./modules/documentos/documentos.module').then(m => m.DocumentosModule), data: { tipo: 'politicas' } },
+              { path: 'politicas', loadComponent: () => import('./modules/documentos/politica-sst/politica-sst.component').then(m => m.PoliticaSstComponent) },
               { path: 'manual-sgsst', loadChildren: () => import('./modules/documentos/documentos.module').then(m => m.DocumentosModule), data: { tipo: 'manual-sgsst' } },
               { path: 'manual-control', loadChildren: () => import('./modules/documentos/documentos.module').then(m => m.DocumentosModule), data: { tipo: 'manual-control' } },
               { path: 'perfil-trabajadores', loadChildren: () => import('./modules/documentos/documentos.module').then(m => m.DocumentosModule), data: { tipo: 'perfil-trabajadores' } },
@@ -155,6 +155,18 @@ const routes: Routes = [
       {
         path: 'indicadores',
         loadChildren: () => import('./modules/indicadores/indicadores.module').then(m => m.IndicadoresModule)
+      },
+
+      // Módulos independientes en desarrollo (PHVA)
+      {
+        path: 'investigacion-atel',
+        loadChildren: () => import('./modules/gestion-sst/incidentes/incidentes.module').then(m => m.IncidentesModule),
+        data: { tipo: 'investigacion-de-at-el' }
+      },
+      {
+        path: 'acciones-correctivas',
+        loadChildren: () => import('./modules/formatos/formatos.module').then(m => m.FormatosModule),
+        data: { tipo: 'acciones-correctivas' }
       },
 
       // Auditorías

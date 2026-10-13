@@ -1,0 +1,255 @@
+<div class="historial-table-card">
+  <!-- Card Header -->
+  <div class="p-3.5 sm:p-4 border-b border-dark-border/80 flex items-center justify-between gap-3 bg-dark-secondary/80">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary shrink-0">
+        <ion-icon name="time-outline" class="text-lg"></ion-icon>
+      </div>
+      <div>
+        <h3 class="text-xs sm:text-sm font-bold text-[rgb(var(--color-heading))] tracking-tight">
+          Historial de Control de Versiones
+        </h3>
+        <p class="text-[11px] text-dark-text">Trazabilidad de cambios, revisiones y firmas aprobatorias</p>
+      </div>
+    </div>
+    <span class="px-2.5 py-1 text-[11px] font-bold rounded-md bg-dark-primary/90 border border-dark-border text-slate-300">
+      {{ versiones().length }} versión(es)
+    </span>
+  </div>
+
+  <!-- PrimeNG Data Table -->
+  <div class="overflow-x-auto">
+    <p-table
+      [value]="versiones()"
+      dataKey="id"
+      [rowHover]="true"
+      styleClass="p-datatable-sm p-datatable-gridlines"
+      [tableStyle]="{ 'min-width': '52rem' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem" class="text-center">#</th>
+          <th style="width: 7rem">Versión</th>
+          <th style="width: 8.5rem">Estado</th>
+          <th style="width: 13rem">Fechas (Elab. / Aprob.)</th>
+          <th>Aprobado por (Rep. Legal)</th>
+          <th style="width: 10.5rem">Próxima Revisión</th>
+          <th style="width: 4.5rem" class="text-center">Acción</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-ver let-expanded="expanded">
+        <tr [class.fila-publicada]="ver.estado === 'publicado'" [class.fila-obsoleta]="ver.estado === 'obsoleto'">
+          <!-- Row Toggler Button -->
+          <td class="text-center !p-2">
+            <button
+              type="button"
+              pButton
+              [pRowToggler]="ver"
+              class="btn-expander"
+              [class.is-expanded]="expanded"
+              [title]="expanded ? 'Ocultar detalles' : 'Ver trazabilidad completa'"
+            >
+              <ion-icon
+                [name]="expanded ? 'chevron-down-outline' : 'chevron-forward-outline'"
+                class="text-xs transition-transform duration-200"
+              ></ion-icon>
+            </button>
+          </td>
+
+          <!-- Versión Badge -->
+          <td>
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-xs text-[rgb(var(--color-heading))] font-mono">
+                v{{ ver.version }}
+              </span>
+              @if (ver.estado === 'publicado') {
+                <span class="px-1.5 py-0.2 text-[9px] font-extrabold tracking-wider uppercase rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                  Vigente
+                </span>
+              }
+            </div>
+          </td>
+
+          <!-- Estado Pill -->
+          <td>
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold rounded-full border"
+              [ngClass]="getEstadoClasses(ver.estado)"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getEstadoDot(ver.estado)"></span>
+              {{ getEstadoLabel(ver.estado) }}
+            </span>
+          </td>
+
+          <!-- Fechas compactas -->
+          <td>
+            <div class="space-y-0.5 text-[11px]">
+              <div class="flex items-center gap-1 text-slate-300">
+                <span class="text-slate-500 text-[10px] w-10">Elab:</span>
+                <span class="font-mono text-slate-300">{{ ver.fecha_elaboracion || '—' }}</span>
+              </div>
+              <div class="flex items-center gap-1 text-slate-400">
+                <span class="text-slate-500 text-[10px] w-10">Aprob:</span>
+                <span class="font-mono" [class.text-emerald-400]="ver.fecha_aprobacion">
+                  {{ ver.fecha_aprobacion || 'Pendiente' }}
+                </span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Aprobado por (Rep. Legal) -->
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-md bg-dark-primary border border-dark-border flex items-center justify-center text-slate-400 shrink-0">
+                <ion-icon name="shield-checkmark-outline" class="text-xs"></ion-icon>
+              </div>
+              <div class="min-w-0">
+                <span class="text-xs font-semibold text-slate-200 block truncate" [title]="ver.aprobado_por_nombre || 'Pendiente'">
+                  {{ ver.aprobado_por_nombre || 'Pendiente de aprobación' }}
+                </span>
+                <span class="text-[10px] text-slate-500 block">Representante Legal</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Próxima Revisión Badge -->
+          <td>
+            @if (ver.fecha_proxima_revision && ver.estado === 'publicado') {
+              <app-badge-vencimiento
+                [fecha]="ver.fecha_proxima_revision"
+                [umbralDias]="30"
+              ></app-badge-vencimiento>
+            } @else if (ver.fecha_proxima_revision) {
+              <span class="font-mono text-[11px] text-slate-400">
+                {{ ver.fecha_proxima_revision }}
+              </span>
+            } @else {
+              <span class="text-[11px] text-slate-600">—</span>
+            }
+          </td>
+
+          <!-- Acción Cargar -->
+          <td class="text-center">
+            <button
+              type="button"
+              (click)="onVerVersion(ver)"
+              title="Cargar esta versión en el visor"
+              class="w-7 h-7 rounded-md inline-flex items-center justify-center text-slate-400 hover:text-brand-primary hover:bg-brand-primary/10 transition-colors"
+            >
+              <ion-icon name="eye-outline" class="text-sm"></ion-icon>
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Row Expansion Detail -->
+      <ng-template pTemplate="rowexpansion" let-ver>
+        <tr>
+          <td colspan="7">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <!-- Bloque 1: Responsables -->
+              <div class="p-3 rounded-lg bg-dark-secondary/70 border border-dark-border/80 space-y-2">
+                <div class="flex items-center gap-1.5 text-slate-300 font-bold border-b border-dark-border/60 pb-1.5">
+                  <ion-icon name="people-outline" class="text-brand-primary"></ion-icon>
+                  <span>Cadena de Responsabilidad</span>
+                </div>
+                <div class="space-y-1.5 text-[11px]">
+                  <div>
+                    <span class="text-slate-500 block">Elaboró:</span>
+                    <span class="text-slate-200 font-semibold">
+                      {{ ver.elaborado_por_trabajador?.nombre || 'No asignado' }}
+                    </span>
+                    @if (ver.elaborado_por_trabajador?.cargo) {
+                      <span class="text-slate-400 block text-[10px]">
+                        {{ ver.elaborado_por_trabajador.cargo }}
+                      </span>
+                    }
+                  </div>
+                  <div>
+                    <span class="text-slate-500 block">Revisó:</span>
+                    <span class="text-slate-200 font-semibold">
+                      {{ ver.revisado_por_trabajador?.nombre || 'No asignado' }}
+                    </span>
+                    @if (ver.revisado_por_trabajador?.cargo) {
+                      <span class="text-slate-400 block text-[10px]">
+                        {{ ver.revisado_por_trabajador.cargo }}
+                      </span>
+                    }
+                  </div>
+                  <div>
+                    <span class="text-slate-500 block">Aprobó (Rep. Legal):</span>
+                    <span class="text-emerald-400 font-bold">
+                      {{ ver.aprobado_por_nombre || 'Pendiente' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloque 2: Alcance -->
+              <div class="p-3 rounded-lg bg-dark-secondary/70 border border-dark-border/80 space-y-2">
+                <div class="flex items-center gap-1.5 text-slate-300 font-bold border-b border-dark-border/60 pb-1.5">
+                  <ion-icon name="document-text-outline" class="text-brand-primary"></ion-icon>
+                  <span>Alcance Registrado</span>
+                </div>
+                <p class="text-slate-300 text-[11px] leading-relaxed whitespace-pre-wrap">
+                  {{ ver.alcance || 'Aplica a todos los centros de trabajo, trabajadores directos, contratistas y partes interesadas.' }}
+                </p>
+              </div>
+
+              <!-- Bloque 3: Cronología y Acción -->
+              <div class="p-3 rounded-lg bg-dark-secondary/70 border border-dark-border/80 flex flex-col justify-between space-y-2">
+                <div>
+                  <div class="flex items-center gap-1.5 text-slate-300 font-bold border-b border-dark-border/60 pb-1.5">
+                    <ion-icon name="calendar-outline" class="text-brand-primary"></ion-icon>
+                    <span>Cronología de Vigencia</span>
+                  </div>
+                  <div class="space-y-1 text-[11px] font-mono mt-2">
+                    <div class="flex justify-between">
+                      <span class="text-slate-500">Elaboración:</span>
+                      <span class="text-slate-300">{{ ver.fecha_elaboracion || '—' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-slate-500">Aprobación:</span>
+                      <span class="text-slate-300">{{ ver.fecha_aprobacion || '—' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-slate-500">Publicación:</span>
+                      <span class="text-slate-300">{{ ver.fecha_publicacion || '—' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-slate-500">Próx. Revisión:</span>
+                      <span class="text-amber-400">{{ ver.fecha_proxima_revision || '—' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="onVerVersion(ver)"
+                  class="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-primary border border-brand-primary/40 rounded-lg text-xs font-bold transition-all shadow-sm mt-2"
+                >
+                  <ion-icon name="arrow-undo-outline" class="text-sm"></ion-icon>
+                  <span>Cargar versión v{{ ver.version }} en visor</span>
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Mensaje Vacío -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="text-center py-8 text-dark-text text-xs">
+            <div class="flex flex-col items-center gap-1">
+              <ion-icon name="folder-open-outline" class="text-2xl text-slate-600 mb-1"></ion-icon>
+              <span class="font-semibold text-slate-400">No hay versiones registradas aún</span>
+              <span class="text-[11px] text-slate-600">Las versiones aparecerán aquí a medida que se gestionen los borradores.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

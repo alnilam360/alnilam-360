@@ -1,0 +1,66 @@
+@use "sass:color";
+
+:host {
+  display: block;
+}
+
+.politica-sst-container {
+  min-height: 100%;
+}
+
+// ─── Estilos de Impresión Oficial ───────────────────────────────────────────
+@media print {
+  // Ocultar todo lo que no sea el documento
+  .no-print,
+  ion-header,
+  ion-toolbar,
+  .app-sidebar,
+  .sidebar,
+  nav {
+    display: none !important;
+  }
+
+  // Estilos limpios sobre fondo blanco
+  body,
+  .politica-sst-container,
+  .documento-oficial-card {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .documento-oficial-card {
+    border: 1px solid #d1d5db !important;
+    padding: 1.5rem !important;
+
+    * {
+      color: #111827 !important;
+      background-color: transparent !important;
+      border-color: #d1d5db !important;
+    }
+  }
+
+  // Saltos de página limpios
+  .page-break {
+    page-break-before: always;
+  }
+}
+
+// ─── Animaciones ────────────────────────────────────────────────────────────
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

@@ -68,7 +68,7 @@ export const MENU_ITEMS: MenuItem[] = [
         ]
       },
       { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'checkbox-outline', route: '/auditorias/programacion' },
-      { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/indicadores/accidentalidad/matriz' },
+      { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/investigacion-atel' },
       { id: 'cumplimiento-legal', label: 'Cumplimiento Legal', icon: 'shield-checkmark-outline', route: '/documentos/catalogos/matriz-requisitos' },
       { id: 'revision-alta-direccion', label: 'Revisión por la Alta Dirección', icon: 'eye-outline', route: '/gestion-sst/plan-mejora' }
     ]
@@ -78,7 +78,7 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'ACTUAR',
     phvaGroup: 'A',
     children: [
-      { id: 'acciones-correctivas', label: 'Acciones Correctivas', icon: 'construct-outline', route: '/indicadores/accidentalidad/matriz' },
+      { id: 'acciones-correctivas', label: 'Acciones Correctivas', icon: 'construct-outline', route: '/acciones-correctivas' },
       { id: 'acciones-preventivas', label: 'Acciones Preventivas', icon: 'shield-outline', route: '/gestion-sst/incidentes/actos-condiciones' },
       { id: 'mejora-continua', label: 'Mejora Continua', icon: 'trending-up-outline', route: '/gestion-sst/plan-mejora' }
     ]

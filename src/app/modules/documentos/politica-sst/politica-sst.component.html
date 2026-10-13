@@ -1,0 +1,752 @@
+<div class="politica-sst-container space-y-6">
+
+  <!-- ─── HEADER / NAV (no-print) ────────────────────────────────────────── -->
+  <div class="no-print flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 border-b border-dark-border">
+    <div>
+      <div class="flex items-center gap-2 text-xs text-dark-text mb-1">
+        <span>Documentos Controlados</span>
+        <ion-icon name="chevron-forward-outline" class="text-[10px]"></ion-icon>
+        <span class="text-slate-300 font-medium">Política, Objetivos y Metas SST</span>
+      </div>
+      <div class="flex items-center gap-3 flex-wrap">
+        <h1 class="text-xl sm:text-2xl font-bold text-[rgb(var(--color-heading))] tracking-tight">
+          Política, Objetivos y Metas del SG-SST
+        </h1>
+        @if (politicaActiva(); as pol) {
+          <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-dark-secondary border border-dark-border text-slate-300">
+            Versión {{ pol.version }}
+          </span>
+          <span
+            class="px-2.5 py-0.5 text-xs font-semibold rounded-full border"
+            [ngClass]="{
+              'bg-blue-500/15 text-blue-400 border-blue-500/30': pol.estado === 'borrador',
+              'bg-amber-500/15 text-amber-400 border-amber-500/30': pol.estado === 'en_revision',
+              'bg-indigo-500/15 text-indigo-400 border-indigo-500/30': pol.estado === 'aprobado',
+              'bg-emerald-500/15 text-emerald-400 border-emerald-500/30': pol.estado === 'publicado',
+              'bg-slate-700/30 text-slate-400 border-slate-700': pol.estado === 'obsoleto'
+            }"
+          >
+            {{ pol.estado | uppercase }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <!-- Right Controls: Empresa Selector + Print Action -->
+    <div class="flex items-center gap-3 flex-wrap">
+      @if (esAdmin() && empresasDisponibles().length > 1) {
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-dark-text whitespace-nowrap">Empresa:</label>
+          <select
+            [value]="empresaActual()?.id || ''"
+            (change)="onCambiarEmpresa($any($event.target).value)"
+            class="px-3 py-1.5 text-xs rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"
+          >
+            @for (emp of empresasDisponibles(); track emp.id) {
+              <option [value]="emp.id">{{ emp.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <button
+        type="button"
+        (click)="imprimirPolitica()"
+        class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition-all duration-200 shadow-sm"
+      >
+        <ion-icon name="print-outline" class="text-base"></ion-icon>
+        <span>Imprimir / PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── ALERTA DE VENCIMIENTO ANUAL (no-print) ────────────────────────── -->
+  @if (politicaActiva()?.estado === 'publicado' && politicaActiva()?.fecha_proxima_revision) {
+    <div class="no-print">
+      <div class="p-3.5 rounded-xl border flex items-center justify-between gap-3 bg-dark-secondary/50 border-dark-border">
+        <div class="flex items-center gap-2.5">
+          <ion-icon name="calendar-outline" class="text-lg text-brand-primary shrink-0"></ion-icon>
+          <div class="text-xs">
+            <span class="text-slate-400">Próxima Revisión Anual Obligatoria (Dec. 1072/2015):</span>
+            <span class="font-bold text-slate-200 ml-1.5">{{ politicaActiva()?.fecha_proxima_revision }}</span>
+          </div>
+        </div>
+        <app-badge-vencimiento
+          [fecha]="politicaActiva()?.fecha_proxima_revision"
+          [umbralDias]="30"
+        ></app-badge-vencimiento>
+      </div>
+    </div>
+  }
+
+  <!-- ─── TABS DE NAVEGACIÓN (no-print) ──────────────────────────────────── -->
+  <div class="no-print flex items-center gap-2 border-b border-dark-border pb-px overflow-x-auto">
+    <button
+      type="button"
+      (click)="tabActivo.set('politica')"
+      class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-all duration-200 whitespace-nowrap"
+      [ngClass]="tabActivo() === 'politica'
+        ? 'border-brand-primary text-brand-primary'
+        : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'"
+    >
+      <ion-icon name="document-text-outline" class="text-base"></ion-icon>
+      <span>1. Política SST</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="tabActivo.set('objetivos')"
+      class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-all duration-200 whitespace-nowrap"
+      [ngClass]="tabActivo() === 'objetivos'
+        ? 'border-brand-primary text-brand-primary'
+        : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'"
+    >
+      <ion-icon name="trophy-outline" class="text-base"></ion-icon>
+      <span>2. Objetivos y Metas</span>
+      <span class="ml-1 px-1.5 py-0.2 text-xs rounded-full bg-slate-800 text-slate-300 font-bold">
+        {{ totalObjetivos() }}
+      </span>
+    </button>
+
+    <button
+      type="button"
+      (click)="tabActivo.set('historial')"
+      class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-all duration-200 whitespace-nowrap"
+      [ngClass]="tabActivo() === 'historial'
+        ? 'border-brand-primary text-brand-primary'
+        : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'"
+    >
+      <ion-icon name="time-outline" class="text-base"></ion-icon>
+      <span>3. Control de Versiones</span>
+      <span class="ml-1 px-1.5 py-0.2 text-xs rounded-full bg-slate-800 text-slate-300 font-bold">
+        {{ versiones().length }}
+      </span>
+    </button>
+  </div>
+
+  <!-- ─── CONTENIDO TAB 1: POLÍTICA SST ─────────────────────────────────── -->
+  @if (tabActivo() === 'politica') {
+    <div class="space-y-6">
+
+      <!-- Flujo de Aprobación (no-print) -->
+      @if (politicaActiva(); as pol) {
+        <div class="no-print">
+          <app-documento-flujo-aprobacion
+            [estado]="pol.estado"
+            [disabled]="guardando()"
+            [canSendRevision]="politicaForm.valid"
+            [canAprobar]="politicaForm.get('revisado_por')?.value !== null"
+            (accion)="onFlujoAccion($event)"
+          ></app-documento-flujo-aprobacion>
+        </div>
+      }
+
+      <!-- MODO EDICIÓN BORRADOR (no-print si borrador activo) -->
+      @if (esBorrador()) {
+        <div class="no-print bg-dark-secondary/60 border border-dark-border rounded-xl p-5 space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-dark-border">
+            <div>
+              <h3 class="text-base font-bold text-[rgb(var(--color-heading))]">Editor de Política SST (Borrador)</h3>
+              <p class="text-xs text-dark-text mt-0.5">Defina el compromiso, alcance y responsables de revisión</p>
+            </div>
+            <button
+              type="button"
+              (click)="guardarBorradorPolitica()"
+              [disabled]="guardando()"
+              class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-md transition-all duration-200"
+            >
+              <ion-icon name="save-outline" class="text-base"></ion-icon>
+              <span>{{ guardando() ? 'Guardando...' : 'Guardar Borrador' }}</span>
+            </button>
+          </div>
+
+          <form [formGroup]="politicaForm" class="space-y-4">
+            <!-- Alcance -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">
+                Alcance de la Política <span class="text-rose-400">*</span>
+              </label>
+              <input
+                type="text"
+                formControlName="alcance"
+                placeholder="Ej. Aplica a todos los centros de trabajo, trabajadores directos, contratistas y partes interesadas..."
+                class="w-full px-3.5 py-2 text-sm bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary"
+              />
+            </div>
+
+            <!-- Contenido Texto -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-semibold text-slate-300">
+                  Texto de la Política SST <span class="text-rose-400">*</span>
+                </label>
+                <span class="text-[11px] text-dark-text">Mínimo 20 caracteres</span>
+              </div>
+              <textarea
+                rows="9"
+                formControlName="contenido"
+                placeholder="Escriba aquí el compromiso explícito de la Alta Dirección con la seguridad y salud en el trabajo, cumplimiento de la normativa legal colombiana y mejora continua..."
+                class="w-full px-3.5 py-2.5 text-sm leading-relaxed bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary font-mono"
+              ></textarea>
+            </div>
+
+            <!-- Firmas y Responsables -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">
+                  Elaborado por <span class="text-rose-400">*</span>
+                </label>
+                <select
+                  formControlName="elaborado_por"
+                  class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"
+                >
+                  <option [ngValue]="null">Seleccione un trabajador...</option>
+                  @for (t of trabajadores(); track t.id) {
+                    <option [value]="t.id">{{ t.nombre }} — {{ t.cargo }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">
+                  Revisado por <span class="text-rose-400">*</span>
+                </label>
+                <select
+                  formControlName="revisado_por"
+                  class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"
+                >
+                  <option [ngValue]="null">Seleccione un trabajador...</option>
+                  @for (t of trabajadores(); track t.id) {
+                    <option [value]="t.id">{{ t.nombre }} — {{ t.cargo }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">
+                  Aprobado por (Representante Legal)
+                </label>
+                <div class="px-3 py-2 text-xs rounded-lg bg-dark-primary/60 border border-dark-border text-slate-400">
+                  {{ representanteLegalNombre() }}
+                  <span class="block text-[10px] text-slate-500 mt-0.5">Se firma automáticamente al aprobar</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      }
+
+      <!-- VISTA DOCUMENTO CONTROLADO OFICIAL (Visible en pantalla y al imprimir) -->
+      @if (politicaActiva(); as pol) {
+        <div class="documento-oficial-card bg-dark-secondary/80 border border-dark-border rounded-xl p-6 sm:p-8 space-y-6 shadow-xl">
+
+          <!-- Encabezado Oficial Membrete -->
+          <div class="border-b-2 border-dark-border pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary shrink-0">
+                <ion-icon name="shield-checkmark" class="text-2xl"></ion-icon>
+              </div>
+              <div>
+                <h2 class="text-lg font-black text-[rgb(var(--color-heading))] uppercase tracking-wide">
+                  {{ empresaActual()?.nombre || 'ALNILAM 360' }}
+                </h2>
+                <p class="text-xs text-dark-text">NIT: {{ empresaActual()?.nit || '—' }} · SG-SST Dec. 1072/2015</p>
+              </div>
+            </div>
+
+            <div class="text-right text-xs space-y-1">
+              <div><span class="text-slate-500">Código:</span> <span class="font-mono font-bold text-slate-300 ml-1">POL-SST-001</span></div>
+              <div><span class="text-slate-500">Versión:</span> <span class="font-bold text-slate-300 ml-1">v{{ pol.version }}</span></div>
+              <div><span class="text-slate-500">Fecha Aprobación:</span> <span class="text-slate-300 ml-1">{{ pol.fecha_aprobacion || 'En trámite' }}</span></div>
+            </div>
+          </div>
+
+          <!-- Título del Documento -->
+          <div class="text-center py-2">
+            <h3 class="text-base sm:text-lg font-black text-[rgb(var(--color-heading))] uppercase tracking-wider">
+              POLÍTICA DE SEGURIDAD Y SALUD EN EL TRABAJO
+            </h3>
+            <p class="text-xs text-dark-text mt-1">Compromiso institucional con la prevención y el bienestar laboral</p>
+          </div>
+
+          <!-- Alcance -->
+          <div class="p-4 rounded-lg bg-dark-primary/60 border border-dark-border space-y-1">
+            <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">Alcance</span>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              {{ pol.alcance || 'Aplica a todos los centros de trabajo, procesos, trabajadores directos, contratistas y visitantes de la organización.' }}
+            </p>
+          </div>
+
+          <!-- Cuerpo de la Política -->
+          <div class="space-y-2">
+            <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">Declaración de la Política</span>
+            <div class="text-sm leading-relaxed text-slate-200 whitespace-pre-wrap font-sans p-4 rounded-lg bg-dark-primary/40 border border-dark-border/50">
+              {{ pol.contenido }}
+            </div>
+          </div>
+
+          <!-- Cuadro de Firmas Oficiales -->
+          <div class="pt-6 border-t border-dark-border">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-4 text-center">
+              Control y Aprobación del Documento
+            </span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center text-xs">
+              <!-- Elaboró -->
+              <div class="p-3 rounded-lg border border-dark-border bg-dark-primary/30 flex flex-col justify-between min-h-[7rem]">
+                <div class="text-slate-500 font-medium">ELABORÓ</div>
+                <div class="my-auto py-2">
+                  <span class="font-bold text-slate-200 block text-xs">
+                    {{ pol.elaborado_por_trabajador?.nombre || '—' }}
+                  </span>
+                  <span class="text-[11px] text-slate-400 block mt-0.5">
+                    {{ pol.elaborado_por_trabajador?.cargo || 'Responsable SST' }}
+                  </span>
+                </div>
+                <div class="text-[10px] text-slate-500 border-t border-dark-border/60 pt-1">
+                  {{ pol.fecha_elaboracion }}
+                </div>
+              </div>
+
+              <!-- Revisó -->
+              <div class="p-3 rounded-lg border border-dark-border bg-dark-primary/30 flex flex-col justify-between min-h-[7rem]">
+                <div class="text-slate-500 font-medium">REVISÓ</div>
+                <div class="my-auto py-2">
+                  <span class="font-bold text-slate-200 block text-xs">
+                    {{ pol.revisado_por_trabajador?.nombre || '—' }}
+                  </span>
+                  <span class="text-[11px] text-slate-400 block mt-0.5">
+                    {{ pol.revisado_por_trabajador?.cargo || 'COPASST / Asesor SST' }}
+                  </span>
+                </div>
+                <div class="text-[10px] text-slate-500 border-t border-dark-border/60 pt-1">
+                  {{ pol.fecha_aprobacion || pol.fecha_elaboracion }}
+                </div>
+              </div>
+
+              <!-- Aprobó -->
+              <div class="p-3 rounded-lg border border-brand-primary/40 bg-brand-primary/5 flex flex-col justify-between min-h-[7rem]">
+                <div class="text-brand-primary font-bold">APROBÓ (FIRMA)</div>
+                <div class="my-auto py-2">
+                  <span class="font-black text-slate-100 block text-xs">
+                    {{ pol.aprobado_por_nombre || representanteLegalNombre() }}
+                  </span>
+                  <span class="text-[11px] text-slate-400 block mt-0.5">Representante Legal</span>
+                </div>
+                <div class="text-[10px] text-slate-500 border-t border-dark-border/60 pt-1">
+                  {{ pol.fecha_aprobacion || 'Firma al pasar a Aprobado' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+
+    </div>
+  }
+
+  <!-- ─── CONTENIDO TAB 2: OBJETIVOS Y METAS SMART ──────────────────────── -->
+  @if (tabActivo() === 'objetivos') {
+    <div class="space-y-6">
+
+      <!-- Resumen KPIs -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div class="p-4 rounded-xl bg-dark-secondary/60 border border-dark-border">
+          <span class="text-xs text-dark-text block">Total Objetivos</span>
+          <span class="text-2xl font-black text-[rgb(var(--color-heading))] mt-1 block">
+            {{ totalObjetivos() }}
+          </span>
+        </div>
+
+        <div class="p-4 rounded-xl bg-dark-secondary/60 border border-dark-border">
+          <span class="text-xs text-emerald-400 block">Cumplidos</span>
+          <span class="text-2xl font-black text-emerald-400 mt-1 block">
+            {{ objetivosCumplidos() }}
+          </span>
+        </div>
+
+        <div class="p-4 rounded-xl bg-dark-secondary/60 border border-dark-border">
+          <span class="text-xs text-blue-400 block">En Curso (Vigentes)</span>
+          <span class="text-2xl font-black text-blue-400 mt-1 block">
+            {{ objetivosVigentes() }}
+          </span>
+        </div>
+
+        <div class="p-4 rounded-xl bg-dark-secondary/60 border border-dark-border">
+          <span class="text-xs text-rose-400 block">Vencidos / No Cumplidos</span>
+          <span class="text-2xl font-black text-rose-400 mt-1 block">
+            {{ objetivosVencidos() }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Barra de Herramientas -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <!-- Filtros Rápidos -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button
+            type="button"
+            (click)="filtroEstadoObjetivo.set('todos')"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
+            [ngClass]="filtroEstadoObjetivo() === 'todos'
+              ? 'bg-brand-primary text-white border-brand-primary'
+              : 'bg-dark-secondary/60 text-slate-400 border-dark-border hover:text-white'"
+          >
+            Todos ({{ totalObjetivos() }})
+          </button>
+          <button
+            type="button"
+            (click)="filtroEstadoObjetivo.set('vigente')"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
+            [ngClass]="filtroEstadoObjetivo() === 'vigente'
+              ? 'bg-blue-600 text-white border-blue-500'
+              : 'bg-dark-secondary/60 text-slate-400 border-dark-border hover:text-white'"
+          >
+            Vigentes
+          </button>
+          <button
+            type="button"
+            (click)="filtroEstadoObjetivo.set('cumplido')"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
+            [ngClass]="filtroEstadoObjetivo() === 'cumplido'
+              ? 'bg-emerald-600 text-white border-emerald-500'
+              : 'bg-dark-secondary/60 text-slate-400 border-dark-border hover:text-white'"
+          >
+            Cumplidos
+          </button>
+          <button
+            type="button"
+            (click)="filtroEstadoObjetivo.set('vencido')"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
+            [ngClass]="filtroEstadoObjetivo() === 'vencido'
+              ? 'bg-rose-600 text-white border-rose-500'
+              : 'bg-dark-secondary/60 text-slate-400 border-dark-border hover:text-white'"
+          >
+            Vencidos
+          </button>
+        </div>
+
+        <!-- Botón + Nuevo Objetivo -->
+        <button
+          type="button"
+          (click)="abrirModalNuevoObjetivo()"
+          class="flex items-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs font-semibold rounded-lg shadow-md transition-all duration-200"
+        >
+          <ion-icon name="add-circle-outline" class="text-base"></ion-icon>
+          <span>+ Nuevo Objetivo SMART</span>
+        </button>
+      </div>
+
+      <!-- Tarjetas / Lista de Objetivos -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @for (obj of objetivosFiltrados(); track obj.id) {
+          <div class="bg-dark-secondary/60 border border-dark-border rounded-xl p-5 space-y-4 hover:border-slate-700 transition-colors duration-200 flex flex-col justify-between">
+            <!-- Header de Tarjeta -->
+            <div class="space-y-2">
+              <div class="flex items-start justify-between gap-3">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-full border {{ getEstadoObjetivoClass(obj.estado) }}">
+                  {{ getEstadoObjetivoLabel(obj.estado) }}
+                </span>
+
+                <div class="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    (click)="editarObjetivo(obj)"
+                    title="Editar objetivo"
+                    class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                  >
+                    <ion-icon name="create-outline" class="text-base"></ion-icon>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="eliminarObjetivoConfirm(obj)"
+                    title="Eliminar objetivo"
+                    class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 rounded-lg transition-colors"
+                  >
+                    <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Descripción SMART -->
+              <p class="text-sm font-semibold text-[rgb(var(--color-heading))] leading-snug">
+                {{ obj.descripcion }}
+              </p>
+            </div>
+
+            <!-- Meta y Avance -->
+            <div class="p-3.5 rounded-lg bg-dark-primary/60 border border-dark-border space-y-2.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-400 font-medium">Meta Propuesta:</span>
+                <span class="font-bold text-slate-200">
+                  {{ obj.criterio_cumplimiento === 'menor_igual' ? '≤' : '≥' }} {{ obj.meta_texto }}
+                </span>
+              </div>
+
+              <!-- Micro Barra de Progreso -->
+              @if (obj.indicador_vinculado_id) {
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-[11px] text-slate-400">
+                    <span class="truncate max-w-[15rem]">
+                      Indicador: <span class="text-slate-200 font-medium">{{ obj.indicador_nombre }}</span>
+                    </span>
+                    <span class="text-brand-primary font-mono text-[10px] uppercase font-bold">
+                      {{ obj.indicador_tipo || 'Matriz' }}
+                    </span>
+                  </div>
+                  <app-micro-progress
+                    [value]="obj.porcentaje_avance"
+                    [meta]="obj.meta_valor_numerico"
+                    [resultado]="obj.indicador_ultimo_resultado"
+                    [unidad]="obj.meta_unidad"
+                    [criterio]="obj.criterio_cumplimiento"
+                  ></app-micro-progress>
+                </div>
+              } @else {
+                <div class="text-[11px] text-slate-500 italic flex items-center gap-1.5">
+                  <ion-icon name="information-circle-outline"></ion-icon>
+                  <span>Sin indicador vinculado (estado manual)</span>
+                </div>
+              }
+            </div>
+
+            <!-- Footer con Responsable y Vigencia -->
+            <div class="pt-2 border-t border-dark-border flex items-center justify-between text-xs text-dark-text">
+              <div class="flex items-center gap-1.5">
+                <ion-icon name="person-outline" class="text-sm text-slate-500"></ion-icon>
+                <span class="text-slate-300 font-medium truncate max-w-[12rem]">
+                  {{ getResponsableLabel(obj) }}
+                </span>
+              </div>
+              <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>{{ obj.fecha_fin }}</span>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="col-span-full py-12 text-center rounded-xl bg-dark-secondary/40 border border-dark-border p-6 space-y-3">
+            <ion-icon name="trophy-outline" class="text-4xl text-slate-600"></ion-icon>
+            <h4 class="text-sm font-bold text-slate-300">No hay objetivos registrados</h4>
+            <p class="text-xs text-dark-text max-w-md mx-auto">
+              Defina los objetivos SMART alineados con la política SST de esta versión.
+            </p>
+            <button
+              type="button"
+              (click)="abrirModalNuevoObjetivo()"
+              class="px-4 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs font-semibold rounded-lg shadow-sm"
+            >
+              + Crear Primer Objetivo
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+  <!-- ─── CONTENIDO TAB 3: CONTROL DE VERSIONES ─────────────────────────── -->
+  @if (tabActivo() === 'historial') {
+    <div class="space-y-4">
+      <app-documento-historial-versiones
+        [versiones]="versiones()"
+        (verVersion)="seleccionarPolitica($event); tabActivo.set('politica')"
+      ></app-documento-historial-versiones>
+    </div>
+  }
+
+  <!-- ─── MODAL CREAR / EDITAR OBJETIVO SMART (PrimeNG Dialog o Modal) ─── -->
+  @if (modalObjetivoVisible()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div class="bg-dark-secondary border border-dark-border rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <!-- Modal Header -->
+        <div class="p-5 border-b border-dark-border flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary">
+              <ion-icon name="trophy-outline" class="text-lg"></ion-icon>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-[rgb(var(--color-heading))]">
+                {{ objetivoEnEdicion() ? 'Editar Objetivo SMART' : 'Nuevo Objetivo SMART' }}
+              </h3>
+              <p class="text-xs text-dark-text">Defina un objetivo medible y alineado al SG-SST</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="cerrarModalObjetivo()"
+            class="text-slate-400 hover:text-white p-1 rounded-lg"
+          >
+            <ion-icon name="close-outline" class="text-xl"></ion-icon>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto space-y-4 text-xs">
+          <form [formGroup]="objetivoForm" class="space-y-4">
+
+            <!-- Descripción SMART -->
+            <div>
+              <label class="block font-semibold text-slate-300 mb-1">
+                Descripción del Objetivo (Específico, Medible, Alcanzable) <span class="text-rose-400">*</span>
+              </label>
+              <textarea
+                rows="3"
+                formControlName="descripcion"
+                placeholder="Ej. Reducir la tasa de frecuencia de accidentalidad laboral en un 15% durante el año fiscal..."
+                class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 placeholder-dark-text focus:outline-none focus:border-brand-primary"
+              ></textarea>
+            </div>
+
+            <!-- Meta Texto y Meta Numérica -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="sm:col-span-2">
+                <label class="block font-semibold text-slate-300 mb-1">
+                  Meta Resumida (Texto) <span class="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  formControlName="meta_texto"
+                  placeholder="Ej. Menor o igual a 2.5 casos"
+                  class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 placeholder-dark-text focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">
+                  Valor Numérico
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  formControlName="meta_valor_numerico"
+                  placeholder="2.5"
+                  class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 placeholder-dark-text focus:outline-none focus:border-brand-primary font-mono"
+                />
+              </div>
+            </div>
+
+            <!-- Unidad y Criterio -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Unidad de Medida</label>
+                <input
+                  type="text"
+                  formControlName="meta_unidad"
+                  placeholder="%, casos, días, capacitaciones"
+                  class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">
+                  Criterio de Cumplimiento
+                </label>
+                <select
+                  formControlName="criterio_cumplimiento"
+                  class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 focus:outline-none focus:border-brand-primary"
+                >
+                  <option value="mayor_igual">Mayor o igual (≥ meta)</option>
+                  <option value="menor_igual">Menor o igual (≤ meta — ej. Accidentes)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Indicador Vinculado -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block font-semibold text-slate-300">
+                  Vincular con Indicador (Matriz de Indicadores)
+                </label>
+                <span class="text-[11px] text-slate-500">Opcional</span>
+              </div>
+              <select
+                formControlName="indicador_vinculado_id"
+                class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 focus:outline-none focus:border-brand-primary"
+              >
+                <option [ngValue]="null">Ninguno (Avance y estado manual)</option>
+                @for (ind of indicadoresDisponibles(); track ind.id) {
+                  <option [value]="ind.id">
+                    {{ ind.nombre }} [{{ ind.tipo }}] — Último resultado: {{ ind.ultimo_resultado ?? 'Sin dato' }}
+                  </option>
+                }
+              </select>
+
+              @if (indicadorSeleccionadoInfo(); as sel) {
+                <div class="mt-2 p-2.5 rounded-lg bg-dark-primary/60 border border-dark-border text-[11px] text-slate-400 space-y-1">
+                  <div>
+                    <span class="text-slate-500">Último resultado registrado:</span>
+                    <span class="font-bold text-brand-primary ml-1 font-mono">{{ sel.ultimo_resultado ?? '—' }}</span>
+                    @if (sel.ultimo_anio) {
+                      <span class="text-slate-500 ml-1">({{ sel.ultimo_anio }} / Mes {{ sel.ultimo_mes }})</span>
+                    }
+                  </div>
+                  @if (sel.formula) {
+                    <div class="truncate"><span class="text-slate-500">Fórmula:</span> {{ sel.formula }}</div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Responsable del Objetivo -->
+            <div>
+              <label class="block font-semibold text-slate-300 mb-1">
+                Responsable del Objetivo (Rol SG-SST)
+              </label>
+              <select
+                formControlName="responsable_id"
+                class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 focus:outline-none focus:border-brand-primary"
+              >
+                <option [ngValue]="null">Seleccione un rol responsable...</option>
+                @for (resp of catalogoResponsables(); track resp.id) {
+                  <option [value]="resp.id">{{ resp.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Vigencia (Fechas) -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Fecha Inicio</label>
+                <input
+                  type="date"
+                  formControlName="fecha_inicio"
+                  class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-300 mb-1">Fecha Fin</label>
+                <input
+                  type="date"
+                  formControlName="fecha_fin"
+                  class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-slate-200 focus:outline-none focus:border-brand-primary"
+                />
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-4 border-t border-dark-border flex items-center justify-end gap-3 bg-dark-secondary/60">
+          <button
+            type="button"
+            (click)="cerrarModalObjetivo()"
+            class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="guardarObjetivoSubmit()"
+            [disabled]="guardando()"
+            class="px-4 py-2 bg-brand-primary hover:bg-blue-600 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow-md transition-all"
+          >
+            {{ guardando() ? 'Guardando...' : (objetivoEnEdicion() ? 'Actualizar Objetivo' : 'Crear Objetivo') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
