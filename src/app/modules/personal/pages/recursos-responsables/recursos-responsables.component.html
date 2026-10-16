@@ -1,0 +1,1220 @@
+<div class="max-w-[1600px] mx-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3.5">
+
+  <!-- ─── 1. BREADCRUMBS COMPACTO ────────────────────────────────────────────── -->
+  <nav class="flex items-center gap-1.5 text-xs text-dark-text select-none" aria-label="Ruta de navegación">
+    <span class="hover:text-dark-text-light transition-colors">Personal &amp; RRHH</span>
+    <ion-icon name="chevron-forward-outline" class="text-[10px] opacity-40"></ion-icon>
+    <span class="font-semibold text-dark-text-light">Recursos y Responsables SG-SST</span>
+  </nav>
+
+  <!-- ─── 2. HEADER EJECUTIVO COMPACTO ───────────────────────────────────────── -->
+  <header class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-3 border-b border-dark-border">
+    <div class="space-y-1 min-w-0">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-primary/10 border border-brand-primary/25 text-brand-primary">
+          <ion-icon name="shield-checkmark-outline" class="text-xs"></ion-icon>
+          Res. 0312/2019 Est. 1.1.1 - 1.1.8 · Dec. 1072/2015
+        </span>
+      </div>
+      <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white m-0">
+        Recursos y Responsables del SG-SST
+      </h1>
+      <p class="text-xs text-dark-text max-w-3xl leading-relaxed m-0">
+        Asignación de recursos (financieros, humanos, técnicos), comités institucionales (COPASST, Convivencia, Brigada) y Matriz RACI.
+      </p>
+    </div>
+
+    <!-- Acciones Rápidas & Selectores Adaptables -->
+    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-shrink-0">
+      <!-- Selector de Empresa (Admin) -->
+      @if (esAdmin() && empresasDisponibles().length > 1) {
+        <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
+          <ion-icon name="business-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+          <label for="empresa-header-select" class="text-gray-400 text-[11px] font-medium select-none">Empresa:</label>
+          <select
+            id="empresa-header-select"
+            style="color-scheme: dark;"
+            class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
+            [value]="empresaId()"
+            (change)="onCambiarEmpresa($any($event.target).value)">
+            @for (emp of empresasDisponibles(); track emp.id) {
+              <option [value]="emp.id" class="bg-[#1a1d26] text-gray-100 font-medium">{{ emp.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <!-- Selector de Período Optimizado para Modo Oscuro -->
+      <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
+        <ion-icon name="calendar-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+        <label for="periodo-select" class="text-gray-400 text-[11px] font-medium select-none">Período:</label>
+        <select
+          id="periodo-select"
+          style="color-scheme: dark;"
+          class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
+          [value]="periodoActual()"
+          (change)="cambiarPeriodo($event)">
+          @for (p of periodosDisponibles(); track p) {
+            <option [value]="p" class="bg-[#1a1d26] text-gray-100 font-medium">{{ p === 'todos' ? 'Histórico General' : p }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Botón(es) de Acción según Tab Activo (Permanecen SIEMPRE juntos lado a lado) -->
+      @if (activeTab() === 'recursos') {
+        <button
+          class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
+          (click)="abrirModalRecurso()">
+          <ion-icon name="add-circle-outline" class="text-sm"></ion-icon>
+          <span>Asignar Recurso</span>
+        </button>
+      } @else if (activeTab() === 'copasst') {
+        <div class="flex items-center gap-1.5 flex-nowrap flex-shrink-0">
+          <button
+            class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
+            (click)="abrirModalActa('COPASST')">
+            <ion-icon name="document-text-outline" class="text-sm text-brand-primary"></ion-icon>
+            <span>+ Acta</span>
+          </button>
+          <button
+            class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
+            (click)="abrirModalMiembro('COPASST')">
+            <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
+            <span>+ Integrante</span>
+          </button>
+        </div>
+      } @else if (activeTab() === 'convivencia') {
+        <div class="flex items-center gap-1.5 flex-nowrap flex-shrink-0">
+          <button
+            class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
+            (click)="abrirModalActa('COMITE_CONVIVENCIA')">
+            <ion-icon name="document-text-outline" class="text-sm text-brand-primary"></ion-icon>
+            <span>+ Acta</span>
+          </button>
+          <button
+            class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
+            (click)="abrirModalMiembro('COMITE_CONVIVENCIA')">
+            <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
+            <span>+ Integrante</span>
+          </button>
+        </div>
+      } @else if (activeTab() === 'brigada') {
+        <div class="flex items-center gap-1.5 flex-nowrap flex-shrink-0">
+          <button
+            class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
+            (click)="abrirModalActa('BRIGADA_EMERGENCIA')">
+            <ion-icon name="document-text-outline" class="text-sm text-brand-primary"></ion-icon>
+            <span>+ Acta</span>
+          </button>
+          <button
+            class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
+            (click)="abrirModalMiembro('BRIGADA_EMERGENCIA')">
+            <ion-icon name="shield-half-outline" class="text-sm"></ion-icon>
+            <span>+ Brigadista</span>
+          </button>
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- ─── 3. TABS DE NAVEGACIÓN COMPACTO ──────────────────────────────────────── -->
+  <nav class="flex items-center gap-1.5 overflow-x-auto border-b border-dark-border pb-1 scrollbar-none" aria-label="Secciones del Módulo">
+    <button
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
+      [ngClass]="activeTab() === 'recursos' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
+      (click)="setTab('recursos')">
+      <ion-icon name="wallet-outline" class="text-sm"></ion-icon>
+      <span>1. Recursos Asignados</span>
+      <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'recursos' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
+        {{ recursos().length }}
+      </span>
+    </button>
+
+    <button
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
+      [ngClass]="activeTab() === 'copasst' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
+      (click)="setTab('copasst')">
+      <ion-icon name="people-outline" class="text-sm"></ion-icon>
+      <span>2. COPASST</span>
+      <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'copasst' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
+        {{ miembrosCopasst().length }}
+      </span>
+    </button>
+
+    <button
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
+      [ngClass]="activeTab() === 'convivencia' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
+      (click)="setTab('convivencia')">
+      <ion-icon name="chatbubbles-outline" class="text-sm"></ion-icon>
+      <span>3. Convivencia Laboral</span>
+      <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'convivencia' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
+        {{ miembrosConvivencia().length }}
+      </span>
+    </button>
+
+    <button
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
+      [ngClass]="activeTab() === 'brigada' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
+      (click)="setTab('brigada')">
+      <ion-icon name="flame-outline" class="text-sm"></ion-icon>
+      <span>4. Brigada Emergencia</span>
+      <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'brigada' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
+        {{ miembrosBrigada().length }}
+      </span>
+    </button>
+
+    <button
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
+      [ngClass]="activeTab() === 'raci' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
+      (click)="setTab('raci')">
+      <ion-icon name="grid-outline" class="text-sm"></ion-icon>
+      <span>5. Matriz RACI</span>
+      <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'raci' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
+        {{ actividadesRaci().length }}
+      </span>
+    </button>
+  </nav>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- SECCIÓN 1: RECURSOS ASIGNADOS AL SG-SST (COMPACTO)                        -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'recursos') {
+    <!-- Grid KPI Compacto -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3" aria-label="Métricas de Presupuesto">
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-blue-500/40 transition-colors flex items-center gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <ion-icon name="cash-outline"></ion-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Presupuesto Asignado</span>
+          <div class="text-sm sm:text-base font-bold text-white tabular-numbers leading-tight truncate">
+            {{ formatMoney(resumenPresupuesto().totalPresupuestado) }}
+          </div>
+          <div class="text-[10px] text-dark-text truncate mt-0.5">Período {{ periodoActual() }}</div>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-emerald-500/40 transition-colors flex items-center gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <ion-icon name="checkmark-done-circle-outline"></ion-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Monto Ejecutado</span>
+          <div class="text-sm sm:text-base font-bold text-white tabular-numbers leading-tight truncate">
+            {{ formatMoney(resumenPresupuesto().totalEjecutado) }}
+          </div>
+          <div class="text-[10px] text-dark-text truncate mt-0.5">{{ resumenPresupuesto().porcentajeEjecucion }}% ejecutado</div>
+          <div class="mt-1 h-1 w-full bg-dark-accent rounded-full overflow-hidden">
+            <div class="h-full bg-emerald-500 rounded-full transition-all duration-500" [style.width.%]="resumenPresupuesto().porcentajeEjecucion"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-purple-500/40 transition-colors flex items-center gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <ion-icon name="pie-chart-outline"></ion-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Saldo Disponible</span>
+          <div class="text-sm sm:text-base font-bold text-white tabular-numbers leading-tight truncate">
+            {{ formatMoney(resumenPresupuesto().saldoDisponible) }}
+          </div>
+          <div class="text-[10px] text-dark-text truncate mt-0.5">Remanente de caja</div>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-amber-500/40 transition-colors flex items-center gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <ion-icon name="layers-outline"></ion-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Total Recursos</span>
+          <div class="text-sm sm:text-base font-bold text-white tabular-numbers leading-tight truncate">
+            {{ recursos().length }}
+          </div>
+          <div class="text-[10px] text-dark-text truncate mt-0.5">
+            H:{{ resumenPresupuesto().porTipo.humano.cantidad }} · F:{{ resumenPresupuesto().porTipo.financiero.cantidad }} · T:{{ resumenPresupuesto().porTipo.tecnico_tecnologico.cantidad }} · L:{{ resumenPresupuesto().porTipo.fisico_locativo.cantidad }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabla Compacta de Recursos -->
+    <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
+      <!-- Barra Superior de Filtros -->
+      <div class="px-3.5 py-2 border-b border-dark-border flex flex-wrap items-center justify-between gap-2 bg-dark-secondary/95">
+        <div class="flex items-center gap-2">
+          <h4 class="text-xs sm:text-sm font-bold text-white m-0">Inventario de Recursos SG-SST</h4>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-dark-accent text-dark-text border border-dark-border">
+            {{ recursosFiltrados().length }}
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="relative flex items-center">
+            <ion-icon name="search-outline" class="absolute left-2.5 text-dark-text text-xs pointer-events-none"></ion-icon>
+            <input
+              type="text"
+              placeholder="Buscar recurso..."
+              class="h-7.5 w-44 sm:w-56 bg-dark-primary border border-dark-border rounded-md pl-8 pr-2.5 text-xs text-dark-text-light placeholder:text-dark-text/50 focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary transition"
+              [value]="busquedaRecurso()"
+              (input)="busquedaRecurso.set($any($event.target).value)">
+          </div>
+
+          <select
+            style="color-scheme: dark;"
+            class="h-7.5 bg-dark-primary border border-dark-border rounded-md px-2 text-xs text-dark-text-light font-medium focus:border-brand-primary focus:outline-none cursor-pointer"
+            [value]="filtroTipoRecurso()"
+            (change)="filtroTipoRecurso.set($any($event.target).value)">
+            <option value="todos">Todos los Tipos</option>
+            <option value="humano">Humano</option>
+            <option value="financiero">Financiero</option>
+            <option value="tecnico_tecnologico">Técnico / Tecnológico</option>
+            <option value="fisico_locativo">Físico / Locativo</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla Responsive -->
+      <div class="overflow-x-auto scrollbar-thin">
+        <table class="min-w-full text-left text-xs">
+          <thead>
+            <tr class="bg-dark-accent/80 text-[11px] font-bold uppercase tracking-wider text-dark-text border-b border-dark-border">
+              <th class="px-3 py-2 whitespace-nowrap">Tipo</th>
+              <th class="px-3 py-2 whitespace-nowrap">Descripción</th>
+              <th class="px-3 py-2 whitespace-nowrap">Responsable (Censo)</th>
+              <th class="px-3 py-2 whitespace-nowrap">Presupuesto</th>
+              <th class="px-3 py-2 whitespace-nowrap">Ejecutado</th>
+              <th class="px-3 py-2 whitespace-nowrap">Período</th>
+              <th class="px-3 py-2 whitespace-nowrap">Estado</th>
+              <th class="px-3 py-2 whitespace-nowrap text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-dark-border/50">
+            @if (recursosFiltrados().length === 0) {
+              <tr>
+                <td colspan="8" class="px-3 py-8 text-center">
+                  <ion-icon name="folder-open-outline" class="text-3xl text-dark-text/40 mb-1"></ion-icon>
+                  <p class="text-xs font-semibold text-white m-0">No se encontraron recursos</p>
+                  <p class="text-[11px] text-dark-text m-0 mt-0.5">Haga clic en "+ Asignar Recurso" para registrar un nuevo recurso.</p>
+                </td>
+              </tr>
+            } @else {
+              @for (r of recursosFiltrados(); track r.id) {
+                <tr class="hover:bg-dark-accent/30 transition-colors">
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold"
+                      [ngClass]="{
+                        'bg-purple-500/10 text-purple-400 border border-purple-500/20': r.tipo_recurso === 'humano',
+                        'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': r.tipo_recurso === 'financiero',
+                        'bg-blue-500/10 text-blue-400 border border-blue-500/20': r.tipo_recurso === 'tecnico_tecnologico',
+                        'bg-amber-500/10 text-amber-400 border border-amber-500/20': r.tipo_recurso === 'fisico_locativo'
+                      }">
+                      {{ r.tipo_recurso === 'humano' ? 'Humano' :
+                         r.tipo_recurso === 'financiero' ? 'Financiero' :
+                         r.tipo_recurso === 'tecnico_tecnologico' ? 'Tecnológico' : 'Físico / Locativo' }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 max-w-xs">
+                    <span class="font-semibold text-white block truncate">{{ r.descripcion }}</span>
+                    @if (r.observaciones) {
+                      <span class="text-[11px] text-dark-text block truncate">{{ r.observaciones }}</span>
+                    }
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    @if (r.responsable) {
+                      <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-brand-primary/15 border border-brand-primary/30 text-brand-primary flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                          {{ getInitials(r.responsable.nombre) }}
+                        </div>
+                        <div class="min-w-0">
+                          <span class="font-semibold text-white block truncate">{{ r.responsable.nombre }}</span>
+                          <span class="text-[10px] text-dark-text block truncate">{{ r.responsable.cargo || 'Sin cargo' }}</span>
+                        </div>
+                      </div>
+                    } @else {
+                      <span class="text-dark-text italic text-[11px]">No asignado</span>
+                    }
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap tabular-numbers font-medium text-dark-text-light">
+                    {{ r.tipo_recurso === 'financiero' ? formatMoney(r.monto_presupuestado) : '—' }}
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap tabular-numbers font-bold"
+                    [ngClass]="(r.monto_ejecutado || 0) > (r.monto_presupuestado || 0) ? 'text-red-400' : 'text-emerald-400'">
+                    {{ r.tipo_recurso === 'financiero' ? formatMoney(r.monto_ejecutado) : '—' }}
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-dark-text-light">{{ r.periodo }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                      [ngClass]="{
+                        'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20': r.estado === 'activo',
+                        'bg-blue-500/10 text-blue-400 border border-blue-500/20': r.estado === 'ejecutado',
+                        'bg-amber-500/10 text-amber-400 border border-amber-500/20': r.estado === 'pendiente'
+                      }">
+                      {{ r.estado }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <button
+                        class="p-1 rounded text-dark-text hover:text-white hover:bg-dark-accent transition cursor-pointer"
+                        (click)="abrirModalRecurso(r)"
+                        title="Editar recurso">
+                        <ion-icon name="create-outline" class="text-sm"></ion-icon>
+                      </button>
+                      <button
+                        class="p-1 rounded text-dark-text hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+                        (click)="eliminarRecurso(r.id)"
+                        title="Eliminar recurso">
+                        <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- SECCIONES 2, 3 Y 4: COMITÉS (COPASST, CONVIVENCIA, BRIGADA)              -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'copasst' || activeTab() === 'convivencia' || activeTab() === 'brigada') {
+    @let tipoComiteActual = (activeTab() === 'copasst' ? 'COPASST' :
+                            activeTab() === 'convivencia' ? 'COMITE_CONVIVENCIA' : 'BRIGADA_EMERGENCIA');
+    @let comiteActual = getComitePorTipo(tipoComiteActual);
+    @let miembrosActuales = miembrosFiltrados();
+    @let actasActuales = actasFiltradas();
+
+    <!-- Banner de Estado Compacto -->
+    @if (comiteActual) {
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 relative overflow-hidden">
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1"
+            [ngClass]="{
+              'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30': comiteActual.estado === 'vigente',
+              'bg-amber-500/15 text-amber-400 border border-amber-500/30': comiteActual.por_vencer,
+              'bg-red-500/15 text-red-400 border border-red-500/30': comiteActual.estado === 'vencido'
+            }">
+            <ion-icon [name]="comiteActual.estado === 'vigente' ? 'shield-checkmark-outline' : comiteActual.por_vencer ? 'alert-circle-outline' : 'warning-outline'"></ion-icon>
+            {{ comiteActual.estado === 'vigente' ? 'Comité Vigente' : comiteActual.estado === 'en_proceso_eleccion' ? 'En Elección' : 'Comité Vencido' }}
+          </span>
+
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white m-0">
+              {{ comiteActual.nombre_personalizado || (tipoComiteActual === 'COPASST' ? 'COPASST Institucional' : tipoComiteActual === 'COMITE_CONVIVENCIA' ? 'Comité de Convivencia Laboral' : 'Brigada de Prevención y Emergencias') }}
+            </h3>
+            <p class="text-xs text-dark-text m-0 mt-0.5">
+              {{ comiteActual.acto_administrativo || 'Acto Administrativo No Registrado' }} · Vigencia de {{ comiteActual.periodo_anios }} año(s)
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 text-xs">
+          <div class="bg-dark-primary/60 border border-dark-border px-2.5 py-1 rounded-md">
+            <span class="text-[10px] uppercase text-dark-text font-bold block">Conformación</span>
+            <span class="font-semibold text-white">{{ comiteActual.fecha_conformacion }}</span>
+          </div>
+
+          <div class="bg-dark-primary/60 border border-dark-border px-2.5 py-1 rounded-md">
+            <span class="text-[10px] uppercase text-dark-text font-bold block">Vence</span>
+            <span class="font-semibold text-white">{{ comiteActual.fecha_vigencia_fin }}</span>
+          </div>
+
+          <div class="bg-dark-primary/60 border border-dark-border px-2.5 py-1 rounded-md">
+            <span class="text-[10px] uppercase text-dark-text font-bold block">Días Restantes</span>
+            <span class="font-bold tabular-numbers"
+              [ngClass]="{
+                'text-red-400': (comiteActual.dias_restantes || 0) < 0,
+                'text-amber-400': (comiteActual.dias_restantes || 0) >= 0 && (comiteActual.dias_restantes || 0) <= 60,
+                'text-emerald-400': (comiteActual.dias_restantes || 0) > 60
+              }">
+              {{ (comiteActual.dias_restantes || 0) < 0 ? 'Vencido (' + (-(comiteActual.dias_restantes || 0)) + 'd)' : (comiteActual.dias_restantes || 0) + ' días' }}
+            </span>
+          </div>
+
+          <button
+            class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-md text-xs font-semibold bg-dark-accent border border-dark-border text-dark-text-light hover:bg-dark-border transition cursor-pointer"
+            (click)="abrirModalConformacion(tipoComiteActual)">
+            <ion-icon name="refresh-outline" class="text-xs"></ion-icon>
+            <span>Nueva Conformación</span>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Sin conformación inicial -->
+      <div class="rounded-lg border border-red-500/30 bg-dark-secondary p-3.5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/30">
+            Sin Conformar
+          </span>
+          <div>
+            <h3 class="text-sm font-bold text-white m-0">No se ha registrado la conformación legal de este comité</h3>
+            <p class="text-xs text-dark-text m-0 mt-0.5">Registre el acto administrativo y período de vigencia para comenzar.</p>
+          </div>
+        </div>
+
+        <button
+          class="h-8 inline-flex items-center gap-1 px-3 rounded-md text-xs font-semibold bg-brand-primary text-white hover:bg-blue-600 transition cursor-pointer"
+          (click)="abrirModalConformacion(tipoComiteActual)">
+          <ion-icon name="add-circle-outline" class="text-sm"></ion-icon>
+          <span>Conformar Comité</span>
+        </button>
+      </div>
+    }
+
+    <!-- Tabla Compacta de Integrantes -->
+    <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
+      <div class="px-3.5 py-2 border-b border-dark-border flex flex-wrap items-center justify-between gap-2 bg-dark-secondary/95">
+        <div class="flex items-center gap-2">
+          <h4 class="text-xs sm:text-sm font-bold text-white m-0">Integrantes del Comité</h4>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-dark-accent text-dark-text border border-dark-border">
+            {{ miembrosActuales.length }}
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="relative flex items-center">
+            <ion-icon name="search-outline" class="absolute left-2.5 text-dark-text text-xs pointer-events-none"></ion-icon>
+            <input
+              type="text"
+              placeholder="Buscar integrante..."
+              class="h-7.5 w-44 sm:w-56 bg-dark-primary border border-dark-border rounded-md pl-8 pr-2.5 text-xs text-dark-text-light placeholder:text-dark-text/50 focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary transition"
+              [value]="busquedaMiembro()"
+              (input)="busquedaMiembro.set($any($event.target).value)">
+          </div>
+
+          <button
+            class="h-7.5 inline-flex items-center gap-1 px-2.5 rounded-md text-xs font-medium bg-dark-accent border border-dark-border text-dark-text-light hover:bg-dark-border transition cursor-pointer"
+            (click)="abrirModalMiembro(tipoComiteActual)">
+            <ion-icon name="person-add-outline" class="text-xs text-brand-primary"></ion-icon>
+            <span>+ Integrante</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto scrollbar-thin">
+        <table class="min-w-full text-left text-xs">
+          <thead>
+            <tr class="bg-dark-accent/80 text-[11px] font-bold uppercase tracking-wider text-dark-text border-b border-dark-border">
+              <th class="px-3 py-2 whitespace-nowrap">Integrante</th>
+              <th class="px-3 py-2 whitespace-nowrap">Cargo / Área</th>
+              <th class="px-3 py-2 whitespace-nowrap">Rol en Comité</th>
+              <th class="px-3 py-2 whitespace-nowrap">Representación</th>
+              <th class="px-3 py-2 whitespace-nowrap">Calidad</th>
+              <th class="px-3 py-2 whitespace-nowrap">Seguridad Social</th>
+              <th class="px-3 py-2 whitespace-nowrap">Participación</th>
+              <th class="px-3 py-2 whitespace-nowrap text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-dark-border/50">
+            @if (miembrosActuales.length === 0) {
+              <tr>
+                <td colspan="8" class="px-3 py-8 text-center">
+                  <ion-icon name="people-outline" class="text-3xl text-dark-text/40 mb-1"></ion-icon>
+                  <p class="text-xs font-semibold text-white m-0">No hay integrantes vinculados</p>
+                  <p class="text-[11px] text-dark-text m-0 mt-0.5">Haga clic en "+ Integrante" para asignar trabajadores desde el censo.</p>
+                </td>
+              </tr>
+            } @else {
+              @for (m of miembrosActuales; track m.id) {
+                <tr class="hover:bg-dark-accent/30 transition-colors" [ngClass]="{'opacity-50': !m.activo}">
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <div class="flex items-center gap-2">
+                      <div class="w-6 h-6 rounded-full bg-brand-primary/15 border border-brand-primary/30 text-brand-primary flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                        {{ getInitials(m.trabajador?.nombre) }}
+                      </div>
+                      <div class="min-w-0">
+                        <span class="font-semibold text-white block truncate">{{ m.trabajador?.nombre }}</span>
+                        <span class="text-[10px] text-dark-text block">C.C. {{ m.trabajador?.documento }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <span class="text-dark-text-light font-medium block truncate">{{ m.trabajador?.cargo || 'Sin cargo' }}</span>
+                    <span class="text-[10px] text-dark-text block truncate">{{ m.trabajador?.area_trabajo || 'General' }}</span>
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                      [ngClass]="{
+                        'bg-blue-500/10 text-blue-400 border border-blue-500/20': m.rol_en_comite === 'presidente',
+                        'bg-purple-500/10 text-purple-400 border border-purple-500/20': m.rol_en_comite === 'secretario',
+                        'bg-red-500/10 text-red-400 border border-red-500/20': m.rol_en_comite === 'jefe_brigada' || m.rol_en_comite === 'coordinador',
+                        'bg-amber-500/10 text-amber-400 border border-amber-500/20': m.rol_en_comite === 'brigadista',
+                        'bg-slate-500/10 text-slate-300 border border-slate-500/20': m.rol_en_comite === 'miembro'
+                      }">
+                      {{ m.rol_en_comite }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    @if (m.tipo_representacion !== 'no_aplica') {
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                        [ngClass]="m.tipo_representacion === 'empleador' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'">
+                        {{ m.tipo_representacion === 'empleador' ? 'Empleador' : 'Trabajadores' }}
+                      </span>
+                    } @else {
+                      <span class="text-dark-text text-[11px]">N/A (Brigada)</span>
+                    }
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap font-bold text-dark-text-light uppercase text-[11px]">
+                    {{ m.tipo_miembro }}
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-[11px] text-dark-text">
+                    EPS: {{ m.trabajador?.eps || '—' }} · ARL: {{ m.trabajador?.arl || '—' }}
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-[11px]">
+                    <span class="text-dark-text-light">Desde: {{ m.fecha_inicio_participacion }}</span>
+                    @if (!m.activo) {
+                      <span class="text-red-400 block text-[10px]">Retirado: {{ m.fecha_fin_participacion }}</span>
+                    }
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-right">
+                    @if (m.activo) {
+                      <button
+                        class="p-1 rounded text-dark-text hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+                        (click)="retirarMiembro(m.id, tipoComiteActual)"
+                        title="Retirar integrante del comité">
+                        <ion-icon name="person-remove-outline" class="text-sm"></ion-icon>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabla Compacta de Actas -->
+    <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
+      <div class="px-3.5 py-2 border-b border-dark-border flex flex-wrap items-center justify-between gap-2 bg-dark-secondary/95">
+        <div class="flex items-center gap-2">
+          <h4 class="text-xs sm:text-sm font-bold text-white m-0">Actas de Reunión Periódica</h4>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-dark-accent text-dark-text border border-dark-border">
+            {{ actasActuales.length }}
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="relative flex items-center">
+            <ion-icon name="search-outline" class="absolute left-2.5 text-dark-text text-xs pointer-events-none"></ion-icon>
+            <input
+              type="text"
+              placeholder="Buscar acta..."
+              class="h-7.5 w-44 sm:w-56 bg-dark-primary border border-dark-border rounded-md pl-8 pr-2.5 text-xs text-dark-text-light placeholder:text-dark-text/50 focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary transition"
+              [value]="busquedaActa()"
+              (input)="busquedaActa.set($any($event.target).value)">
+          </div>
+
+          <button
+            class="h-7.5 inline-flex items-center gap-1 px-2.5 rounded-md text-xs font-medium bg-dark-accent border border-dark-border text-dark-text-light hover:bg-dark-border transition cursor-pointer"
+            (click)="abrirModalActa(tipoComiteActual)">
+            <ion-icon name="add-circle-outline" class="text-xs text-brand-primary"></ion-icon>
+            <span>+ Registrar Acta</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto scrollbar-thin">
+        <table class="min-w-full text-left text-xs">
+          <thead>
+            <tr class="bg-dark-accent/80 text-[11px] font-bold uppercase tracking-wider text-dark-text border-b border-dark-border">
+              <th class="px-3 py-2 whitespace-nowrap">Número de Acta</th>
+              <th class="px-3 py-2 whitespace-nowrap">Fecha de Sesión</th>
+              <th class="px-3 py-2 whitespace-nowrap">Tipo</th>
+              <th class="px-3 py-2 whitespace-nowrap">Temas Tratados</th>
+              <th class="px-3 py-2 whitespace-nowrap">Compromisos</th>
+              <th class="px-3 py-2 whitespace-nowrap">Asistentes</th>
+              <th class="px-3 py-2 whitespace-nowrap">Archivo</th>
+              <th class="px-3 py-2 whitespace-nowrap text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-dark-border/50">
+            @if (actasActuales.length === 0) {
+              <tr>
+                <td colspan="8" class="px-3 py-8 text-center">
+                  <ion-icon name="document-text-outline" class="text-3xl text-dark-text/40 mb-1"></ion-icon>
+                  <p class="text-xs font-semibold text-white m-0">No hay actas registradas</p>
+                  <p class="text-[11px] text-dark-text m-0 mt-0.5">Registre las sesiones periódicas requeridas por los estándares 1.1.6 y 1.1.7.</p>
+                </td>
+              </tr>
+            } @else {
+              @for (a of actasActuales; track a.id) {
+                <tr class="hover:bg-dark-accent/30 transition-colors">
+                  <td class="px-3 py-2 whitespace-nowrap font-bold text-white">{{ a.numero_acta }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap text-dark-text-light">{{ a.fecha_reunion }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase"
+                      [ngClass]="a.tipo_reunion === 'ordinaria' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'">
+                      {{ a.tipo_reunion }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 max-w-xs">
+                    <div class="line-clamp-2-compact text-dark-text-light">{{ a.temas_tratados }}</div>
+                  </td>
+                  <td class="px-3 py-2 max-w-xs">
+                    <div class="line-clamp-2-compact text-dark-text">{{ a.compromisos || 'Sin compromisos' }}</div>
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap tabular-numbers">
+                    <span class="font-bold text-white">{{ a.asistentes?.length || 0 }}</span>
+                    <span class="text-[10px] text-dark-text ml-1">asistentes</span>
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    @if (a.archivo_acta_url) {
+                      <a [href]="a.archivo_acta_url" target="_blank" rel="noopener noreferrer"
+                        class="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-400 hover:text-blue-300 underline">
+                        <ion-icon name="cloud-download-outline"></ion-icon>
+                        Descargar
+                      </a>
+                    } @else {
+                      <span class="text-dark-text text-[11px]">Sin archivo</span>
+                    }
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <button
+                      class="p-1 rounded text-dark-text hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+                      (click)="eliminarActa(a.id, tipoComiteActual)"
+                      title="Eliminar acta">
+                      <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- SECCIÓN 5: MATRIZ DE RESPONSABILIDADES RACI (COMPACTO)                    -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'raci') {
+    <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
+      <!-- Toolbar RACI -->
+      <div class="px-3.5 py-2 border-b border-dark-border flex flex-wrap items-center justify-between gap-2 bg-dark-secondary/95">
+        <div class="flex items-center gap-2">
+          <h4 class="text-xs sm:text-sm font-bold text-white m-0">Matriz RACI de Responsabilidades SG-SST</h4>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-dark-accent text-dark-text border border-dark-border">
+            {{ actividadesRaci().length }} Actividades
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <select
+            style="color-scheme: dark;"
+            class="h-7.5 bg-dark-primary border border-dark-border rounded-md px-2 text-xs text-dark-text-light font-medium focus:border-brand-primary focus:outline-none cursor-pointer"
+            [value]="filtroFaseRaci()"
+            (change)="filtroFaseRaci.set($any($event.target).value)">
+            <option value="todas">Todas las Fases PHVA</option>
+            <option value="planear">Planear</option>
+            <option value="hacer">Hacer</option>
+            <option value="verificar">Verificar</option>
+            <option value="actuar">Actuar</option>
+          </select>
+
+          <span class="text-[11px] text-dark-text">
+            Clic: rotar (R &rarr; A &rarr; C &rarr; I) · Doble clic: detalle
+          </span>
+        </div>
+      </div>
+
+      <!-- Tabla RACI Compacta -->
+      <div class="overflow-x-auto scrollbar-thin">
+        <table class="min-w-full text-left text-xs">
+          <thead>
+            <tr class="bg-dark-accent/80 text-[11px] font-bold text-dark-text border-b border-dark-border">
+              <th class="px-3 py-2 min-w-[240px] uppercase tracking-wider">Actividad SG-SST</th>
+              <th class="px-2.5 py-2 w-24 text-center uppercase tracking-wider">Fase</th>
+              @for (rol of rolesRaci; track rol) {
+                <th class="px-2 py-2 text-center min-w-[110px] uppercase tracking-wider text-[10px]">{{ rol }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-dark-border/50">
+            @for (act of actividadesRaci(); track act.actividad) {
+              <tr class="hover:bg-dark-accent/25 transition-colors">
+                <td class="px-3 py-1.5 font-medium text-white max-w-sm">
+                  <div class="truncate">{{ act.actividad }}</div>
+                </td>
+                <td class="px-2.5 py-1.5 text-center whitespace-nowrap">
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 border border-brand-primary/25 text-brand-primary">
+                    {{ act.fase }}
+                  </span>
+                </td>
+                @for (rol of rolesRaci; track rol) {
+                  @let itemRaci = getRaciValor(act.actividad, rol);
+                  <td class="px-1 py-1 text-center whitespace-nowrap">
+                    <button
+                      class="raci-btn"
+                      [ngClass]="itemRaci ? itemRaci.tipo_responsabilidad : 'empty'"
+                      (click)="ciclarRaciRapido(act.actividad, rol, $event)"
+                      (dblclick)="abrirModalRaci(act.actividad, rol)"
+                      [title]="itemRaci ? (itemRaci.tipo_responsabilidad + ': ' + (itemRaci.descripcion_responsabilidad || 'Doble clic para editar')) : 'Clic para asignar responsabilidad'">
+                      {{ itemRaci ? itemRaci.tipo_responsabilidad : '—' }}
+                    </button>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Leyenda Metodológica RACI -->
+      <footer class="px-3.5 py-2 bg-dark-accent/40 border-t border-dark-border flex flex-wrap items-center gap-3 text-[11px] text-dark-text">
+        <span class="font-bold uppercase tracking-wider text-white">RACI (Dec. 1072/15):</span>
+        <div class="flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded bg-blue-900 border border-blue-500 text-blue-200 font-bold text-[10px] flex items-center justify-center">R</span>
+          <span><strong>R</strong> - Responsable (Ejecuta)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded bg-purple-900 border border-purple-500 text-purple-200 font-bold text-[10px] flex items-center justify-center">A</span>
+          <span><strong>A</strong> - Aprueba (Autoriza)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded bg-amber-900 border border-amber-500 text-amber-200 font-bold text-[10px] flex items-center justify-center">C</span>
+          <span><strong>C</strong> - Consultado (Aporta)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded bg-slate-800 border border-slate-600 text-slate-300 font-bold text-[10px] flex items-center justify-center">I</span>
+          <span><strong>I</strong> - Informado (Notificado)</span>
+        </div>
+      </footer>
+    </div>
+  }
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODALES COMPACTOS (PATRÓN TAILWIND CSS)                                    -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- MODAL 1: RECURSO -->
+@if (modalRecursoVisible()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70 backdrop-blur-sm" (click)="cerrarModalRecurso()">
+    <div class="bg-dark-secondary rounded-xl border border-dark-border shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden animate-modal-in" (click)="$event.stopPropagation()">
+      <div class="px-4 py-2.5 border-b border-dark-border flex items-center justify-between bg-dark-secondary">
+        <h3 class="text-sm font-bold text-white m-0">
+          {{ recursoEnEdicion() ? 'Editar Recurso SST' : 'Asignar Nuevo Recurso al SG-SST' }}
+        </h3>
+        <button class="text-dark-text hover:text-white text-lg p-1 cursor-pointer leading-none" (click)="cerrarModalRecurso()">&times;</button>
+      </div>
+
+      <form [formGroup]="recursoForm" (ngSubmit)="guardarRecurso()" class="flex flex-col flex-1 overflow-hidden">
+        <div class="p-4 space-y-3 overflow-y-auto text-xs">
+          <div>
+            <label for="tipo_recurso" class="block font-semibold text-dark-text-light mb-1">Tipo de Recurso *</label>
+            <select id="tipo_recurso" formControlName="tipo_recurso"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              <option value="humano">Humano</option>
+              <option value="financiero">Financiero</option>
+              <option value="tecnico_tecnologico">Técnico / Tecnológico</option>
+              <option value="fisico_locativo">Físico / Locativo</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="descripcion" class="block font-semibold text-dark-text-light mb-1">Descripción del Recurso *</label>
+            <textarea id="descripcion" formControlName="descripcion" rows="2"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              placeholder="Ej. Presupuesto para exámenes médicos ocupacionales periódicos..."></textarea>
+          </div>
+
+          <div>
+            <label for="responsable_gestion" class="block font-semibold text-dark-text-light mb-1">Responsable de Gestión (Censo)</label>
+            <select id="responsable_gestion" formControlName="responsable_gestion"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              <option [ngValue]="null">Seleccione un trabajador...</option>
+              @for (t of trabajadoresDisponibles(); track t.id) {
+                <option [value]="t.id">{{ t.nombre }} ({{ t.cargo || 'Sin cargo' }} - C.C. {{ t.documento }})</option>
+              }
+            </select>
+          </div>
+
+          @if (recursoForm.get('tipo_recurso')?.value === 'financiero') {
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label for="monto_presupuestado" class="block font-semibold text-dark-text-light mb-1">Presupuestado ($) *</label>
+                <input id="monto_presupuestado" type="number" formControlName="monto_presupuestado" placeholder="0"
+                  class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              </div>
+              <div>
+                <label for="monto_ejecutado" class="block font-semibold text-dark-text-light mb-1">Ejecutado ($)</label>
+                <input id="monto_ejecutado" type="number" formControlName="monto_ejecutado" placeholder="0"
+                  class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              </div>
+            </div>
+          }
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="periodo" class="block font-semibold text-dark-text-light mb-1">Período *</label>
+              <input id="periodo" type="text" formControlName="periodo" placeholder="2026"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+            </div>
+            <div>
+              <label for="estado" class="block font-semibold text-dark-text-light mb-1">Estado *</label>
+              <select id="estado" formControlName="estado"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+                <option value="activo">Activo</option>
+                <option value="ejecutado">Ejecutado</option>
+                <option value="pendiente">Pendiente</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="observaciones" class="block font-semibold text-dark-text-light mb-1">Observaciones</label>
+            <textarea id="observaciones" formControlName="observaciones" rows="2"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              placeholder="Detalles de proveedores, contratos o cotizaciones..."></textarea>
+          </div>
+        </div>
+
+        <div class="px-4 py-2.5 border-t border-dark-border flex items-center justify-end gap-2 bg-dark-secondary/80">
+          <button type="button" class="px-3 py-1.5 rounded-md text-xs font-medium text-dark-text hover:text-white bg-dark-accent border border-dark-border cursor-pointer"
+            (click)="cerrarModalRecurso()">
+            Cancelar
+          </button>
+          <button type="submit" class="px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-brand-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
+            [disabled]="recursoForm.invalid">
+            Guardar Recurso
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL 2: INTEGRANTE DE COMITÉ -->
+@if (modalMiembroVisible()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70 backdrop-blur-sm" (click)="cerrarModalMiembro()">
+    <div class="bg-dark-secondary rounded-xl border border-dark-border shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden animate-modal-in" (click)="$event.stopPropagation()">
+      <div class="px-4 py-2.5 border-b border-dark-border flex items-center justify-between bg-dark-secondary">
+        <h3 class="text-sm font-bold text-white m-0">Agregar Integrante a {{ miembroTipoComite() }}</h3>
+        <button class="text-dark-text hover:text-white text-lg p-1 cursor-pointer leading-none" (click)="cerrarModalMiembro()">&times;</button>
+      </div>
+
+      <form [formGroup]="miembroForm" (ngSubmit)="guardarMiembro()" class="flex flex-col flex-1 overflow-hidden">
+        <div class="p-4 space-y-3 overflow-y-auto text-xs">
+          <div>
+            <label for="trabajador_id" class="block font-semibold text-dark-text-light mb-1">Seleccionar Trabajador (Censo) *</label>
+            <select id="trabajador_id" formControlName="trabajador_id" (change)="onTrabajadorSeleccionado($any($event.target).value)"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              <option value="">Seleccione una persona...</option>
+              @for (t of trabajadoresDisponibles(); track t.id) {
+                <option [value]="t.id">{{ t.nombre }} — {{ t.cargo || 'Sin cargo' }} (C.C. {{ t.documento }})</option>
+              }
+            </select>
+          </div>
+
+          <!-- Preview compacto del trabajador -->
+          @if (trabajadorSeleccionadoPreview(); as tw) {
+            <div class="bg-brand-primary/10 border border-brand-primary/25 rounded-lg p-2.5 flex items-center gap-2.5 text-xs">
+              <div class="w-8 h-8 rounded-full bg-brand-primary/20 text-brand-primary font-bold flex items-center justify-center text-xs flex-shrink-0">
+                {{ getInitials(tw.nombre) }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <strong class="text-white block truncate">{{ tw.nombre }}</strong>
+                <span class="text-[11px] text-dark-text block truncate">{{ tw.cargo || 'Sin cargo' }} · {{ tw.area_trabajo || 'General' }}</span>
+                <span class="text-[10px] text-dark-text/80 block">EPS: {{ tw.eps || '—' }} · ARL: {{ tw.arl || '—' }} · C.C. {{ tw.documento }}</span>
+              </div>
+            </div>
+          }
+
+          @if (advertenciaSuperposicion()) {
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2 text-amber-400 text-xs flex items-center gap-1.5">
+              <ion-icon name="warning-outline" class="text-sm flex-shrink-0"></ion-icon>
+              <span>{{ advertenciaSuperposicion() }}</span>
+            </div>
+          }
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="rol_en_comite" class="block font-semibold text-dark-text-light mb-1">Rol en el Comité *</label>
+              <select id="rol_en_comite" formControlName="rol_en_comite"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+                @if (miembroTipoComite() === 'BRIGADA_EMERGENCIA') {
+                  <option value="jefe_brigada">Jefe de Brigada</option>
+                  <option value="coordinador">Coordinador de Brigada</option>
+                  <option value="brigadista">Brigadista</option>
+                  <option value="otro">Otro</option>
+                } @else {
+                  <option value="presidente">Presidente</option>
+                  <option value="secretario">Secretario</option>
+                  <option value="miembro">Miembro / Vocal</option>
+                  <option value="otro">Otro</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label for="tipo_representacion" class="block font-semibold text-dark-text-light mb-1">Representación *</label>
+              <select id="tipo_representacion" formControlName="tipo_representacion"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+                @if (miembroTipoComite() === 'BRIGADA_EMERGENCIA') {
+                  <option value="no_aplica">No Aplica (Brigada)</option>
+                } @else {
+                  <option value="empleador">Empleador</option>
+                  <option value="trabajadores">Trabajadores</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="tipo_miembro" class="block font-semibold text-dark-text-light mb-1">Calidad / Grupo *</label>
+              <select id="tipo_miembro" formControlName="tipo_miembro"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+                @if (miembroTipoComite() === 'BRIGADA_EMERGENCIA') {
+                  <option value="primeros_auxilios">Primeros Auxilios</option>
+                  <option value="evacuacion_rescate">Evacuación y Rescate</option>
+                  <option value="control_incendios">Control de Incendios</option>
+                  <option value="comunicaciones">Comunicaciones</option>
+                  <option value="general">Brigadista Integral</option>
+                } @else {
+                  <option value="principal">Principal</option>
+                  <option value="suplente">Suplente</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label for="fecha_inicio_participacion" class="block font-semibold text-dark-text-light mb-1">Fecha Inicio *</label>
+              <input id="fecha_inicio_participacion" type="date" formControlName="fecha_inicio_participacion"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+            </div>
+          </div>
+        </div>
+
+        <div class="px-4 py-2.5 border-t border-dark-border flex items-center justify-end gap-2 bg-dark-secondary/80">
+          <button type="button" class="px-3 py-1.5 rounded-md text-xs font-medium text-dark-text hover:text-white bg-dark-accent border border-dark-border cursor-pointer"
+            (click)="cerrarModalMiembro()">
+            Cancelar
+          </button>
+          <button type="submit" class="px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-brand-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
+            [disabled]="miembroForm.invalid">
+            Asignar Integrante
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL 3: REGISTRAR ACTA -->
+@if (modalActaVisible()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70 backdrop-blur-sm" (click)="cerrarModalActa()">
+    <div class="bg-dark-secondary rounded-xl border border-dark-border shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden animate-modal-in" (click)="$event.stopPropagation()">
+      <div class="px-4 py-2.5 border-b border-dark-border flex items-center justify-between bg-dark-secondary">
+        <h3 class="text-sm font-bold text-white m-0">Registrar Acta - {{ actaTipoComite() }}</h3>
+        <button class="text-dark-text hover:text-white text-lg p-1 cursor-pointer leading-none" (click)="cerrarModalActa()">&times;</button>
+      </div>
+
+      <form [formGroup]="actaForm" (ngSubmit)="guardarActa()" class="flex flex-col flex-1 overflow-hidden">
+        <div class="p-4 space-y-3 overflow-y-auto text-xs">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="numero_acta" class="block font-semibold text-dark-text-light mb-1">Número de Acta *</label>
+              <input id="numero_acta" type="text" formControlName="numero_acta" placeholder="Acta No. 001-2026"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+            </div>
+            <div>
+              <label for="fecha_reunion" class="block font-semibold text-dark-text-light mb-1">Fecha de Sesión *</label>
+              <input id="fecha_reunion" type="date" formControlName="fecha_reunion"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+            </div>
+          </div>
+
+          <div>
+            <label for="tipo_reunion" class="block font-semibold text-dark-text-light mb-1">Tipo de Reunión *</label>
+            <select id="tipo_reunion" formControlName="tipo_reunion"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              <option value="ordinaria">Ordinaria (Programada periódica)</option>
+              <option value="extraordinaria">Extraordinaria (Accidente grave / Urgente)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="temas_tratados" class="block font-semibold text-dark-text-light mb-1">Temas Tratados / Orden del Día *</label>
+            <textarea id="temas_tratados" formControlName="temas_tratados" rows="2"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              placeholder="Detalle de temas evaluados, inspecciones o casos analizados..."></textarea>
+          </div>
+
+          <div>
+            <label for="compromisos" class="block font-semibold text-dark-text-light mb-1">Compromisos Acordados</label>
+            <textarea id="compromisos" formControlName="compromisos" rows="2"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              placeholder="Tareas, fechas de entrega y responsables..."></textarea>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-dark-text-light mb-1">Asistencia de Miembros Activos:</label>
+            <div class="max-h-28 overflow-y-auto bg-dark-primary border border-dark-border rounded-md p-2 space-y-1.5">
+              @for (m of getMiembrosPorTipo(actaTipoComite()); track m.id) {
+                <label class="flex items-center gap-2 cursor-pointer select-none text-[11px] text-dark-text-light">
+                  <input
+                    type="checkbox"
+                    class="rounded border-dark-border text-brand-primary focus:ring-0"
+                    [checked]="asistentesSeleccionados().includes(m.trabajador_id)"
+                    (change)="toggleAsistente(m.trabajador_id)">
+                  <span>{{ m.trabajador?.nombre }} ({{ m.rol_en_comite | uppercase }})</span>
+                </label>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label for="archivo_acta" class="block font-semibold text-dark-text-light mb-1">Adjuntar Acta Firmada (PDF / Imagen)</label>
+            <input id="archivo_acta" type="file" accept=".pdf,image/*" (change)="onArchivoActaChange($event)"
+              class="w-full text-xs text-dark-text file:mr-2 file:py-1 file:px-2.5 file:rounded file:border file:border-dark-border file:bg-dark-accent file:text-white file:text-xs hover:file:bg-dark-border cursor-pointer">
+          </div>
+        </div>
+
+        <div class="px-4 py-2.5 border-t border-dark-border flex items-center justify-end gap-2 bg-dark-secondary/80">
+          <button type="button" class="px-3 py-1.5 rounded-md text-xs font-medium text-dark-text hover:text-white bg-dark-accent border border-dark-border cursor-pointer"
+            (click)="cerrarModalActa()">
+            Cancelar
+          </button>
+          <button type="submit" class="px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-brand-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
+            [disabled]="actaForm.invalid">
+            Guardar Acta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL 4: CONFORMACIÓN DE COMITÉ -->
+@if (modalConformacionVisible()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70 backdrop-blur-sm" (click)="cerrarModalConformacion()">
+    <div class="bg-dark-secondary rounded-xl border border-dark-border shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden animate-modal-in" (click)="$event.stopPropagation()">
+      <div class="px-4 py-2.5 border-b border-dark-border flex items-center justify-between bg-dark-secondary">
+        <h3 class="text-sm font-bold text-white m-0">Conformación Oficial de {{ conformacionTipoComite() }}</h3>
+        <button class="text-dark-text hover:text-white text-lg p-1 cursor-pointer leading-none" (click)="cerrarModalConformacion()">&times;</button>
+      </div>
+
+      <form [formGroup]="conformacionForm" (ngSubmit)="guardarConformacion()" class="flex flex-col flex-1 overflow-hidden">
+        <div class="p-4 space-y-3 overflow-y-auto text-xs">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label for="fecha_conformacion" class="block font-semibold text-dark-text-light mb-1">Fecha Conformación *</label>
+              <input id="fecha_conformacion" type="date" formControlName="fecha_conformacion"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+            </div>
+            <div>
+              <label for="periodo_anios" class="block font-semibold text-dark-text-light mb-1">Vigencia (Años) *</label>
+              <input id="periodo_anios" type="number" formControlName="periodo_anios"
+                class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              <span class="text-[10px] text-dark-text block mt-0.5">COPASST/CCL: 2 años · Brigada: 1 año</span>
+            </div>
+          </div>
+
+          <div>
+            <label for="acto_administrativo" class="block font-semibold text-dark-text-light mb-1">Acto Administrativo / Resolución *</label>
+            <input id="acto_administrativo" type="text" formControlName="acto_administrativo" placeholder="Ej. Resolución Interna No. 002 de 2026"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+          </div>
+
+          <div>
+            <label for="conf_observaciones" class="block font-semibold text-dark-text-light mb-1">Observaciones / Escrutinio</label>
+            <textarea id="conf_observaciones" formControlName="observaciones" rows="2"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              placeholder="Resultados de votación o acta de escrutinio..."></textarea>
+          </div>
+
+          @if (getComitePorTipo(conformacionTipoComite())) {
+            <div class="pt-1">
+              <label class="flex items-center gap-2 cursor-pointer text-xs text-dark-text-light select-none">
+                <input type="checkbox" formControlName="migrar_miembros" class="rounded border-dark-border text-brand-primary focus:ring-0">
+                <span>Migrar integrantes activos del período anterior</span>
+              </label>
+            </div>
+          }
+        </div>
+
+        <div class="px-4 py-2.5 border-t border-dark-border flex items-center justify-end gap-2 bg-dark-secondary/80">
+          <button type="button" class="px-3 py-1.5 rounded-md text-xs font-medium text-dark-text hover:text-white bg-dark-accent border border-dark-border cursor-pointer"
+            (click)="cerrarModalConformacion()">
+            Cancelar
+          </button>
+          <button type="submit" class="px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-brand-primary hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
+            [disabled]="conformacionForm.invalid">
+            Guardar Conformación
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL 5: DETALLE CELDA RACI -->
+@if (modalRaciVisible() && raciCeldaEnEdicion()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70 backdrop-blur-sm" (click)="cerrarModalRaci()">
+    <div class="bg-dark-secondary rounded-xl border border-dark-border shadow-2xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden animate-modal-in" (click)="$event.stopPropagation()">
+      <div class="px-4 py-2.5 border-b border-dark-border flex items-center justify-between bg-dark-secondary">
+        <h3 class="text-sm font-bold text-white m-0">Detalle RACI</h3>
+        <button class="text-dark-text hover:text-white text-lg p-1 cursor-pointer leading-none" (click)="cerrarModalRaci()">&times;</button>
+      </div>
+
+      <form [formGroup]="raciForm" (ngSubmit)="guardarAsignacionRaci()" class="flex flex-col flex-1 overflow-hidden">
+        <div class="p-4 space-y-3 overflow-y-auto text-xs">
+          <div class="bg-dark-accent/60 border border-dark-border rounded-lg p-2.5 space-y-1">
+            <span class="text-[10px] uppercase font-bold text-dark-text block">Actividad:</span>
+            <div class="font-bold text-white leading-snug">{{ raciCeldaEnEdicion()?.actividad }}</div>
+            <span class="text-[10px] uppercase font-bold text-dark-text block pt-1">Rol / Cargo:</span>
+            <div class="font-bold text-brand-primary">{{ raciCeldaEnEdicion()?.rol }}</div>
+          </div>
+
+          <div>
+            <label for="tipo_responsabilidad" class="block font-semibold text-dark-text-light mb-1">Tipo de Responsabilidad RACI *</label>
+            <select id="tipo_responsabilidad" formControlName="tipo_responsabilidad"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              <option value="R">R - Responsable (Ejecuta la actividad)</option>
+              <option value="A">A - Aprueba / Rinde Cuentas (Autoriza y responde)</option>
+              <option value="C">C - Consultado (Aporta conceptos o datos)</option>
+              <option value="I">I - Informado (Se le notifica el avance)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="descripcion_responsabilidad" class="block font-semibold text-dark-text-light mb-1">Alcance Específico de la Responsabilidad</label>
+            <textarea id="descripcion_responsabilidad" formControlName="descripcion_responsabilidad" rows="2"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              placeholder="Detalle qué debe ejecutar o aprobar en este proceso..."></textarea>
+          </div>
+
+          <div>
+            <label for="trabajador_especifico_id" class="block font-semibold text-dark-text-light mb-1">Persona Específica (Opcional)</label>
+            <select id="trabajador_especifico_id" formControlName="trabajador_especifico_id"
+              class="w-full rounded-md border border-dark-border bg-dark-primary px-2.5 py-1.5 text-xs text-dark-text-light focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary">
+              <option [ngValue]="null">Aplica a todo el rol / cargo</option>
+              @for (t of trabajadoresDisponibles(); track t.id) {
+                <option [value]="t.id">{{ t.nombre }} ({{ t.cargo || 'Sin cargo' }})</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="px-4 py-2.5 border-t border-dark-border flex items-center justify-end gap-2 bg-dark-secondary/80">
+          <button type="button" class="px-3 py-1.5 rounded-md text-xs font-medium text-dark-text hover:text-white bg-dark-accent border border-dark-border cursor-pointer"
+            (click)="cerrarModalRaci()">
+            Cancelar
+          </button>
+          <button type="submit" class="px-3.5 py-1.5 rounded-md text-xs font-semibold text-white bg-brand-primary hover:bg-blue-600 shadow-sm cursor-pointer">
+            Guardar Asignación
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

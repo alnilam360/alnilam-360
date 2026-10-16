@@ -29,7 +29,7 @@ A continuación se detalla el estado actual de cada opción del menú lateral de
 | **PLANEAR (P)** | **Evaluación Inicial** | `/gestion-sst/evaluaciones` | <span style="color:#10b981;font-weight:bold;">OPERATIVO</span> | Evaluación Res. 0312/2019 (7, 21 o 60 estándares calculados). |
 | **PLANEAR (P)** | **Plan Anual de Trabajo** | `/gestion-sst/planes/plan-trabajo` | <span style="color:#10b981;font-weight:bold;">OPERATIVO</span> | Cronograma anual, responsables, modal de actividades y avance. |
 | **PLANEAR (P)** | **Matriz Legal** | `/documentos/catalogos/matriz-requisitos` | <span style="color:#f59e0b;font-weight:bold;">EN DESARROLLO</span> | Vista estándar de placeholder (`DocumentosModule`). |
-| **PLANEAR (P)** | **Recursos y Responsables** | `/personal/roles` | <span style="color:#f59e0b;font-weight:bold;">EN DESARROLLO</span> | Vista estándar de placeholder (`PersonalModule`). |
+| **PLANEAR (P)** | **Recursos y Responsables** | `/personal/roles` | <span style="color:#10b981;font-weight:bold;">OPERATIVO</span> | Asignación de recursos SG-SST, comités unificados (COPASST, Convivencia, Brigada) con vigencia, actas y Matriz RACI. |
 | **HACER (H)** | **Gestión de Peligros y Riesgos** | `/gestion-sst/matriz-iperc` | <span style="color:#10b981;font-weight:bold;">OPERATIVO</span> | Matriz IPERC (GTC 45), evaluación, medidas y exportación Excel. |
 | **HACER (H)** | **Gestión de la Salud** | `/formatos/seguimiento-examenes` | <span style="color:#f59e0b;font-weight:bold;">EN DESARROLLO</span> | Vista estándar de placeholder (`FormatosModule`). |
 | **HACER (H)** | **Capacitación y Competencias** | `/gestion-sst/planes/capacitaciones` | <span style="color:#f59e0b;font-weight:bold;">EN DESARROLLO</span> | Vista estándar de placeholder (`PlanesModule`). |
@@ -157,9 +157,9 @@ Los siguientes módulos cuentan con ruta activa en la aplicación pero actualmen
 
 ```mermaid
 pie title Estado de Módulos de Alnilam 360
-    "Módulos Operativos e Implementados" : 14
-    "Módulos en Desarrollo (Placeholders)" : 15
+    "Módulos Operativos e Implementados" : 15
+    "Módulos en Desarrollo (Placeholders)" : 14
 ```
 
-* **Módulos Operativos Clave (Completos):** 14 opciones (48.3% del menú), abarcando los componentes más críticos y normativos del sistema (Evaluación Res. 0312, Plan Anual, Matriz IPERC, Plan de Mejora, las 5 Matrices de Indicadores SG-SST y la Administración Multi-Empresa con Cargue Masivo).
-* **Módulos Pendientes (Placeholders):** 15 opciones (51.7% del menú), que corresponden principalmente a formatos operativos, gestión documental secundaria y módulos específicos de soporte.
+* **Módulos Operativos Clave (Completos):** 15 opciones (51.7% del menú), abarcando los componentes más críticos y normativos del sistema (Evaluación Res. 0312, Plan Anual, Recursos y Responsables, Matriz IPERC, Plan de Mejora, las 5 Matrices de Indicadores SG-SST y la Administración Multi-Empresa con Cargue Masivo).
+* **Módulos Pendientes (Placeholders):** 14 opciones (48.3% del menú), que corresponden principalmente a formatos operativos, gestión documental secundaria y módulos específicos de soporte.
