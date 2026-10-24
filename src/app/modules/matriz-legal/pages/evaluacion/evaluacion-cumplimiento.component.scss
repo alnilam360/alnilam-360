@@ -1,0 +1,22 @@
+@use '../../matriz-legal.shared.scss';
+
+.ml-eval-table {
+  th.num, td.num { text-align: center; white-space: nowrap; }
+  .ml-col-total { background: var(--ml-surface-2); font-weight: 700; }
+  .ml-row-total td { font-weight: 600; background: var(--ml-surface-2); }
+  .ml-row-pct td { font-weight: 700; }
+}
+
+.is-ok { color: var(--ml-success); }
+.is-warn { color: var(--ml-warning); }
+.is-bad { color: var(--ml-danger); }
+.is-null { color: var(--ml-muted); }
+
+.ml-pct-badge {
+  padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: 0.9rem;
+  background: var(--ml-surface-2);
+  &.is-ok { color: var(--ml-success); }
+  &.is-warn { color: var(--ml-warning); }
+  &.is-bad { color: var(--ml-danger); }
+  &.is-null { color: var(--ml-muted); }
+}

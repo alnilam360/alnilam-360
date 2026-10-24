@@ -34,7 +34,7 @@ export const MENU_ITEMS: MenuItem[] = [
       { id: 'politica-objetivos', label: 'Política, Objetivos y Metas', icon: 'flag-outline', route: '/documentos/controlados/politicas' },
       { id: 'evaluacion-inicial', label: 'Evaluación Inicial', icon: 'clipboard-outline', route: '/gestion-sst/evaluaciones' },
       { id: 'plan-anual-trabajo', label: 'Plan Anual de Trabajo', icon: 'calendar-outline', route: '/gestion-sst/planes/plan-trabajo' },
-      { id: 'matriz-legal', label: 'Matriz Legal', icon: 'document-text-outline', route: '/documentos/catalogos/matriz-requisitos' },
+      { id: 'matriz-legal', label: 'Matriz Legal', icon: 'document-text-outline', route: '/matriz-legal' },
       { id: 'recursos-responsables', label: 'Recursos y Responsables', icon: 'people-outline', route: '/personal/roles' }
     ]
   },
@@ -69,7 +69,7 @@ export const MENU_ITEMS: MenuItem[] = [
       },
       { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'checkbox-outline', route: '/auditorias/programacion' },
       { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/investigacion-atel' },
-      { id: 'cumplimiento-legal', label: 'Cumplimiento Legal', icon: 'shield-checkmark-outline', route: '/documentos/catalogos/matriz-requisitos' },
+      { id: 'cumplimiento-legal', label: 'Cumplimiento Legal', icon: 'shield-checkmark-outline', route: '/matriz-legal/evaluacion' },
       { id: 'revision-alta-direccion', label: 'Revisión por la Alta Dirección', icon: 'eye-outline', route: '/gestion-sst/plan-mejora' }
     ]
   },

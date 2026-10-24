@@ -1,0 +1,75 @@
+@use '../../matriz-legal.shared.scss';
+
+:host {
+  --ml-surface: var(--ion-card-background, #1e293b);
+  --ml-surface-2: rgba(148, 163, 184, 0.08);
+  --ml-border: rgba(148, 163, 184, 0.22);
+  --ml-text: var(--ion-text-color, #e2e8f0);
+  --ml-muted: var(--ion-color-medium, #94a3b8);
+  --ml-primary: var(--ion-color-primary, #3b82f6);
+}
+
+.ml-modal {
+  --width: min(840px, 96vw);
+  --height: auto;
+  --max-height: 92vh;
+  --border-radius: 18px;
+}
+
+.ml-modal__panel {
+  background: var(--ml-surface);
+  color: var(--ml-text);
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+}
+
+.ml-modal__head, .ml-modal__foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  gap: 10px;
+}
+.ml-modal__head { border-bottom: 1px solid var(--ml-border); h2 { margin: 0; font-size: 1.05rem; font-weight: 700; } }
+.ml-modal__foot { border-top: 1px solid var(--ml-border); justify-content: flex-end; }
+.ml-modal__body { padding: 18px 20px; overflow-y: auto; }
+
+.ml-icon-btn {
+  background: transparent; border: none; color: var(--ml-muted);
+  font-size: 1.4rem; cursor: pointer; display: grid; place-items: center;
+}
+
+.ml-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; color: var(--ml-muted); }
+}
+.ml-col-2 { grid-column: 1 / -1; }
+
+.ml-input {
+  width: 100%; padding: 9px 12px; border-radius: 10px;
+  border: 1px solid var(--ml-border); background: var(--ml-surface-2);
+  color: var(--ml-text); font-size: 0.85rem;
+  &:focus { outline: 2px solid var(--ml-primary); outline-offset: 1px; }
+}
+textarea.ml-input { resize: vertical; }
+
+.ml-field-label { font-size: 0.78rem; color: var(--ml-muted); display: block; margin-bottom: 6px; }
+.ml-estado-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.ml-pill {
+  padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--ml-border); background: var(--ml-surface-2);
+  color: var(--ml-text); font-size: 0.8rem; font-weight: 600;
+  &.is-active { background: var(--ml-primary); color: #fff; border-color: var(--ml-primary); }
+}
+
+.ml-checkbox {
+  flex-direction: row !important; align-items: center; gap: 8px !important;
+  font-size: 0.85rem !important; color: var(--ml-text) !important;
+  input { width: 16px; height: 16px; }
+}
+
+@media (max-width: 640px) {
+  .ml-form-grid { grid-template-columns: 1fr; }
+  .ml-col-2 { grid-column: auto; }
+}

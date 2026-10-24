@@ -1,0 +1,232 @@
+// ============================================================================
+// Estilos compartidos del módulo Matriz Legal.
+// Se importa en cada componente del módulo. Usa variables de tema de Ionic para
+// adaptarse a claro/oscuro; los acentos semánticos reutilizan los colores Ionic.
+// ============================================================================
+
+:host {
+  --ml-surface: var(--ion-card-background, var(--ion-item-background, #1e293b));
+  --ml-surface-2: rgba(148, 163, 184, 0.08);
+  --ml-border: rgba(148, 163, 184, 0.22);
+  --ml-text: var(--ion-text-color, #e2e8f0);
+  --ml-muted: var(--ion-color-medium, #94a3b8);
+  --ml-primary: var(--ion-color-primary, #3b82f6);
+  --ml-success: var(--ion-color-success, #22c55e);
+  --ml-warning: var(--ion-color-warning, #f59e0b);
+  --ml-danger: var(--ion-color-danger, #ef4444);
+}
+
+.ml-page {
+  padding: 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  color: var(--ml-text);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── Topbar ───────────────────────────────────────────────────────────────────
+.ml-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+
+  &__title {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+
+    h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
+    p { margin: 2px 0 0; font-size: 0.82rem; color: var(--ml-muted); }
+  }
+
+  &__actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+}
+
+.ml-icon-badge {
+  width: 46px; height: 46px; border-radius: 14px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--ml-primary), #6366f1);
+  color: #fff; font-size: 1.4rem;
+}
+
+// ── Botones ────────────────────────────────────────────────────────────────
+.ml-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 14px; border-radius: 10px; border: 1px solid transparent;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: all 0.15s ease;
+  ion-icon { font-size: 1.05rem; }
+
+  &--sm { padding: 6px 10px; font-size: 0.78rem; }
+  &--primary { background: var(--ml-primary); color: #fff; }
+  &--primary:hover { filter: brightness(1.08); }
+  &--ghost { background: var(--ml-surface-2); color: var(--ml-text); border-color: var(--ml-border); }
+  &--ghost:hover { background: rgba(148, 163, 184, 0.16); }
+  &--danger { background: rgba(239, 68, 68, 0.12); color: var(--ml-danger); border-color: rgba(239,68,68,0.3); }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+// ── Inputs / selects ──────────────────────────────────────────────────────────
+.ml-input, .ml-select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--ml-border);
+  background: var(--ml-surface-2);
+  color: var(--ml-text);
+  font-size: 0.85rem;
+  &:focus { outline: 2px solid var(--ml-primary); outline-offset: 1px; }
+}
+.ml-select { min-width: 200px; }
+
+// ── Cards ──────────────────────────────────────────────────────────────────
+.ml-card {
+  background: var(--ml-surface);
+  border: 1px solid var(--ml-border);
+  border-radius: 16px;
+  padding: 18px;
+
+  &__head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+    h2 { margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  }
+}
+
+.ml-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  div { display: flex; flex-direction: column; gap: 3px; }
+  span { font-size: 0.72rem; color: var(--ml-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  strong { font-size: 0.92rem; }
+}
+
+.ml-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem; color: var(--ml-muted); }
+}
+.ml-form-actions {
+  grid-column: 1 / -1;
+  display: flex; justify-content: flex-end; gap: 10px;
+}
+
+// ── KPIs ─────────────────────────────────────────────────────────────────────
+.ml-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+.ml-kpi {
+  background: var(--ml-surface);
+  border: 1px solid var(--ml-border);
+  border-left: 4px solid var(--ml-muted);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+
+  &__label { font-size: 0.74rem; color: var(--ml-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  &__value { font-size: 1.6rem; font-weight: 700; }
+
+  &--success { border-left-color: var(--ml-success); }
+  &--warning { border-left-color: var(--ml-warning); }
+  &--danger { border-left-color: var(--ml-danger); }
+  &--accent { border-left-color: var(--ml-primary); }
+}
+
+// ── Dominios / tarjetas de componente ─────────────────────────────────────────
+.ml-dominio {
+  display: flex; flex-direction: column; gap: 12px;
+
+  &__head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    h2 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+  }
+  &__pct { font-size: 0.82rem; color: var(--ml-muted); font-weight: 600; }
+}
+
+.ml-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.ml-comp-card {
+  text-align: left;
+  background: var(--ml-surface);
+  border: 1px solid var(--ml-border);
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+  color: var(--ml-text);
+  &:hover { transform: translateY(-2px); border-color: var(--ml-primary); }
+
+  &__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  &__name { font-weight: 600; font-size: 0.9rem; }
+  &__pct { font-weight: 700; font-size: 0.95rem; color: var(--ml-success); }
+  &__pct.is-null { color: var(--ml-muted); }
+  &__counts {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; color: var(--ml-muted);
+  }
+  &__total { margin-left: auto; font-size: 0.72rem; }
+}
+
+.ml-bar {
+  height: 6px; border-radius: 999px; background: var(--ml-surface-2); overflow: hidden;
+  &__fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--ml-success), #4ade80); }
+}
+
+.dot {
+  width: 8px; height: 8px; border-radius: 999px; display: inline-block;
+  &--success { background: var(--ml-success); }
+  &--warning { background: var(--ml-warning); }
+  &--danger { background: var(--ml-danger); }
+}
+
+// ── Estados / utilidades ───────────────────────────────────────────────────────
+.ml-empty {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 48px; color: var(--ml-muted);
+}
+
+.ml-footer-actions { display: flex; justify-content: flex-end; }
+
+// ── Chips de estado ───────────────────────────────────────────────────────────
+.ml-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 600;
+  &--success { background: rgba(34,197,94,0.14); color: var(--ml-success); }
+  &--warning { background: rgba(245,158,11,0.14); color: var(--ml-warning); }
+  &--danger { background: rgba(239,68,68,0.14); color: var(--ml-danger); }
+  &--medium { background: rgba(148,163,184,0.16); color: var(--ml-muted); }
+}
+
+// ── Tablas ────────────────────────────────────────────────────────────────────
+.ml-table-wrap { overflow-x: auto; border: 1px solid var(--ml-border); border-radius: 14px; }
+.ml-table {
+  width: 100%; border-collapse: collapse; font-size: 0.82rem;
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--ml-border); vertical-align: top; }
+  thead th { background: var(--ml-surface-2); font-weight: 700; position: sticky; top: 0; white-space: nowrap; }
+  tbody tr:hover { background: var(--ml-surface-2); }
+  td.num, th.num { text-align: center; }
+}
+
+// ── Filtros ────────────────────────────────────────────────────────────────────
+.ml-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  background: var(--ml-surface);
+  border: 1px solid var(--ml-border);
+  border-radius: 14px;
+  padding: 14px;
+}

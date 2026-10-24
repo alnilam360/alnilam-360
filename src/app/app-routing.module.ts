@@ -157,6 +157,12 @@ const routes: Routes = [
         loadChildren: () => import('./modules/indicadores/indicadores.module').then(m => m.IndicadoresModule)
       },
 
+      // Matriz Legal (requisitos legales y de otra índole + evaluación de cumplimiento)
+      {
+        path: 'matriz-legal',
+        loadChildren: () => import('./modules/matriz-legal/matriz-legal.module').then(m => m.MatrizLegalModule)
+      },
+
       // Módulos independientes en desarrollo (PHVA)
       {
         path: 'investigacion-atel',

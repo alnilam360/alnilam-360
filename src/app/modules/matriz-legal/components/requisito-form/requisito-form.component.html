@@ -1,0 +1,104 @@
+<ion-modal [isOpen]="open" (didDismiss)="onCerrar()" class="ml-modal">
+  <ng-template>
+    <div class="ml-modal__panel">
+      <div class="ml-modal__head">
+        <h2>{{ esEdicion ? 'Editar requisito' : 'Nuevo requisito legal' }}</h2>
+        <button class="ml-icon-btn" (click)="onCerrar()"><ion-icon name="close-outline"></ion-icon></button>
+      </div>
+
+      <div class="ml-modal__body">
+        <div class="ml-form-grid">
+          <label>Componente *
+            <select class="ml-input" [ngModel]="form().componente_id" (ngModelChange)="patch('componente_id', $event)">
+              <option value="">Seleccione…</option>
+              <option *ngFor="let c of componentes" [value]="c.id">
+                {{ c.dominio === 'SG_SST' ? 'SG-SST' : 'Ambiental' }} · {{ c.nombre }}
+              </option>
+            </select>
+          </label>
+
+          <label>Tipo de norma
+            <select class="ml-input" [ngModel]="form().tipo_norma_id" (ngModelChange)="patch('tipo_norma_id', $event || null)">
+              <option value="">Seleccione…</option>
+              <option *ngFor="let t of tiposNorma" [value]="t.id">{{ t.nombre }}</option>
+            </select>
+          </label>
+
+          <label>Número
+            <input class="ml-input" [ngModel]="form().numero" (ngModelChange)="patch('numero', $event)" placeholder="Ej: 1072">
+          </label>
+
+          <label>Año
+            <input class="ml-input" type="number" [ngModel]="form().anio" (ngModelChange)="patch('anio', $event)" placeholder="Ej: 2015">
+          </label>
+
+          <label>Fecha de expedición
+            <input class="ml-input" type="date" [ngModel]="form().fecha_expedicion" (ngModelChange)="patch('fecha_expedicion', $event)">
+          </label>
+
+          <label>Entidad emisora
+            <input class="ml-input" [ngModel]="form().entidad_emisora" (ngModelChange)="patch('entidad_emisora', $event)" placeholder="Ej: Ministerio del Trabajo">
+          </label>
+
+          <label class="ml-col-2">Artículos aplicables
+            <input class="ml-input" [ngModel]="form().articulos_aplicables" (ngModelChange)="patch('articulos_aplicables', $event)" placeholder="Ej: Art. 2.2.4.6.2">
+          </label>
+
+          <label class="ml-col-2">Descripción del requisito *
+            <textarea class="ml-input" rows="2" [ngModel]="form().descripcion_requisito" (ngModelChange)="patch('descripcion_requisito', $event)"></textarea>
+          </label>
+
+          <label class="ml-col-2">Aplicación en la empresa
+            <textarea class="ml-input" rows="2" [ngModel]="form().aplicacion_empresa" (ngModelChange)="patch('aplicacion_empresa', $event)"></textarea>
+          </label>
+
+          <div class="ml-col-2">
+            <span class="ml-field-label">Estado de cumplimiento *</span>
+            <div class="ml-estado-pills">
+              <button *ngFor="let e of estados" type="button"
+                      class="ml-pill"
+                      [class.is-active]="form().estado_cumplimiento === e"
+                      (click)="setEstado(e)">
+                {{ ESTADO_LABEL[e] }}
+              </button>
+            </div>
+          </div>
+
+          <label class="ml-col-2">Evidencia de cumplimiento
+            <input class="ml-input" [ngModel]="form().evidencia_cumplimiento" (ngModelChange)="patch('evidencia_cumplimiento', $event)" placeholder="Documento / registro / enlace">
+          </label>
+
+          <label>Responsable
+            <input class="ml-input" [ngModel]="form().responsable" (ngModelChange)="patch('responsable', $event)">
+          </label>
+
+          <label>Fecha de verificación
+            <input class="ml-input" type="date" [ngModel]="form().fecha_verificacion" (ngModelChange)="patch('fecha_verificacion', $event)">
+          </label>
+
+          <label>Norma que la deroga/modifica
+            <input class="ml-input" [ngModel]="form().norma_deroga" (ngModelChange)="patch('norma_deroga', $event)">
+          </label>
+
+          <label class="ml-checkbox">
+            <input type="checkbox" [ngModel]="form().vigente" (ngModelChange)="patch('vigente', $event)"> Vigente
+          </label>
+          <label class="ml-checkbox">
+            <input type="checkbox" [ngModel]="form().es_otra_indole" (ngModelChange)="patch('es_otra_indole', $event)"> Requisito de otra índole
+          </label>
+
+          <label class="ml-col-2">Observaciones
+            <textarea class="ml-input" rows="2" [ngModel]="form().observaciones" (ngModelChange)="patch('observaciones', $event)"></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="ml-modal__foot">
+        <button class="ml-btn ml-btn--ghost" (click)="onCerrar()">Cancelar</button>
+        <button class="ml-btn ml-btn--primary" [disabled]="guardando" (click)="onGuardar()">
+          <ion-icon name="save-outline"></ion-icon> {{ guardando ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

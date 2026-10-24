@@ -1,0 +1,149 @@
+<div class="ml-page">
+  <!-- Cabecera -->
+  <div class="ml-topbar">
+    <div class="ml-topbar__title">
+      <div class="ml-icon-badge"><ion-icon name="document-text-outline"></ion-icon></div>
+      <div>
+        <h1>Matriz Legal</h1>
+        <p>Identificación y evaluación de requisitos legales y de otra índole · Dec. 1072/2015</p>
+      </div>
+    </div>
+
+    <div class="ml-topbar__actions">
+      <select *ngIf="esAdmin() && empresas().length > 1"
+              class="ml-select"
+              [ngModel]="empresaId()"
+              (ngModelChange)="onEmpresaChange($event)">
+        <option *ngFor="let e of empresas()" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+      <button class="ml-btn ml-btn--ghost" (click)="irACatalogos()">
+        <ion-icon name="options-outline"></ion-icon> Catálogos
+      </button>
+      <button class="ml-btn ml-btn--primary" (click)="irARequisitos()">
+        <ion-icon name="list-outline"></ion-icon> Ver requisitos
+      </button>
+    </div>
+  </div>
+
+  <!-- Estado de carga -->
+  <div *ngIf="cargando()" class="ml-empty">
+    <ion-spinner name="crescent"></ion-spinner>
+    <span>Cargando matriz…</span>
+  </div>
+
+  <ng-container *ngIf="!cargando()">
+    <!-- Encabezado del formato (hoja MENU) -->
+    <section class="ml-card ml-header-card">
+      <div class="ml-card__head">
+        <h2><ion-icon name="ribbon-outline"></ion-icon> Encabezado del formato</h2>
+        <button *ngIf="!editandoEncabezado()" class="ml-btn ml-btn--ghost ml-btn--sm" (click)="abrirEdicionEncabezado()">
+          <ion-icon name="create-outline"></ion-icon> Editar
+        </button>
+      </div>
+
+      <!-- Vista -->
+      <div *ngIf="!editandoEncabezado()" class="ml-meta-grid">
+        <div><span>Código</span><strong>{{ config()?.codigo_formato || '—' }}</strong></div>
+        <div><span>Versión</span><strong>{{ config()?.version || '—' }}</strong></div>
+        <div><span>Fecha actualización</span><strong>{{ config()?.fecha_actualizacion || '—' }}</strong></div>
+        <div><span>Responsable actualización</span><strong>{{ config()?.responsable_actualizacion || '—' }}</strong></div>
+        <div><span>Fecha verificación</span><strong>{{ config()?.fecha_verificacion || '—' }}</strong></div>
+        <div><span>Responsable verificación</span><strong>{{ config()?.responsable_verificacion || '—' }}</strong></div>
+      </div>
+
+      <!-- Edición -->
+      <div *ngIf="editandoEncabezado()" class="ml-form-grid">
+        <label>Código del formato
+          <input class="ml-input" [ngModel]="formConfig().codigo_formato"
+                 (ngModelChange)="patchConfig('codigo_formato', $event)" placeholder="Ej: FTO-03-GH-2018">
+        </label>
+        <label>Versión
+          <input class="ml-input" [ngModel]="formConfig().version"
+                 (ngModelChange)="patchConfig('version', $event)" placeholder="Ej: 02">
+        </label>
+        <label>Fecha de actualización
+          <input class="ml-input" type="date" [ngModel]="formConfig().fecha_actualizacion"
+                 (ngModelChange)="patchConfig('fecha_actualizacion', $event)">
+        </label>
+        <label>Responsable de actualización
+          <input class="ml-input" [ngModel]="formConfig().responsable_actualizacion"
+                 (ngModelChange)="patchConfig('responsable_actualizacion', $event)">
+        </label>
+        <label>Fecha de verificación
+          <input class="ml-input" type="date" [ngModel]="formConfig().fecha_verificacion"
+                 (ngModelChange)="patchConfig('fecha_verificacion', $event)">
+        </label>
+        <label>Responsable de verificación
+          <input class="ml-input" [ngModel]="formConfig().responsable_verificacion"
+                 (ngModelChange)="patchConfig('responsable_verificacion', $event)">
+        </label>
+        <div class="ml-form-actions">
+          <button class="ml-btn ml-btn--ghost" (click)="cancelarEdicionEncabezado()">Cancelar</button>
+          <button class="ml-btn ml-btn--primary" [disabled]="guardandoConfig()" (click)="guardarEncabezado()">
+            <ion-icon name="save-outline"></ion-icon> {{ guardandoConfig() ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resumen global -->
+    <section class="ml-kpis" *ngIf="evaluacion() as ev">
+      <div class="ml-kpi">
+        <span class="ml-kpi__label">Total requisitos</span>
+        <span class="ml-kpi__value">{{ ev.totalConteos.CUMPLE + ev.totalConteos.EN_PROCESO + ev.totalConteos.NO_CUMPLE + ev.totalConteos.NO_APLICA }}</span>
+      </div>
+      <div class="ml-kpi ml-kpi--success">
+        <span class="ml-kpi__label">Cumple</span>
+        <span class="ml-kpi__value">{{ ev.totalConteos.CUMPLE }}</span>
+      </div>
+      <div class="ml-kpi ml-kpi--warning">
+        <span class="ml-kpi__label">En proceso</span>
+        <span class="ml-kpi__value">{{ ev.totalConteos.EN_PROCESO }}</span>
+      </div>
+      <div class="ml-kpi ml-kpi--danger">
+        <span class="ml-kpi__label">No cumple</span>
+        <span class="ml-kpi__value">{{ ev.totalConteos.NO_CUMPLE }}</span>
+      </div>
+      <div class="ml-kpi ml-kpi--accent">
+        <span class="ml-kpi__label">% Cumplimiento</span>
+        <span class="ml-kpi__value">{{ pct(ev.porcentajeCumplimiento) }}</span>
+      </div>
+    </section>
+
+    <!-- Componentes por dominio (hoja MENU) -->
+    <section *ngFor="let dom of dominios" class="ml-dominio">
+      <div class="ml-dominio__head">
+        <h2>{{ DOMINIO_LABEL[dom] }}</h2>
+        <span class="ml-dominio__pct">{{ pct(dominioResumen(dom)?.porcentajeCumplimiento ?? null) }} cumplimiento</span>
+      </div>
+
+      <div class="ml-cards">
+        <button *ngFor="let c of dominioResumen(dom)?.componentes"
+                class="ml-comp-card"
+                (click)="irARequisitos(c.componenteId)">
+          <div class="ml-comp-card__top">
+            <span class="ml-comp-card__name">{{ c.nombre }}</span>
+            <span class="ml-comp-card__pct" [class.is-null]="c.porcentajeCumplimiento === null">
+              {{ pct(c.porcentajeCumplimiento) }}
+            </span>
+          </div>
+          <div class="ml-bar">
+            <div class="ml-bar__fill" [style.width.%]="(c.porcentajeCumplimiento ?? 0) * 100"></div>
+          </div>
+          <div class="ml-comp-card__counts">
+            <span class="dot dot--success"></span>{{ c.conteos.CUMPLE }}
+            <span class="dot dot--warning"></span>{{ c.conteos.EN_PROCESO }}
+            <span class="dot dot--danger"></span>{{ c.conteos.NO_CUMPLE }}
+            <span class="ml-comp-card__total">{{ c.totalAplicable }} aplicables</span>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <div class="ml-footer-actions">
+      <button class="ml-btn ml-btn--primary" (click)="irAEvaluacion()">
+        <ion-icon name="stats-chart-outline"></ion-icon> Evaluación de cumplimiento
+      </button>
+    </div>
+  </ng-container>
+</div>

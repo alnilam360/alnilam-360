@@ -1,0 +1,16 @@
+@use '../../matriz-legal.shared.scss';
+
+.ml-sub { font-size: 0.72rem; color: var(--ml-muted); margin-top: 2px; }
+.ml-desc { max-width: 360px; white-space: normal; }
+
+.ml-filters__btn {
+  display: flex; flex-direction: column; justify-content: flex-end;
+  button { height: 38px; }
+}
+
+.ml-icon-act {
+  background: transparent; border: none; cursor: pointer;
+  color: var(--ml-muted); font-size: 1.15rem; padding: 4px;
+  &:hover { color: var(--ml-primary); }
+  &--danger:hover { color: var(--ml-danger); }
+}

@@ -1,0 +1,130 @@
+<div class="ml-page">
+  <div class="ml-topbar">
+    <div class="ml-topbar__title">
+      <div class="ml-icon-badge"><ion-icon name="list-outline"></ion-icon></div>
+      <div>
+        <h1>Requisitos legales</h1>
+        <p>Registro y evaluación de cumplimiento por componente</p>
+      </div>
+    </div>
+    <div class="ml-topbar__actions">
+      <select *ngIf="esAdmin() && empresas().length > 1" class="ml-select"
+              [ngModel]="empresaId()" (ngModelChange)="onEmpresaChange($event)">
+        <option *ngFor="let e of empresas()" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+      <button class="ml-btn ml-btn--ghost" [disabled]="exportando()" (click)="exportar()">
+        <ion-icon name="download-outline"></ion-icon> {{ exportando() ? 'Generando…' : 'Excel' }}
+      </button>
+      <button class="ml-btn ml-btn--primary" (click)="nuevoRequisito()">
+        <ion-icon name="add-outline"></ion-icon> Nuevo requisito
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="ml-filters">
+    <label>Dominio
+      <select class="ml-input" [ngModel]="fDominio()" (ngModelChange)="onDominioChange($event)">
+        <option value="">Todos</option>
+        <option *ngFor="let d of DOMINIOS" [value]="d">{{ DOMINIO_LABEL[d] }}</option>
+      </select>
+    </label>
+    <label>Componente
+      <select class="ml-input" [ngModel]="fComponente()" (ngModelChange)="fComponente.set($event); cargar()">
+        <option value="">Todos</option>
+        <option *ngFor="let c of componentesFiltrados()" [value]="c.id">{{ c.nombre }}</option>
+      </select>
+    </label>
+    <label>Tipo de norma
+      <select class="ml-input" [ngModel]="fTipoNorma()" (ngModelChange)="fTipoNorma.set($event); cargar()">
+        <option value="">Todos</option>
+        <option *ngFor="let t of tiposNorma()" [value]="t.id">{{ t.nombre }}</option>
+      </select>
+    </label>
+    <label>Estado
+      <select class="ml-input" [ngModel]="fEstado()" (ngModelChange)="fEstado.set($event); cargar()">
+        <option value="">Todos</option>
+        <option *ngFor="let e of estados" [value]="e">{{ ESTADO_LABEL[e] }}</option>
+      </select>
+    </label>
+    <label>Buscar
+      <input class="ml-input" [ngModel]="fTexto()" (ngModelChange)="fTexto.set($event)"
+             (keyup.enter)="cargar()" placeholder="Norma, entidad, responsable…">
+    </label>
+    <label class="ml-filters__btn">
+      <span>&nbsp;</span>
+      <button class="ml-btn ml-btn--ghost" (click)="limpiarFiltros()">
+        <ion-icon name="refresh-outline"></ion-icon> Limpiar
+      </button>
+    </label>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="cargando()" class="ml-empty">
+    <ion-spinner name="crescent"></ion-spinner><span>Cargando requisitos…</span>
+  </div>
+
+  <div *ngIf="!cargando() && requisitos().length === 0" class="ml-empty">
+    <ion-icon name="file-tray-outline" style="font-size:2rem"></ion-icon>
+    <span>No hay requisitos con los filtros actuales.</span>
+  </div>
+
+  <div *ngIf="!cargando() && requisitos().length > 0" class="ml-table-wrap">
+    <table class="ml-table">
+      <thead>
+        <tr>
+          <th class="num">N°</th>
+          <th>Componente</th>
+          <th>Norma</th>
+          <th>Artículos</th>
+          <th>Descripción</th>
+          <th>Estado</th>
+          <th>Responsable</th>
+          <th class="num">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of requisitos(); let i = index">
+          <td class="num">{{ i + 1 }}</td>
+          <td>
+            <strong>{{ r.componente?.nombre || '—' }}</strong>
+            <div class="ml-sub">{{ r.componente?.dominio === 'SG_SST' ? 'SG-SST' : 'Ambiental' }}</div>
+          </td>
+          <td>
+            {{ nombreNorma(r) }}
+            <div class="ml-sub" *ngIf="r.entidad_emisora">{{ r.entidad_emisora }}</div>
+            <span class="ml-chip ml-chip--medium" *ngIf="!r.vigente">Derogada</span>
+            <span class="ml-chip ml-chip--medium" *ngIf="r.es_otra_indole">Otra índole</span>
+          </td>
+          <td>{{ r.articulos_aplicables || '—' }}</td>
+          <td class="ml-desc">{{ r.descripcion_requisito }}</td>
+          <td>
+            <span class="ml-chip" [ngClass]="'ml-chip--' + ESTADO_COLOR[r.estado_cumplimiento]">
+              {{ ESTADO_LABEL[r.estado_cumplimiento] }}
+            </span>
+          </td>
+          <td>{{ r.responsable || '—' }}</td>
+          <td class="num">
+            <button class="ml-icon-act" (click)="editarRequisito(r)" title="Editar">
+              <ion-icon name="create-outline"></ion-icon>
+            </button>
+            <button class="ml-icon-act ml-icon-act--danger" (click)="eliminarRequisito(r)" title="Eliminar">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-requisito-form
+  [open]="modalAbierto()"
+  [empresaId]="empresaId()"
+  [componentes]="componentes()"
+  [tiposNorma]="tiposNorma()"
+  [requisito]="requisitoEnEdicion()"
+  [guardando]="guardando()"
+  (guardar)="onGuardarRequisito($event)"
+  (cerrar)="cerrarModal()">
+</app-requisito-form>
