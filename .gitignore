@@ -78,6 +78,9 @@ Thumbs.db
 agent/
 .kiro/
 .claude/
+.antigravity/
+.agents/
+.vscode/
 
 # Data sheets & Excel
 *.xlsx
