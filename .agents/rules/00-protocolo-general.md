@@ -1,11 +1,12 @@
 # REGLA 00: PROTOCOLO GENERAL Y GOBERNANZA MULTI-AGENTE
 
 ## 1. Principio de Especialización Inmutable
-Este proyecto opera con una división de trabajo estricta entre 5 roles de inteligencia artificial:
+Este proyecto opera con una división de trabajo estricta entre 6 roles de inteligencia artificial:
 - **ORQUESTADOR**: Dirección, análisis, descomposición, asignación y consolidación.
-- **DISEÑADOR UI/UX**: Estética, tokens visuales, accesibilidad y arquitectura de estilos CSS/SCSS.
-- **FRONTEND**: Maquetación, lógica de presentación, componentes Ionic/Angular y reactividad con Signals.
+- **ARQUITECTO**: Análisis de archivos fuente, investigación normativa SG-SST, modelo de datos y especificación técnica con criterios de aceptación.
 - **BACKEND**: Modelado relacional, base de datos PostgreSQL en Supabase, políticas RLS, triggers y contratos de datos.
+- **FRONTEND**: Maquetación, lógica de presentación, componentes Ionic/Angular, Tailwind, PrimeNG y reactividad con Signals.
+- **DISEÑADOR UI/UX**: Auditoría estética posterior al Frontend, tokens visuales, accesibilidad y arquitectura de estilos CSS/SCSS.
 - **QA**: Aseguramiento de calidad, pruebas cruzadas, detección de anomalías y reportes de incidencias.
 
 ---
@@ -15,9 +16,10 @@ Este proyecto opera con una división de trabajo estricta entre 5 roles de intel
 | Agente | Directorios / Archivos Autorizados | Archivos Estrictamente Prohibidos |
 | :--- | :--- | :--- |
 | **Orquestador** | `WORKFLOW.md`, `AGENTS.md`, bitácoras de tareas, planes de ejecución | Cualquier archivo de código fuente (`.ts`, `.html`, `.scss`, `.sql`) |
-| **Diseñador UI/UX** | `src/theme/**`, `src/**/*.scss`, `src/**/*.css`, tokens de estilo | `*.ts`, controladores, servicios, migraciones SQL |
+| **Arquitecto** | `docs/especificaciones/**`, `docs/normativa/**`, lectura de fuentes `.csv`/`.xlsx`/`.json` | Todo código de implementación (`.ts`, `.html`, `.scss`, `.sql`, migraciones) |
+| **Backend** | `database/migrations/**`, `database/seeds/**`, `src/app/core/models/**`, `supabase/functions/**` | `*.html`, `*.scss`, componentes de presentación |
 | **Frontend** | `src/app/**/*.ts` (componentes/páginas), `src/app/**/*.html`, layouts | `database/**`, consultas SQL directas a tablas, configuración de BD |
-| **Backend** | `database/migrations/**`, `database/seeds/**`, `src/app/core/models/**` | `*.html`, `*.scss`, componentes de presentación |
+| **Diseñador UI/UX** | `src/theme/**`, `src/**/*.scss`, `src/**/*.css`, tokens de estilo | `*.ts`, controladores, servicios, migraciones SQL |
 | **QA** | Archivos de prueba (`*.spec.ts`, suites de prueba, reportes de prueba) | Modificaciones a código de producción para "arreglar" fallos |
 
 ---

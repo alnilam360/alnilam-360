@@ -5,26 +5,15 @@ import { RouterModule, Routes } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../shared/shared.module';
 
-import { MatrizLegalDashboardComponent } from './pages/dashboard/matriz-legal-dashboard.component';
-import { RequisitosListComponent } from './pages/requisitos-list/requisitos-list.component';
-import { EvaluacionCumplimientoComponent } from './pages/evaluacion/evaluacion-cumplimiento.component';
-import { CatalogosComponent } from './pages/catalogos/catalogos.component';
-import { RequisitoFormComponent } from './components/requisito-form/requisito-form.component';
+import { MatrizLegalComponent } from './pages/matriz/matriz-legal.component';
 
 const routes: Routes = [
-  { path: '', component: MatrizLegalDashboardComponent },
-  { path: 'requisitos', component: RequisitosListComponent },
-  { path: 'evaluacion', component: EvaluacionCumplimientoComponent },
-  { path: 'catalogos', component: CatalogosComponent },
+  { path: '', component: MatrizLegalComponent },
 ];
 
 @NgModule({
   declarations: [
-    MatrizLegalDashboardComponent,
-    RequisitosListComponent,
-    EvaluacionCumplimientoComponent,
-    CatalogosComponent,
-    RequisitoFormComponent,
+    MatrizLegalComponent,
   ],
   imports: [
     CommonModule,

@@ -1,11 +1,10 @@
 import {
   MatrizLegalComponente,
-  MatrizLegalRequisito,
-  conteosVacios,
-  contarPorEstado,
-  construirEvaluacion,
-  porcentajeCumplimiento,
-  totalAplicable,
+  ConteoComponente,
+  construirResumenDominio,
+  conteoVacio,
+  totalComponente,
+  porcentaje,
 } from './matriz-legal.model';
 
 // Dataset sintético (NO los valores del Excel del cliente).
@@ -13,74 +12,60 @@ function comp(id: string, dominio: 'SG_SST' | 'AMBIENTAL', nombre: string, orden
   return { id, empresa_id: null, dominio, nombre, orden, activo: true };
 }
 
-function req(componente_id: string, estado: MatrizLegalRequisito['estado_cumplimiento']): MatrizLegalRequisito {
-  return {
-    empresa_id: 'e1',
-    componente_id,
-    tipo_norma_id: null,
-    numero: null, anio: null, fecha_expedicion: null, entidad_emisora: null,
-    articulos_aplicables: null, descripcion_requisito: 'x', aplicacion_empresa: null,
-    estado_cumplimiento: estado, evidencia_cumplimiento: null, responsable: null,
-    fecha_verificacion: null, observaciones: null, es_otra_indole: false,
-    vigente: true, norma_deroga: null,
-  };
+function conteo(
+  id: string, nombre: string, orden: number,
+  cumple: number, enProceso: number, noCumple: number,
+): ConteoComponente {
+  return { componenteId: id, nombre, orden, cumple, enProceso, noCumple, total: 0 };
 }
 
 describe('matriz-legal.model — funciones puras', () => {
-  it('totalAplicable excluye NO_APLICA', () => {
-    const c = { CUMPLE: 4, EN_PROCESO: 1, NO_CUMPLE: 1, NO_APLICA: 10 };
-    expect(totalAplicable(c)).toBe(6);
+  it('totalComponente suma los tres estados', () => {
+    expect(totalComponente({ cumple: 4, enProceso: 1, noCumple: 1 })).toBe(6);
   });
 
-  it('porcentajeCumplimiento = CUMPLE / total aplicable', () => {
-    expect(porcentajeCumplimiento({ CUMPLE: 3, EN_PROCESO: 0, NO_CUMPLE: 1, NO_APLICA: 5 })).toBeCloseTo(0.75, 5);
+  it('porcentaje = valor / total', () => {
+    expect(porcentaje(3, 4)).toBeCloseTo(0.75, 5);
   });
 
-  it('porcentajeCumplimiento devuelve null sin requisitos aplicables (guard división por cero)', () => {
-    expect(porcentajeCumplimiento(conteosVacios())).toBeNull();
-    expect(porcentajeCumplimiento({ CUMPLE: 0, EN_PROCESO: 0, NO_CUMPLE: 0, NO_APLICA: 7 })).toBeNull();
+  it('porcentaje con total 0 devuelve 0 (guard división por cero, sin NaN/Infinity)', () => {
+    const p = porcentaje(0, 0);
+    expect(p).toBe(0);
+    expect(Number.isNaN(p)).toBeFalse();
+    expect(Number.isFinite(p)).toBeTrue();
   });
 
-  it('contarPorEstado agrupa correctamente', () => {
-    const r = [req('a', 'CUMPLE'), req('a', 'CUMPLE'), req('a', 'NO_CUMPLE'), req('a', 'NO_APLICA')];
-    expect(contarPorEstado(r)).toEqual({ CUMPLE: 2, EN_PROCESO: 0, NO_CUMPLE: 1, NO_APLICA: 1 });
+  it('construirResumenDominio calcula totales y % sobre el total del dominio', () => {
+    const r = construirResumenDominio('SG_SST', [
+      conteo('sg2', 'Emergencias', 20, 0, 0, 1),
+      conteo('sg1', 'ATEL', 10, 2, 1, 0),
+    ]);
+
+    // Ordena por `orden` (ATEL antes que Emergencias).
+    expect(r.componentes.map(c => c.nombre)).toEqual(['ATEL', 'Emergencias']);
+    // Total por componente derivado.
+    expect(r.componentes[0].total).toBe(3);
+    expect(r.componentes[1].total).toBe(1);
+    // Total del dominio = 4.
+    expect(r.totalDominio).toBe(4);
+    // % = estado / total dominio.
+    expect(r.pctCumple).toBeCloseTo(2 / 4, 5);
+    expect(r.pctEnProceso).toBeCloseTo(1 / 4, 5);
+    expect(r.pctNoCumple).toBeCloseTo(1 / 4, 5);
+    // Los tres % suman 1 cuando hay datos.
+    expect(r.pctCumple + r.pctEnProceso + r.pctNoCumple).toBeCloseTo(1, 5);
   });
 
-  it('construirEvaluacion agrupa por dominio y calcula totales', () => {
-    const componentes = [
-      comp('sg1', 'SG_SST', 'ATEL', 10),
-      comp('sg2', 'SG_SST', 'Emergencias', 20),
-      comp('am1', 'AMBIENTAL', 'Agua', 10),
-    ];
-    const reqs = [
-      req('sg1', 'CUMPLE'), req('sg1', 'CUMPLE'), req('sg1', 'EN_PROCESO'),
-      req('sg2', 'NO_CUMPLE'),
-      req('am1', 'CUMPLE'), req('am1', 'NO_APLICA'),
-    ];
-
-    const ev = construirEvaluacion(reqs, componentes);
-
-    const sg = ev.porDominio.find(d => d.dominio === 'SG_SST')!;
-    expect(sg.componentes.length).toBe(2);
-    expect(sg.conteos).toEqual({ CUMPLE: 2, EN_PROCESO: 1, NO_CUMPLE: 1, NO_APLICA: 0 });
-    expect(sg.totalAplicable).toBe(4);
-    expect(sg.porcentajeCumplimiento).toBeCloseTo(0.5, 5);
-
-    const am = ev.porDominio.find(d => d.dominio === 'AMBIENTAL')!;
-    expect(am.totalAplicable).toBe(1);            // NO_APLICA excluido
-    expect(am.porcentajeCumplimiento).toBeCloseTo(1, 5);
-
-    // Gran total
-    expect(ev.totalConteos).toEqual({ CUMPLE: 3, EN_PROCESO: 1, NO_CUMPLE: 1, NO_APLICA: 1 });
-    expect(ev.totalAplicable).toBe(5);
-    expect(ev.porcentajeCumplimiento).toBeCloseTo(3 / 5, 5);
+  it('dominio sin datos: total 0 y % en 0 (no NaN)', () => {
+    const r = construirResumenDominio('AMBIENTAL', [conteo('am1', 'Agua', 10, 0, 0, 0)]);
+    expect(r.totalDominio).toBe(0);
+    expect(r.pctCumple).toBe(0);
+    expect(r.pctEnProceso).toBe(0);
+    expect(r.pctNoCumple).toBe(0);
   });
 
-  it('componente sin requisitos aparece con conteos en cero y % null', () => {
-    const componentes = [comp('sg1', 'SG_SST', 'ATEL', 10)];
-    const ev = construirEvaluacion([], componentes);
-    const sg = ev.porDominio.find(d => d.dominio === 'SG_SST')!;
-    expect(sg.componentes[0].totalAplicable).toBe(0);
-    expect(sg.componentes[0].porcentajeCumplimiento).toBeNull();
+  it('conteoVacio crea un componente en cero a partir del catálogo', () => {
+    const v = conteoVacio(comp('sg1', 'SG_SST', 'ATEL', 10));
+    expect(v).toEqual({ componenteId: 'sg1', nombre: 'ATEL', orden: 10, cumple: 0, enProceso: 0, noCumple: 0, total: 0 });
   });
 });

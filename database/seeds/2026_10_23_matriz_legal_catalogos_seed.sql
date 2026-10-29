@@ -1,10 +1,14 @@
 -- ============================================================================
 -- Seed: catálogos semilla del módulo Matriz Legal.
--- Inserta ESTRUCTURA (componentes de la hoja MENU + tipos de norma), NO datos
--- de requisitos de ejemplo. Idempotente.
+-- Inserta los COMPONENTES de la hoja MENU (dominios SG-SST y Ambiental).
+-- Idempotente.
 --
 -- Los componentes se insertan como GLOBALES (empresa_id NULL). Cada empresa los
 -- ve y puede añadir propios o desactivar los que no apliquen.
+--
+-- NOTA: el catálogo de tipos de norma se eliminó en la migración
+-- 2026_10_28_01_matriz_legal_evaluacion_rework.sql (el módulo ya no captura
+-- requisitos individuales, solo conteos de cumplimiento por componente).
 -- ============================================================================
 
 -- ── Componentes dominio SG-SST (hoja MENU) ──────────────────────────────────
@@ -40,24 +44,4 @@ FROM (VALUES
 WHERE NOT EXISTS (
     SELECT 1 FROM public.matriz_legal_componentes m
     WHERE m.empresa_id IS NULL AND m.dominio = 'AMBIENTAL' AND m.nombre = c.nombre
-);
-
--- ── Tipos de norma (jerarquía de Kelsen) ─────────────────────────────────────
-INSERT INTO public.catalogo_tipo_norma (nombre, jerarquia)
-SELECT t.nombre, t.jerarquia
-FROM (VALUES
-    ('Constitución Política', 1),
-    ('Tratado / Convenio Internacional', 2),
-    ('Ley', 3),
-    ('Decreto Ley', 4),
-    ('Decreto', 5),
-    ('Resolución', 6),
-    ('Circular', 7),
-    ('Acuerdo', 8),
-    ('Directiva', 9),
-    ('GTC / NTC', 10),
-    ('Otra', 99)
-) AS t(nombre, jerarquia)
-WHERE NOT EXISTS (
-    SELECT 1 FROM public.catalogo_tipo_norma c WHERE c.nombre = t.nombre
 );

@@ -1,0 +1,226 @@
+<div class="max-w-[1600px] mx-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3.5">
+
+  <!-- ─── Breadcrumb ──────────────────────────────────────────────────────── -->
+  <nav class="flex items-center gap-1.5 text-xs text-dark-text select-none" aria-label="Ruta de navegación">
+    <span>SG-SST</span>
+    <ion-icon name="chevron-forward-outline" class="text-[10px] opacity-40"></ion-icon>
+    <span class="font-semibold text-dark-text-light">Cumplimiento Legal</span>
+  </nav>
+
+  <!-- ─── Header ──────────────────────────────────────────────────────────── -->
+  <header class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-3 border-b border-dark-border">
+    <div class="space-y-1 min-w-0">
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-primary/10 border border-brand-primary/25 text-brand-primary">
+        <ion-icon name="shield-checkmark-outline" class="text-xs"></ion-icon>
+        Dec. 1072/2015 · Res. 0312/2019
+      </span>
+      <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white m-0">Evaluación de Cumplimiento Legal</h1>
+      <p class="text-xs text-dark-text max-w-3xl leading-relaxed m-0">
+        Captura ágil del cumplimiento por componente (SG-SST y Ambiental). Totales, porcentajes y gráfica se calculan en vivo.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-shrink-0">
+      @if (esAdmin() && empresas().length > 1) {
+        <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
+          <ion-icon name="business-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+          <label for="ml-empresa" class="text-gray-400 text-[11px] font-medium select-none">Empresa:</label>
+          <select id="ml-empresa" style="color-scheme: dark;"
+                  class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
+                  [value]="empresaId()" (change)="onEmpresaChange($any($event.target).value)">
+            @for (e of empresas(); track e.id) {
+              <option [value]="e.id" class="bg-[#1a1d26] text-gray-100 font-medium">{{ e.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
+        <ion-icon name="calendar-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+        <label for="ml-periodo" class="text-gray-400 text-[11px] font-medium select-none">Período:</label>
+        <select id="ml-periodo" style="color-scheme: dark;"
+                class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
+                [value]="periodo()" (change)="onPeriodoChange($any($event.target).value)">
+          @for (p of periodos(); track p) {
+            <option [value]="p" class="bg-[#1a1d26] text-gray-100 font-medium">{{ p }}</option>
+          }
+        </select>
+      </div>
+
+      <button class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0 disabled:opacity-50"
+              (click)="exportar()" [disabled]="cargando()">
+        <ion-icon name="download-outline" class="text-sm text-brand-primary"></ion-icon>
+        <span>Exportar</span>
+      </button>
+      <button class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0 disabled:opacity-50"
+              (click)="guardar()" [disabled]="guardando() || cargando()">
+        <ion-icon name="save-outline" class="text-sm"></ion-icon>
+        <span>{{ guardando() ? 'Guardando…' : 'Guardar' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── Error ───────────────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300" role="alert">
+      <ion-icon name="alert-circle-outline" class="text-sm"></ion-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- ─── Carga ───────────────────────────────────────────────────────────── -->
+  @if (cargando()) {
+    <div class="flex items-center justify-center gap-2 py-16 text-dark-text text-xs">
+      <ion-spinner name="crescent" class="w-5 h-5"></ion-spinner>
+      <span>Cargando matriz…</span>
+    </div>
+  } @else {
+
+    <!-- ─── KPIs ──────────────────────────────────────────────────────────── -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3" aria-label="Indicadores de cumplimiento">
+      <!-- % SG-SST -->
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-emerald-500/40 transition-colors flex items-center gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Cumplimiento SG-SST</span>
+          <div class="text-sm sm:text-base font-bold text-white tabular-numbers leading-tight">{{ pct(resumenSgSst().pctCumple) }}</div>
+          <div class="mt-1 h-1 w-full bg-dark-accent rounded-full overflow-hidden">
+            <div class="h-full bg-emerald-500 rounded-full transition-all duration-500" [style.width]="pct(resumenSgSst().pctCumple)"></div>
+          </div>
+        </div>
+      </div>
+      <!-- % Ambiental -->
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-teal-500/40 transition-colors flex items-center gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-teal-500/10 text-teal-400 border border-teal-500/20">
+          <ion-icon name="leaf-outline"></ion-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Cumplimiento Ambiental</span>
+          <div class="text-sm sm:text-base font-bold text-white tabular-numbers leading-tight">{{ pct(resumenAmbiental().pctCumple) }}</div>
+          <div class="mt-1 h-1 w-full bg-dark-accent rounded-full overflow-hidden">
+            <div class="h-full bg-teal-500 rounded-full transition-all duration-500" [style.width]="pct(resumenAmbiental().pctCumple)"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Total requisitos -->
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-blue-500/40 transition-colors flex items-center gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <ion-icon name="layers-outline"></ion-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Total Requisitos</span>
+          <div class="text-sm sm:text-base font-bold text-white tabular-numbers leading-tight">{{ resumenSgSst().totalDominio + resumenAmbiental().totalDominio }}</div>
+          <div class="text-[10px] text-dark-text truncate mt-0.5">SST {{ resumenSgSst().totalDominio }} · Amb {{ resumenAmbiental().totalDominio }}</div>
+        </div>
+      </div>
+      <!-- En proceso / No cumple -->
+      <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-amber-500/40 transition-colors flex items-center gap-3">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Pendiente</span>
+          <div class="text-sm sm:text-base font-bold text-white tabular-numbers leading-tight">
+            {{ sumEnProceso(resumenSgSst()) + sumEnProceso(resumenAmbiental()) + sumNoCumple(resumenSgSst()) + sumNoCumple(resumenAmbiental()) }}
+          </div>
+          <div class="text-[10px] text-dark-text truncate mt-0.5">en proceso + no cumple</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Tablas de captura por dominio ─────────────────────────────────── -->
+    @for (bloque of bloques(); track bloque.dom) {
+      <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
+        <div class="px-3.5 py-2 border-b border-dark-border flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <ion-icon [name]="bloque.dom === 'SG_SST' ? 'shield-checkmark-outline' : 'leaf-outline'" class="text-brand-primary text-sm"></ion-icon>
+            <h4 class="text-xs sm:text-sm font-bold text-white m-0">{{ DOMINIO_LABEL[bloque.dom] }}</h4>
+          </div>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            {{ pct(bloque.resumen.pctCumple) }} cumple
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-dark-border text-dark-text">
+                <th class="px-3 py-2 whitespace-nowrap font-semibold">Componente</th>
+                <th class="px-3 py-2 whitespace-nowrap font-semibold text-center">Cumple</th>
+                <th class="px-3 py-2 whitespace-nowrap font-semibold text-center">En proceso</th>
+                <th class="px-3 py-2 whitespace-nowrap font-semibold text-center">No cumple</th>
+                <th class="px-3 py-2 whitespace-nowrap font-semibold text-center">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (f of bloque.filas; track f.componenteId) {
+                <tr class="border-b border-dark-border/60 hover:bg-dark-accent/40 transition-colors">
+                  <td class="px-3 py-1.5 whitespace-nowrap text-dark-text-light font-medium">{{ f.nombre }}</td>
+                  <td class="px-3 py-1.5 text-center">
+                    <input class="ml-cell" type="number" min="0" inputmode="numeric" [attr.aria-label]="'Cumple ' + f.nombre"
+                           [ngModel]="f.cumple" (ngModelChange)="setValor(bloque.dom, f.componenteId, 'cumple', $event)">
+                  </td>
+                  <td class="px-3 py-1.5 text-center">
+                    <input class="ml-cell" type="number" min="0" inputmode="numeric" [attr.aria-label]="'En proceso ' + f.nombre"
+                           [ngModel]="f.enProceso" (ngModelChange)="setValor(bloque.dom, f.componenteId, 'enProceso', $event)">
+                  </td>
+                  <td class="px-3 py-1.5 text-center">
+                    <input class="ml-cell" type="number" min="0" inputmode="numeric" [attr.aria-label]="'No cumple ' + f.nombre"
+                           [ngModel]="f.noCumple" (ngModelChange)="setValor(bloque.dom, f.componenteId, 'noCumple', $event)">
+                  </td>
+                  <td class="px-3 py-1.5 text-center font-bold text-white tabular-numbers">{{ f.total }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr class="border-t-2 border-dark-border bg-dark-primary/40 font-bold text-white">
+                <td class="px-3 py-2">TOTAL</td>
+                <td class="px-3 py-2 text-center tabular-numbers">{{ sumCumple(bloque.resumen) }}</td>
+                <td class="px-3 py-2 text-center tabular-numbers">{{ sumEnProceso(bloque.resumen) }}</td>
+                <td class="px-3 py-2 text-center tabular-numbers">{{ sumNoCumple(bloque.resumen) }}</td>
+                <td class="px-3 py-2 text-center tabular-numbers">{{ bloque.resumen.totalDominio }}</td>
+              </tr>
+              <tr class="text-[11px] text-dark-text">
+                <td class="px-3 py-1.5">% del total</td>
+                <td class="px-3 py-1.5 text-center"><span class="text-emerald-400 font-semibold">{{ pct(bloque.resumen.pctCumple) }}</span></td>
+                <td class="px-3 py-1.5 text-center"><span class="text-amber-400 font-semibold">{{ pct(bloque.resumen.pctEnProceso) }}</span></td>
+                <td class="px-3 py-1.5 text-center"><span class="text-rose-400 font-semibold">{{ pct(bloque.resumen.pctNoCumple) }}</span></td>
+                <td class="px-3 py-1.5 text-center text-dark-text-light">100%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ─── Gráfica: Nivel de Cumplimiento Legal SST ──────────────────────── -->
+    <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
+      <div class="px-3.5 py-2 border-b border-dark-border flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <ion-icon name="bar-chart-outline" class="text-brand-primary text-sm"></ion-icon>
+          <h4 class="text-xs sm:text-sm font-bold text-white m-0">Nivel de Cumplimiento Legal SST</h4>
+        </div>
+        <div class="flex items-center gap-3 text-[10px] text-dark-text">
+          <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> Cumple</span>
+          <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span> En proceso</span>
+          <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span> No cumple</span>
+        </div>
+      </div>
+
+      <div class="ml-chart" role="img" aria-label="Barras agrupadas de cumplimiento por componente SG-SST">
+        @for (c of resumenSgSst().componentes; track c.componenteId) {
+          <div class="ml-chart__group">
+            <div class="ml-chart__bars">
+              <div class="ml-chart__bar ml-chart__bar--success" [style.height]="alturaBarra(c.cumple)" [title]="'Cumple: ' + c.cumple"></div>
+              <div class="ml-chart__bar ml-chart__bar--warning" [style.height]="alturaBarra(c.enProceso)" [title]="'En proceso: ' + c.enProceso"></div>
+              <div class="ml-chart__bar ml-chart__bar--danger" [style.height]="alturaBarra(c.noCumple)" [title]="'No cumple: ' + c.noCumple"></div>
+            </div>
+            <span class="ml-chart__label" [title]="c.nombre">{{ c.nombre }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

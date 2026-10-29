@@ -2,25 +2,24 @@ import { Injectable } from '@angular/core';
 import { SupabaseClientService } from './supabase-client.service';
 import { TenantService } from './tenant.service';
 import {
-  MatrizLegalRequisito,
   MatrizLegalComponente,
-  MatrizLegalConfig,
-  TipoNorma,
-  FiltrosRequisito,
-  EvaluacionCumplimiento,
-  EstadoCumplimiento,
-  ESTADO_LABEL,
+  MatrizLegalEvaluacionRow,
+  MatrizLegalResumen,
+  ResumenDominio,
+  ConteoUpsert,
+  Dominio,
   DOMINIO_LABEL,
-  construirEvaluacion,
+  ESTADO_LABEL,
+  periodoActual,
 } from '../models/matriz-legal.model';
 
 /**
- * Matriz Legal: identificación y evaluación de requisitos legales y de otra
- * índole (Dec. 1072/2015 Art. 2.2.4.6.2). Multi-tenant por empresa_id.
+ * Matriz Legal — Evaluación de Cumplimiento (rehecho).
  *
- * Sigue la convención de MatrizAtCasoService/MatrizIndicadoresService: métodos
- * async tipados sobre `this.sb.client`, delegación tenant y agregación delegada
- * a las funciones puras del modelo (matriz-legal.model.ts).
+ * Captura directa de conteos (CUMPLE / EN PROCESO / NO CUMPLE) por componente y
+ * periodo; el resumen (totales y %) lo entrega el RPC get_matriz_legal_resumen.
+ * Multi-tenant por empresa_id (RLS en servidor). Sigue la convención de los
+ * demás servicios: métodos async tipados sobre `this.sb.client`.
  */
 @Injectable({ providedIn: 'root' })
 export class MatrizLegalService {
@@ -41,6 +40,7 @@ export class MatrizLegalService {
     const { data, error } = await this.sb.client
       .from('matriz_legal_componentes')
       .select('*')
+      .eq('activo', true)
       .or(`empresa_id.is.null,empresa_id.eq.${empresaId}`)
       .order('dominio')
       .order('orden');
@@ -48,279 +48,162 @@ export class MatrizLegalService {
     return (data ?? []) as MatrizLegalComponente[];
   }
 
-  async crearComponente(c: Partial<MatrizLegalComponente>): Promise<MatrizLegalComponente> {
+  // ── Resumen para tabla + gráfica (RPC: cálculo autoritativo con guarda /0) ──
+  async getResumen(periodo: number = periodoActual()): Promise<MatrizLegalResumen> {
     const { data, error } = await this.sb.client
-      .from('matriz_legal_componentes').insert(c).select().single();
+      .rpc('get_matriz_legal_resumen', { p_periodo: periodo });
     if (error) throw error;
-    return data as MatrizLegalComponente;
+    return data as unknown as MatrizLegalResumen;
   }
 
-  async actualizarComponente(id: string, cambios: Partial<MatrizLegalComponente>): Promise<void> {
-    const { error } = await this.sb.client
-      .from('matriz_legal_componentes')
-      .update({ ...cambios, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    if (error) throw error;
-  }
-
-  async eliminarComponente(id: string): Promise<void> {
-    const { error } = await this.sb.client
-      .from('matriz_legal_componentes').delete().eq('id', id);
-    if (error) throw error;
-  }
-
-  // ── Catálogo: tipos de norma (global) ──────────────────────────────────────
-  async getTiposNorma(): Promise<TipoNorma[]> {
+  // ── Conteos crudos del periodo (para edición en la tabla) ───────────────────
+  async getConteos(empresaId: string, periodo: number): Promise<MatrizLegalEvaluacionRow[]> {
     const { data, error } = await this.sb.client
-      .from('catalogo_tipo_norma').select('*').eq('activo', true).order('jerarquia');
+      .from('matriz_legal_evaluacion')
+      .select('*')
+      .eq('empresa_id', empresaId)
+      .eq('periodo', periodo);
     if (error) throw error;
-    return (data ?? []) as TipoNorma[];
+    return (data ?? []) as MatrizLegalEvaluacionRow[];
   }
 
-  async crearTipoNorma(t: Partial<TipoNorma>): Promise<TipoNorma> {
+  // ── Periodos con datos registrados (para el selector de año) ────────────────
+  async getPeriodos(empresaId: string): Promise<number[]> {
     const { data, error } = await this.sb.client
-      .from('catalogo_tipo_norma').insert(t).select().single();
-    if (error) throw error;
-    return data as TipoNorma;
-  }
-
-  // ── Encabezado del formato (hoja MENU) ──────────────────────────────────────
-  async getConfig(empresaId: string): Promise<MatrizLegalConfig | null> {
-    const { data, error } = await this.sb.client
-      .from('matriz_legal_config').select('*').eq('empresa_id', empresaId).maybeSingle();
-    if (error) throw error;
-    return (data as MatrizLegalConfig) ?? null;
-  }
-
-  async upsertConfig(config: MatrizLegalConfig): Promise<MatrizLegalConfig> {
-    const { data, error } = await this.sb.client
-      .from('matriz_legal_config')
-      .upsert({ ...config, updated_at: new Date().toISOString() }, { onConflict: 'empresa_id' })
-      .select().single();
-    if (error) throw error;
-    return data as MatrizLegalConfig;
-  }
-
-  // ── CRUD requisitos ─────────────────────────────────────────────────────────
-  async listarRequisitos(empresaId: string, filtros: FiltrosRequisito = {}): Promise<MatrizLegalRequisito[]> {
-    let q = this.sb.client
-      .from('matriz_legal_requisitos')
-      .select(`
-        *,
-        componente:matriz_legal_componentes(id, nombre, dominio),
-        tipo_norma:catalogo_tipo_norma(id, nombre)
-      `)
+      .from('matriz_legal_evaluacion')
+      .select('periodo')
       .eq('empresa_id', empresaId);
-
-    if (filtros.componenteId) q = q.eq('componente_id', filtros.componenteId);
-    if (filtros.tipoNormaId) q = q.eq('tipo_norma_id', filtros.tipoNormaId);
-    if (filtros.estado) q = q.eq('estado_cumplimiento', filtros.estado);
-    if (filtros.vigente != null) q = q.eq('vigente', filtros.vigente);
-    if (filtros.esOtraIndole != null) q = q.eq('es_otra_indole', filtros.esOtraIndole);
-
-    const { data, error } = await q.order('created_at', { ascending: false });
     if (error) throw error;
-
-    let reqs = (data ?? []) as MatrizLegalRequisito[];
-
-    // Normalizar relaciones 1:1 (Supabase a veces devuelve array).
-    for (const r of reqs) {
-      const c = r.componente as any;
-      r.componente = Array.isArray(c) ? (c[0] ?? null) : c;
-      const t = r.tipo_norma as any;
-      r.tipo_norma = Array.isArray(t) ? (t[0] ?? null) : t;
-    }
-
-    // Filtros que no se resuelven en SQL (dominio depende del join; texto libre).
-    if (filtros.dominio) reqs = reqs.filter(r => r.componente?.dominio === filtros.dominio);
-    if (filtros.texto) {
-      const q2 = filtros.texto.trim().toLowerCase();
-      reqs = reqs.filter(r =>
-        (r.descripcion_requisito ?? '').toLowerCase().includes(q2) ||
-        (r.numero ?? '').toLowerCase().includes(q2) ||
-        (r.entidad_emisora ?? '').toLowerCase().includes(q2) ||
-        (r.articulos_aplicables ?? '').toLowerCase().includes(q2) ||
-        (r.responsable ?? '').toLowerCase().includes(q2) ||
-        (r.tipo_norma?.nombre ?? '').toLowerCase().includes(q2));
-    }
-    return reqs;
+    const set = new Set<number>((data ?? []).map(r => (r as { periodo: number }).periodo));
+    set.add(periodoActual());
+    return [...set].sort((a, b) => b - a);
   }
 
-  async crearRequisito(req: MatrizLegalRequisito): Promise<MatrizLegalRequisito> {
-    this.validarRequisito(req);
-    const perfil = await this.tenant.getPerfilSeguro();
-    const { componente, tipo_norma, ...payload } = req as any;
-    const { data, error } = await this.sb.client
-      .from('matriz_legal_requisitos')
-      .insert({ ...payload, created_by: perfil?.id })
-      .select().single();
-    if (error) throw error;
-    return data as MatrizLegalRequisito;
-  }
-
-  async actualizarRequisito(id: string, cambios: Partial<MatrizLegalRequisito>): Promise<void> {
-    const { componente, tipo_norma, ...limpio } = cambios as any;
-    const { error } = await this.sb.client
-      .from('matriz_legal_requisitos')
-      .update({ ...limpio, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    if (error) throw error;
-  }
-
-  async eliminarRequisito(id: string): Promise<void> {
-    const { error } = await this.sb.client
-      .from('matriz_legal_requisitos').delete().eq('id', id);
-    if (error) throw error;
-  }
-
-  // ── Evaluación de cumplimiento (hoja EVALUACION) ────────────────────────────
-  /** Carga requisitos + componentes y delega el cálculo a la función pura. */
-  async obtenerEvaluacion(empresaId: string): Promise<EvaluacionCumplimiento> {
-    const [reqs, componentes] = await Promise.all([
-      this.listarRequisitos(empresaId, {}),
-      this.getComponentes(empresaId),
-    ]);
-    return construirEvaluacion(reqs, componentes);
-  }
-
-  // ── Validación mínima ─────────────────────────────────────────────────────
-  validarRequisito(req: MatrizLegalRequisito): void {
-    const faltantes: string[] = [];
-    if (!req.componente_id) faltantes.push('componente');
-    if (!req.descripcion_requisito?.trim()) faltantes.push('descripción del requisito');
-    if (!req.estado_cumplimiento) faltantes.push('estado de cumplimiento');
-    if (faltantes.length) {
-      throw new Error(`Faltan campos obligatorios: ${faltantes.join(', ')}.`);
-    }
-    if (req.anio != null && (req.anio < 1900 || req.anio > 2100)) {
-      throw new Error('El año de la norma no es válido.');
-    }
-  }
-
-  // ── Exportación a Excel (patrón IndicadoresExcelService) ────────────────────
-  async exportarRequisitosExcel(
-    reqs: MatrizLegalRequisito[],
-    empresaNombre: string,
+  // ── Guardar conteos (upsert por empresa × componente × periodo) ─────────────
+  async guardarConteos(
+    empresaId: string,
+    periodo: number,
+    filas: ConteoUpsert[],
   ): Promise<void> {
-    if (!reqs || reqs.length === 0) {
-      alert('No hay requisitos para exportar con los filtros actuales.');
-      return;
+    this.validarConteos(filas);
+    const perfil = await this.tenant.getPerfilSeguro();
+    const payload = filas.map(f => ({
+      empresa_id: empresaId,
+      componente_id: f.componente_id,
+      periodo,
+      cumple: f.cumple,
+      en_proceso: f.en_proceso,
+      no_cumple: f.no_cumple,
+      updated_by: perfil?.id ?? null,
+      updated_at: new Date().toISOString(),
+    }));
+    const { error } = await this.sb.client
+      .from('matriz_legal_evaluacion')
+      .upsert(payload, { onConflict: 'empresa_id,componente_id,periodo' });
+    if (error) throw error;
+  }
+
+  // ── Validación ───────────────────────────────────────────────────────────
+  validarConteos(filas: ConteoUpsert[]): void {
+    for (const f of filas) {
+      if (!f.componente_id) throw new Error('Falta el componente en una fila de conteos.');
+      for (const v of [f.cumple, f.en_proceso, f.no_cumple]) {
+        if (!Number.isInteger(v) || v < 0) {
+          throw new Error('Los conteos deben ser enteros mayores o iguales a cero.');
+        }
+      }
     }
+  }
+
+  // ── Exportación a Excel de la matriz de evaluación (patrón del proyecto) ─────
+  async exportarMatrizExcel(resumen: MatrizLegalResumen, empresaNombre: string): Promise<void> {
     const { Workbook } = await import('exceljs');
     const wb = new Workbook();
     wb.creator = 'Alnilam 360 · SG-SST';
     wb.created = new Date();
     const empresa = empresaNombre || 'Empresa';
     const NOW = new Date();
-
-    const ws = wb.addWorksheet('Matriz Legal', {
+    const ws = wb.addWorksheet('Evaluación Cumplimiento', {
       properties: { tabColor: { argb: 'FF1E40AF' } },
       pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
-      views: [{ state: 'frozen', xSplit: 3, ySplit: 5 }],
     });
 
-    const C = {
-      h1: 'FF0F2942', h2: 'FF1E40AF', h3: 'FF1E293B',
-      headerFill: 'FF1E3A8A', headerText: 'FFFFFFFF', altRow: 'FFF8FAFC', border: 'FFCBD5E1',
-    };
+    const C = { h2: 'FF1E40AF', headerFill: 'FF1E3A8A', headerText: 'FFFFFFFF', border: 'FFCBD5E1' };
     const bdr = {
       top: { style: 'thin' as const, color: { argb: C.border } },
       bottom: { style: 'thin' as const, color: { argb: C.border } },
       left: { style: 'thin' as const, color: { argb: C.border } },
       right: { style: 'thin' as const, color: { argb: C.border } },
     };
-    const TOTAL_COLS = 14;
 
-    ws.mergeCells(1, 1, 1, TOTAL_COLS);
-    const f1 = ws.getCell(1, 1);
-    f1.value = 'SISTEMA DE GESTIÓN DE SEGURIDAD Y SALUD EN EL TRABAJO · ALNILAM 360';
-    f1.font = { name: 'Calibri', size: 9, color: { argb: 'FF93C5FD' }, bold: true };
-    f1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.h1 } };
-    f1.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
-    ws.getRow(1).height = 20;
+    let row = 1;
+    ws.mergeCells(row, 1, row, 6);
+    const title = ws.getCell(row, 1);
+    title.value = `EVALUACIÓN DE CUMPLIMIENTO DE REQUISITOS LEGALES · ${empresa} · ${resumen.periodo}`;
+    title.font = { name: 'Calibri', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+    title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.h2 } };
+    title.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.getRow(row).height = 30;
+    row += 2;
 
-    ws.mergeCells(2, 1, 2, TOTAL_COLS);
-    const f2 = ws.getCell(2, 1);
-    f2.value = 'MATRIZ DE IDENTIFICACIÓN Y EVALUACIÓN DE REQUISITOS LEGALES Y DE OTRA ÍNDOLE';
-    f2.font = { name: 'Calibri', size: 13, color: { argb: 'FFFFFFFF' }, bold: true };
-    f2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.h2 } };
-    f2.alignment = { horizontal: 'center', vertical: 'middle' };
-    ws.getRow(2).height = 34;
-
-    ws.mergeCells(3, 1, 3, TOTAL_COLS);
-    const f3 = ws.getCell(3, 1);
-    f3.value = `Empresa: ${empresa}  ·  Total Requisitos: ${reqs.length}  ·  Generado: ${NOW.toLocaleDateString('es-CO')}  ·  Normativa: Dec. 1072/2015 Art. 2.2.4.6.2`;
-    f3.font = { name: 'Calibri', size: 9, italic: true, color: { argb: 'FFFFFFFF' } };
-    f3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.h3 } };
-    f3.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
-    ws.getRow(3).height = 22;
-    ws.getRow(4).height = 6;
-
-    const headers = [
-      { h: 'N°', w: 6 }, { h: 'Dominio', w: 16 }, { h: 'Componente', w: 20 },
-      { h: 'Tipo Norma', w: 16 }, { h: 'Número', w: 12 }, { h: 'Año', w: 8 },
-      { h: 'Entidad Emisora', w: 20 }, { h: 'Artículos', w: 18 },
-      { h: 'Descripción del Requisito', w: 40 }, { h: 'Aplicación en la Empresa', w: 30 },
-      { h: 'Estado', w: 14 }, { h: 'Evidencia', w: 24 }, { h: 'Responsable', w: 20 },
-      { h: 'Observaciones', w: 28 },
+    const bloques: { dominio: Dominio; data: ResumenDominio }[] = [
+      { dominio: 'SG_SST', data: resumen.sgSst },
+      { dominio: 'AMBIENTAL', data: resumen.ambiental },
     ];
-    ws.columns = headers.map(x => ({ width: x.w }));
-    const hr = ws.getRow(5);
-    headers.forEach((x, i) => {
-      const cell = hr.getCell(i + 1);
-      cell.value = x.h;
-      cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.headerText } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.headerFill } };
-      cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-      cell.border = bdr;
-    });
-    hr.height = 28;
 
-    reqs.forEach((r, idx) => {
-      const row = ws.getRow(6 + idx);
-      row.values = [
-        idx + 1,
-        r.componente ? DOMINIO_LABEL[r.componente.dominio] : '—',
-        r.componente?.nombre ?? '—',
-        r.tipo_norma?.nombre ?? '—',
-        r.numero ?? '—',
-        r.anio ?? '—',
-        r.entidad_emisora ?? '—',
-        r.articulos_aplicables ?? '—',
-        r.descripcion_requisito ?? '—',
-        r.aplicacion_empresa ?? '—',
-        ESTADO_LABEL[r.estado_cumplimiento],
-        r.evidencia_cumplimiento ?? '—',
-        r.responsable ?? '—',
-        r.observaciones ?? '—',
-      ];
-      row.height = 20;
-      for (let col = 1; col <= TOTAL_COLS; col++) {
-        const cell = row.getCell(col);
-        cell.font = { name: 'Calibri', size: 9 };
+    for (const { dominio, data } of bloques) {
+      ws.mergeCells(row, 1, row, 6);
+      const sub = ws.getCell(row, 1);
+      sub.value = DOMINIO_LABEL[dominio];
+      sub.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF1E293B' } };
+      row++;
+
+      const head = ['Componente', ESTADO_LABEL.CUMPLE, ESTADO_LABEL.EN_PROCESO, ESTADO_LABEL.NO_CUMPLE, 'Total', '% Cumplimiento'];
+      const hr = ws.getRow(row);
+      head.forEach((h, i) => {
+        const cell = hr.getCell(i + 1);
+        cell.value = h;
+        cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.headerText } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.headerFill } };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
         cell.border = bdr;
-        if (idx % 2 === 1) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.altRow } };
-        cell.alignment = { horizontal: [1, 6, 11].includes(col) ? 'center' : 'left', vertical: 'middle', wrapText: true };
+      });
+      row++;
+
+      for (const c of data.componentes) {
+        const r = ws.getRow(row);
+        r.values = [c.nombre, c.cumple, c.enProceso, c.noCumple, c.total, ''];
+        for (let col = 1; col <= 6; col++) {
+          const cell = r.getCell(col);
+          cell.font = { name: 'Calibri', size: 9 };
+          cell.border = bdr;
+          cell.alignment = { horizontal: col === 1 ? 'left' : 'center', vertical: 'middle' };
+        }
+        row++;
       }
-      // Semáforo de estado
-      const sc = row.getCell(11);
-      const mapa: Record<EstadoCumplimiento, [string, string]> = {
-        CUMPLE: ['FFD1FAE5', 'FF065F46'],
-        EN_PROCESO: ['FFFEF3C7', 'FF92400E'],
-        NO_CUMPLE: ['FFFEE2E2', 'FF991B1B'],
-        NO_APLICA: ['FFE2E8F0', 'FF475569'],
-      };
-      const [bg, tx] = mapa[r.estado_cumplimiento];
-      sc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
-      sc.font = { name: 'Calibri', size: 9, bold: true, color: { argb: tx } };
-    });
+
+      const tr = ws.getRow(row);
+      const total = data.totalDominio;
+      const sumC = data.componentes.reduce((s, c) => s + c.cumple, 0);
+      const sumE = data.componentes.reduce((s, c) => s + c.enProceso, 0);
+      const sumN = data.componentes.reduce((s, c) => s + c.noCumple, 0);
+      tr.values = ['TOTAL', sumC, sumE, sumN, total, data.pctCumple];
+      for (let col = 1; col <= 6; col++) {
+        const cell = tr.getCell(col);
+        cell.font = { name: 'Calibri', size: 10, bold: true };
+        cell.border = bdr;
+        cell.alignment = { horizontal: col === 1 ? 'left' : 'center', vertical: 'middle' };
+      }
+      tr.getCell(6).numFmt = '0.0%';
+      row += 2;
+    }
 
     const buffer = await wb.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Matriz_Legal_${empresa.replace(/\s+/g, '_')}_${NOW.toISOString().slice(0, 10)}.xlsx`;
+    a.download = `Evaluacion_Cumplimiento_${empresa.replace(/\s+/g, '_')}_${resumen.periodo}.xlsx`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
