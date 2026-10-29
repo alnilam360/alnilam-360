@@ -1,4 +1,4 @@
-<div class="p-4 space-y-5">
+<div class="max-w-[1600px] mx-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3.5">
   <div *ngIf="inicializando()" class="flex items-center justify-center py-16">
     <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
   </div>
@@ -14,28 +14,28 @@
       </div>
       <div class="flex items-center gap-2">
         <select *ngIf="esAdmin()" [ngModel]="empresaId()" (ngModelChange)="empresaId.set($event); cargarItems()"
-                class="px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+                class="px-2.5 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
           <option [ngValue]="null">— Empresa —</option>
           <option *ngFor="let e of empresas()" [ngValue]="e.id">{{ e.nombre }}</option>
         </select>
         <select [ngModel]="anio()" (ngModelChange)="anio.set(+$event); cargarItems()"
-                class="px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+                class="px-2.5 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
           <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
         </select>
       </div>
     </div>
 
     <!-- Tabs -->
-    <div class="inline-flex rounded-xl bg-dark-secondary border border-dark-border p-1">
-      <button (click)="tab.set('indicadores')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+    <div class="inline-flex rounded-lg bg-dark-secondary border border-dark-border p-0.5">
+      <button (click)="tab.set('indicadores')" class="px-3 py-1.5 text-xs font-medium rounded-lg transition flex items-center gap-2"
               [ngClass]="tab() === 'indicadores' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
         <ion-icon name="stats-chart-outline"></ion-icon> Tablero % Cumplimiento
       </button>
-      <button (click)="tab.set('evaluacion')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+      <button (click)="tab.set('evaluacion')" class="px-3 py-1.5 text-xs font-medium rounded-lg transition flex items-center gap-2"
               [ngClass]="tab() === 'evaluacion' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
         <ion-icon name="checkbox-outline"></ion-icon> Evaluación E-P-R (24 ítems)
       </button>
-      <button (click)="tab.set('analisis')" class="px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-2"
+      <button (click)="tab.set('analisis')" class="px-3 py-1.5 text-xs font-medium rounded-lg transition flex items-center gap-2"
               [ngClass]="tab() === 'analisis' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
         <ion-icon name="document-text-outline"></ion-icon> Análisis y Planes
       </button>
@@ -47,7 +47,7 @@
       <div *ngIf="tab() === 'indicadores'" class="space-y-4">
         <!-- 4 Tarjetas de Cumplimiento -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="p-4 rounded-xl bg-dark-secondary border border-dark-border">
+          <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border">
             <span class="text-xs text-dark-text font-medium">Cumplimiento Global SG-SST</span>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-2xl font-bold" [ngClass]="pctGlobal >= 80 ? 'text-emerald-400' : 'text-amber-400'">
@@ -60,7 +60,7 @@
             </div>
           </div>
 
-          <div class="p-4 rounded-xl bg-dark-secondary border border-dark-border">
+          <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border">
             <span class="text-xs text-dark-text font-medium">Indicadores de Estructura</span>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-2xl font-bold text-brand-primary">{{ pctEstructura }}%</span>
@@ -71,7 +71,7 @@
             </div>
           </div>
 
-          <div class="p-4 rounded-xl bg-dark-secondary border border-dark-border">
+          <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border">
             <span class="text-xs text-dark-text font-medium">Indicadores de Proceso</span>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-2xl font-bold text-amber-400">{{ pctProceso }}%</span>
@@ -82,7 +82,7 @@
             </div>
           </div>
 
-          <div class="p-4 rounded-xl bg-dark-secondary border border-dark-border">
+          <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border">
             <span class="text-xs text-dark-text font-medium">Indicadores de Resultado</span>
             <div class="flex items-baseline gap-2 mt-1">
               <span class="text-2xl font-bold text-emerald-400">{{ pctResultado }}%</span>

@@ -1,4 +1,4 @@
-<div class="plan-anual-dashboard space-y-5">
+<div class="plan-anual-dashboard space-y-3.5">
 
   <!-- ── INICIALIZANDO ── -->
   <div *ngIf="inicializando" class="flex items-center justify-center py-16">
@@ -19,19 +19,19 @@
     </div>
 
     <!-- ── SELECTOR EMPRESA + AÑO ── -->
-    <div *ngIf="esAdmin" class="p-3.5 bg-brand-primary/5 border border-brand-primary/30 rounded-xl">
+    <div *ngIf="esAdmin" class="p-3 bg-brand-primary/5 border border-brand-primary/30 rounded-lg">
       <div class="flex flex-col sm:flex-row sm:items-center gap-3">
         <div class="flex items-center gap-2 flex-shrink-0">
           <ion-icon name="business-outline" class="text-brand-primary text-lg"></ion-icon>
           <label class="text-xs font-semibold text-[rgb(var(--color-heading))]">Empresa:</label>
         </div>
         <select [(ngModel)]="empresaSeleccionadaId" (ngModelChange)="onSeleccionEmpresa($event)"
-                class="flex-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+                class="flex-1 px-2.5 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
           <option [ngValue]="null">— Seleccione una empresa —</option>
           <option *ngFor="let e of empresasDisponibles" [ngValue]="e.id">{{ e.nombre }}</option>
         </select>
         <select [(ngModel)]="anioSeleccionado" (ngModelChange)="onSeleccionAnio($event)"
-                class="w-32 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+                class="w-32 px-2.5 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
           <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
         </select>
       </div>
@@ -40,7 +40,7 @@
     <div *ngIf="!esAdmin" class="flex items-center gap-2">
       <label class="text-xs font-semibold text-dark-text uppercase tracking-wider">Año:</label>
       <select [(ngModel)]="anioSeleccionado" (ngModelChange)="onSeleccionAnio($event)"
-              class="px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+              class="px-2.5 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
         <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
       </select>
     </div>
@@ -67,11 +67,11 @@
       </p>
       <p class="text-[11px] text-dark-text mt-1 mb-5">Crea el plan anual para registrar actividades.</p>
       <button (click)="crearNuevoPlan()" [disabled]="guardandoEncabezado"
-              class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-primary hover:bg-blue-600
-                     text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-primary/25
-                     disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600
+                     text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95
+                     disabled:opacity-40 disabled:cursor-not-allowed transition">
         <ion-spinner *ngIf="guardandoEncabezado" name="crescent" class="w-4 h-4"></ion-spinner>
-        <ion-icon *ngIf="!guardandoEncabezado" name="add-outline" class="text-lg"></ion-icon>
+        <ion-icon *ngIf="!guardandoEncabezado" name="add-outline" class="text-sm"></ion-icon>
         Crear Plan {{ anioSeleccionado }}
       </button>
     </div>
@@ -93,24 +93,24 @@
           </p>
         </div>
         <button (click)="exportarExcel()" [disabled]="exportandoExcel"
-                class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700
                        disabled:opacity-50 disabled:cursor-not-allowed
-                       text-white text-xs font-semibold rounded-xl
-                       shadow-md shadow-emerald-600/25 transition-all shrink-0 self-start">
+                       text-white text-xs font-semibold rounded-lg
+                       shadow-sm transition active:scale-95 shrink-0 self-start">
           <ion-spinner *ngIf="exportandoExcel" name="crescent" class="w-3.5 h-3.5"></ion-spinner>
-          <ion-icon *ngIf="!exportandoExcel" name="download-outline" class="text-base"></ion-icon>
+          <ion-icon *ngIf="!exportandoExcel" name="download-outline" class="text-sm"></ion-icon>
           Exportar Excel
         </button>
       </div>
 
       <!-- TABS -->
       <div class="flex gap-0 border-b border-dark-border">
-        <button class="tab-btn px-5 py-2.5 text-sm font-semibold"
+        <button class="tab-btn px-3 py-1.5 text-xs font-semibold"
                 [class.active]="tabActivo === 'planeacion'"
                 (click)="tabActivo = 'planeacion'">
           Planeación
         </button>
-        <button class="tab-btn px-5 py-2.5 text-sm font-semibold"
+        <button class="tab-btn px-3 py-1.5 text-xs font-semibold"
                 [class.active]="tabActivo === 'plan-accion'"
                 (click)="tabActivo = 'plan-accion'">
           Plan de Acción
@@ -316,9 +316,9 @@
               </select>
             </div>
             <button (click)="abrirNuevaActividad()"
-                    class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600
-                           text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25 shrink-0">
-              <ion-icon name="add-outline" class="text-lg"></ion-icon>
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600
+                           text-white text-xs rounded-lg font-semibold transition active:scale-95 shadow-sm shrink-0">
+              <ion-icon name="add-outline" class="text-sm"></ion-icon>
               <span>Agregar</span>
             </button>
           </div>

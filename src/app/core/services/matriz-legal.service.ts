@@ -7,9 +7,6 @@ import {
   MatrizLegalResumen,
   ResumenDominio,
   ConteoUpsert,
-  Dominio,
-  DOMINIO_LABEL,
-  ESTADO_LABEL,
   periodoActual,
 } from '../models/matriz-legal.model';
 
@@ -115,88 +112,193 @@ export class MatrizLegalService {
     }
   }
 
-  // ── Exportación a Excel de la matriz de evaluación (patrón del proyecto) ─────
+  // ── Exportación a Excel: réplica del formato de la hoja EVALUACIÓN CUMPLIMIENTO
+  //    (componentes en columnas, estados en filas, grupos SG-SST y Ambiental). ──
   async exportarMatrizExcel(resumen: MatrizLegalResumen, empresaNombre: string): Promise<void> {
     const { Workbook } = await import('exceljs');
     const wb = new Workbook();
     wb.creator = 'Alnilam 360 · SG-SST';
     wb.created = new Date();
     const empresa = empresaNombre || 'Empresa';
-    const NOW = new Date();
+
+    const sst: ResumenDominio = resumen.sgSst;
+    const amb: ResumenDominio = resumen.ambiental;
+    const nSst = sst.componentes.length;
+    const nAmb = amb.componentes.length;
+
+    // Índices de columna (1-based).
+    const colEstado = 1;
+    const sstStart = 2;
+    const sstEnd = 1 + nSst;
+    const colPctSst = nSst + 2;
+    const ambStart = nSst + 3;
+    const ambEnd = nSst + 2 + nAmb;
+    const colPctAmb = nSst + nAmb + 3;
+    const totalCols = colPctAmb;
+
     const ws = wb.addWorksheet('Evaluación Cumplimiento', {
-      properties: { tabColor: { argb: 'FF1E40AF' } },
+      properties: { tabColor: { argb: 'FF1F3864' } },
       pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
     });
 
-    const C = { h2: 'FF1E40AF', headerFill: 'FF1E3A8A', headerText: 'FFFFFFFF', border: 'FFCBD5E1' };
+    // Paleta (colores del formato original).
+    const NAVY = 'FF1F3864', HEADER = 'FF1F4E79', WHITE = 'FFFFFFFF', BLACK = 'FF000000';
+    const GREEN = 'FF00B050', YELLOW = 'FFFFFF00', RED = 'FFFF0000', GRAY = 'FFBFBFBF';
+    const BRD = 'FF4472C4';
     const bdr = {
-      top: { style: 'thin' as const, color: { argb: C.border } },
-      bottom: { style: 'thin' as const, color: { argb: C.border } },
-      left: { style: 'thin' as const, color: { argb: C.border } },
-      right: { style: 'thin' as const, color: { argb: C.border } },
+      top: { style: 'thin' as const, color: { argb: BRD } },
+      bottom: { style: 'thin' as const, color: { argb: BRD } },
+      left: { style: 'thin' as const, color: { argb: BRD } },
+      right: { style: 'thin' as const, color: { argb: BRD } },
     };
+    const fill = (argb: string) => ({ type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb } });
 
-    let row = 1;
-    ws.mergeCells(row, 1, row, 6);
-    const title = ws.getCell(row, 1);
-    title.value = `EVALUACIÓN DE CUMPLIMIENTO DE REQUISITOS LEGALES · ${empresa} · ${resumen.periodo}`;
-    title.font = { name: 'Calibri', size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
-    title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.h2 } };
+    // Anchos.
+    ws.getColumn(colEstado).width = 16;
+    for (let c = sstStart; c <= sstEnd; c++) ws.getColumn(c).width = 10;
+    ws.getColumn(colPctSst).width = 15;
+    for (let c = ambStart; c <= ambEnd; c++) ws.getColumn(c).width = 10;
+    ws.getColumn(colPctAmb).width = 15;
+
+    // Fila 1: título.
+    ws.mergeCells(1, 1, 1, totalCols);
+    const title = ws.getCell(1, 1);
+    title.value = 'EVALUACIÓN DE CUMPLIMIENTO DE REQUISITOS LEGALES';
+    title.font = { name: 'Calibri', size: 14, bold: true, color: { argb: BLACK } };
     title.alignment = { horizontal: 'center', vertical: 'middle' };
-    ws.getRow(row).height = 30;
-    row += 2;
+    ws.getRow(1).height = 28;
 
-    const bloques: { dominio: Dominio; data: ResumenDominio }[] = [
-      { dominio: 'SG_SST', data: resumen.sgSst },
-      { dominio: 'AMBIENTAL', data: resumen.ambiental },
-    ];
+    // Fila 2: grupos.
+    ws.getCell(2, colEstado).value = 'COMPONENTE';
+    ws.mergeCells(2, sstStart, 2, colPctSst);
+    ws.getCell(2, sstStart).value = 'NORMATIVIDAD SG-SST';
+    ws.mergeCells(2, ambStart, 2, colPctAmb);
+    ws.getCell(2, ambStart).value = 'NORMATIVIDAD AMBIENTAL';
 
-    for (const { dominio, data } of bloques) {
-      ws.mergeCells(row, 1, row, 6);
-      const sub = ws.getCell(row, 1);
-      sub.value = DOMINIO_LABEL[dominio];
-      sub.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF1E293B' } };
-      row++;
+    // Fila 3: ESTADO + nombres de componente + encabezados de %.
+    ws.getCell(3, colEstado).value = 'ESTADO';
+    sst.componentes.forEach((c, i) => { ws.getCell(3, sstStart + i).value = c.nombre.toUpperCase(); });
+    ws.getCell(3, colPctSst).value = '% CUMPLIMIENTO SG-SST -LABORAL';
+    amb.componentes.forEach((c, i) => { ws.getCell(3, ambStart + i).value = c.nombre.toUpperCase(); });
+    ws.getCell(3, colPctAmb).value = '% CUMPLIMIENTO AMBIENTAL';
 
-      const head = ['Componente', ESTADO_LABEL.CUMPLE, ESTADO_LABEL.EN_PROCESO, ESTADO_LABEL.NO_CUMPLE, 'Total', '% Cumplimiento'];
-      const hr = ws.getRow(row);
-      head.forEach((h, i) => {
-        const cell = hr.getCell(i + 1);
-        cell.value = h;
-        cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.headerText } };
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.headerFill } };
+    // Estilo de encabezados (filas 2 y 3).
+    for (const r of [2, 3]) {
+      for (let c = 1; c <= totalCols; c++) {
+        const cell = ws.getCell(r, c);
+        cell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: WHITE } };
+        cell.fill = fill(HEADER);
         cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
         cell.border = bdr;
-      });
-      row++;
-
-      for (const c of data.componentes) {
-        const r = ws.getRow(row);
-        r.values = [c.nombre, c.cumple, c.enProceso, c.noCumple, c.total, ''];
-        for (let col = 1; col <= 6; col++) {
-          const cell = r.getCell(col);
-          cell.font = { name: 'Calibri', size: 9 };
-          cell.border = bdr;
-          cell.alignment = { horizontal: col === 1 ? 'left' : 'center', vertical: 'middle' };
-        }
-        row++;
       }
-
-      const tr = ws.getRow(row);
-      const total = data.totalDominio;
-      const sumC = data.componentes.reduce((s, c) => s + c.cumple, 0);
-      const sumE = data.componentes.reduce((s, c) => s + c.enProceso, 0);
-      const sumN = data.componentes.reduce((s, c) => s + c.noCumple, 0);
-      tr.values = ['TOTAL', sumC, sumE, sumN, total, data.pctCumple];
-      for (let col = 1; col <= 6; col++) {
-        const cell = tr.getCell(col);
-        cell.font = { name: 'Calibri', size: 10, bold: true };
-        cell.border = bdr;
-        cell.alignment = { horizontal: col === 1 ? 'left' : 'center', vertical: 'middle' };
-      }
-      tr.getCell(6).numFmt = '0.0%';
-      row += 2;
+      ws.getRow(r).height = r === 3 ? 34 : 18;
     }
+
+    // Filas de estado (4-6).
+    type Fila = { label: string; field: 'cumple' | 'enProceso' | 'noCumple'; pct: 'pctCumple' | 'pctEnProceso' | 'pctNoCumple'; fillArgb: string; txt: string; fmt: string };
+    const filas: Fila[] = [
+      { label: 'CUMPLE',     field: 'cumple',    pct: 'pctCumple',    fillArgb: GREEN,  txt: WHITE, fmt: '0.0%' },
+      { label: 'EN PROCESO', field: 'enProceso', pct: 'pctEnProceso', fillArgb: YELLOW, txt: BLACK, fmt: '0.0%' },
+      { label: 'NO CUMPLE',  field: 'noCumple',  pct: 'pctNoCumple',  fillArgb: RED,    txt: WHITE, fmt: '0.00%' },
+    ];
+
+    let row = 4;
+    for (const f of filas) {
+      const r = ws.getRow(row);
+      // Etiqueta de estado (coloreada).
+      const lab = r.getCell(colEstado);
+      lab.value = f.label;
+      lab.font = { name: 'Calibri', size: 9, bold: true, color: { argb: f.txt } };
+      lab.fill = fill(f.fillArgb);
+      lab.alignment = { horizontal: 'left', vertical: 'middle' };
+      lab.border = bdr;
+      // Componentes SG-SST.
+      sst.componentes.forEach((c, i) => {
+        const cell = r.getCell(sstStart + i);
+        cell.value = c[f.field];
+        cell.font = { name: 'Calibri', size: 9, color: { argb: BLACK } };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = bdr;
+      });
+      // % SG-SST (coloreado).
+      const pSst = r.getCell(colPctSst);
+      pSst.value = sst[f.pct];
+      pSst.numFmt = f.fmt;
+      pSst.font = { name: 'Calibri', size: 9, bold: true, color: { argb: f.txt } };
+      pSst.fill = fill(f.fillArgb);
+      pSst.alignment = { horizontal: 'center', vertical: 'middle' };
+      pSst.border = bdr;
+      // Componentes Ambiental.
+      amb.componentes.forEach((c, i) => {
+        const cell = r.getCell(ambStart + i);
+        cell.value = c[f.field];
+        cell.font = { name: 'Calibri', size: 9, color: { argb: BLACK } };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = bdr;
+      });
+      // % Ambiental (coloreado).
+      const pAmb = r.getCell(colPctAmb);
+      pAmb.value = amb[f.pct];
+      pAmb.numFmt = f.fmt;
+      pAmb.font = { name: 'Calibri', size: 9, bold: true, color: { argb: f.txt } };
+      pAmb.fill = fill(f.fillArgb);
+      pAmb.alignment = { horizontal: 'center', vertical: 'middle' };
+      pAmb.border = bdr;
+      row++;
+    }
+
+    // Fila TOTAL (7).
+    const tr = ws.getRow(row);
+    const tLab = tr.getCell(colEstado);
+    tLab.value = 'TOTAL';
+    tLab.font = { name: 'Calibri', size: 9, bold: true, color: { argb: BLACK } };
+    tLab.fill = fill(GRAY);
+    tLab.alignment = { horizontal: 'left', vertical: 'middle' };
+    tLab.border = bdr;
+    sst.componentes.forEach((c, i) => {
+      const cell = tr.getCell(sstStart + i);
+      cell.value = c.total;
+      cell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: BLACK } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = bdr;
+    });
+    const tPctSst = tr.getCell(colPctSst);
+    tPctSst.value = sst.pctCumple; tPctSst.numFmt = '0%';
+    tPctSst.font = { name: 'Calibri', size: 9, bold: true, color: { argb: BLACK } };
+    tPctSst.alignment = { horizontal: 'center', vertical: 'middle' };
+    tPctSst.border = bdr;
+    amb.componentes.forEach((c, i) => {
+      const cell = tr.getCell(ambStart + i);
+      cell.value = c.total;
+      cell.font = { name: 'Calibri', size: 9, bold: true, color: { argb: BLACK } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = bdr;
+    });
+    const tPctAmb = tr.getCell(colPctAmb);
+    tPctAmb.value = amb.pctCumple; tPctAmb.numFmt = '0%';
+    tPctAmb.font = { name: 'Calibri', size: 9, bold: true, color: { argb: BLACK } };
+    tPctAmb.alignment = { horizontal: 'center', vertical: 'middle' };
+    tPctAmb.border = bdr;
+    row++;
+
+    // Fila 8: grandes totales por dominio (barras).
+    const gr = ws.getRow(row);
+    ws.mergeCells(row, sstStart, row, colPctSst);
+    const gSst = gr.getCell(sstStart);
+    gSst.value = sst.totalDominio;
+    gSst.font = { name: 'Calibri', size: 10, bold: true, color: { argb: WHITE } };
+    gSst.fill = fill(NAVY);
+    gSst.alignment = { horizontal: 'center', vertical: 'middle' };
+    gSst.border = bdr;
+    ws.mergeCells(row, ambStart, row, colPctAmb);
+    const gAmb = gr.getCell(ambStart);
+    gAmb.value = amb.totalDominio;
+    gAmb.font = { name: 'Calibri', size: 10, bold: true, color: { argb: WHITE } };
+    gAmb.fill = fill(NAVY);
+    gAmb.alignment = { horizontal: 'center', vertical: 'middle' };
+    gAmb.border = bdr;
+    gr.getCell(colEstado).fill = fill(GRAY);
+    gr.getCell(colEstado).border = bdr;
 
     const buffer = await wb.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });

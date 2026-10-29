@@ -1,76 +1,53 @@
-<div class="space-y-6">
+<div class="max-w-[1600px] mx-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3.5">
 
-  <!-- ======================================================================== -->
-  <!-- HERO HEADER DEL MÓDULO                                                   -->
-  <!-- ======================================================================== -->
-  <div class="p-6 rounded-3xl bg-gradient-to-r from-dark-secondary via-dark-secondary to-brand-primary/10 border border-dark-border shadow-xl relative overflow-hidden">
-    <div class="absolute -right-8 -top-8 w-44 h-44 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none"></div>
-
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 relative z-10">
-      <div>
-        <div class="flex items-center gap-2 mb-2 flex-wrap">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+  <!-- HEADER COMPACTO DEL MÓDULO -->
+  <div class="pb-3 border-b border-dark-border">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <div class="min-w-0 space-y-1">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Módulo VERIFICAR · SG-SST
+            Verificar · SG-SST
           </span>
-          <span class="text-xs text-dark-text font-mono">
-            Res. 0312/2019 · Dec. 1072/2015 · GTC 3701
-          </span>
+          <span class="text-[10px] text-dark-text font-mono">Res. 0312/2019 · Dec. 1072/2015 · GTC 3701</span>
         </div>
 
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-[rgb(var(--color-heading))] tracking-tight flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
-            <ion-icon name="grid-outline" class="text-2xl"></ion-icon>
-          </div>
+        <h1 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))] tracking-tight flex items-center gap-2 m-0">
+          <ion-icon name="grid-outline" class="text-brand-primary text-lg"></ion-icon>
           0. Matriz de Indicadores
         </h1>
 
-        <p class="text-xs sm:text-sm text-dark-text mt-2 max-w-3xl leading-relaxed">
+        <p class="text-xs text-dark-text max-w-3xl leading-relaxed m-0">
           Consolidado oficial de indicadores SG-SST: Accidente de Trabajo (AT), Enfermedad Laboral (EL), Ausentismo y Estándares E-P-R.
         </p>
       </div>
 
       <!-- Barra de Acciones de Cabecera -->
-      <div class="flex items-center gap-2.5 flex-wrap">
-        <!-- 1. Registrar Indicador -->
-        <button
-          type="button"
-          (click)="abrirNuevoIndicador()"
-          class="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-brand-primary to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-brand-primary/25 transition-all duration-200 transform hover:-translate-y-0.5 cursor-pointer">
-          <ion-icon name="add-circle-outline" class="text-base"></ion-icon>
+      <div class="flex items-center gap-2 flex-wrap flex-shrink-0">
+        <button type="button" (click)="abrirNuevoIndicador()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-primary hover:bg-blue-600 text-white shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap">
+          <ion-icon name="add-circle-outline" class="text-sm"></ion-icon>
           <span>Registrar Indicador</span>
         </button>
 
-        <!-- 2. Plantilla Estándar -->
-        <button
-          type="button"
-          (click)="inicializarPlantilla()"
-          [disabled]="inicializando() || cargando()"
-          class="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-dark-border bg-dark-primary hover:bg-dark-accent text-[rgb(var(--color-heading))] transition-all duration-200 disabled:opacity-50 cursor-pointer"
+        <button type="button" (click)="inicializarPlantilla()" [disabled]="inicializando() || cargando()"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-dark-border bg-dark-accent hover:bg-dark-border text-dark-text-light transition active:scale-95 disabled:opacity-50 cursor-pointer whitespace-nowrap"
           title="Cargar las fichas normativas estándar del SG-SST en este periodo">
-          <ion-icon name="layers-outline" [class.animate-spin]="inicializando()" class="text-base text-purple-400"></ion-icon>
+          <ion-icon name="layers-outline" [class.animate-spin]="inicializando()" class="text-sm text-purple-400"></ion-icon>
           <span>{{ inicializando() ? 'Cargando...' : 'Plantilla Estándar' }}</span>
         </button>
 
-        <!-- 3. Exportar Excel -->
-        <button
-          type="button"
-          (click)="exportarExcel()"
-          [disabled]="exportando() || filas().length === 0"
-          class="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-200 shadow-md shadow-emerald-600/20 disabled:opacity-50 cursor-pointer"
+        <button type="button" (click)="exportarExcel()" [disabled]="exportando() || filas().length === 0"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition active:scale-95 shadow-sm disabled:opacity-50 cursor-pointer whitespace-nowrap"
           title="Descargar matriz en formato Excel .xlsx">
-          <ion-icon name="document-text-outline" class="text-base"></ion-icon>
+          <ion-icon name="document-text-outline" class="text-sm"></ion-icon>
           <span>{{ exportando() ? 'Generando...' : 'Exportar Excel' }}</span>
         </button>
 
-        <!-- 4. Actualizar -->
-        <button
-          type="button"
-          (click)="cargarMatriz()"
-          [disabled]="cargando()"
-          class="p-2.5 rounded-xl border border-dark-border bg-dark-primary hover:bg-dark-accent text-dark-text hover:text-white transition-all duration-200 disabled:opacity-50 cursor-pointer"
+        <button type="button" (click)="cargarMatriz()" [disabled]="cargando()"
+          class="p-1.5 rounded-lg border border-dark-border bg-dark-accent hover:bg-dark-border text-dark-text hover:text-white transition active:scale-95 disabled:opacity-50 cursor-pointer"
           title="Actualizar datos desde la base de datos">
-          <ion-icon name="sync-outline" [class.animate-spin]="cargando()" class="text-base"></ion-icon>
+          <ion-icon name="sync-outline" [class.animate-spin]="cargando()" class="text-sm"></ion-icon>
         </button>
       </div>
     </div>
@@ -79,8 +56,8 @@
   <!-- ======================================================================== -->
   <!-- BARRA DE FILTROS SUPERIOR Y SELECTORES EN CASCADA                        -->
   <!-- ======================================================================== -->
-  <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-lg space-y-3">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+  <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border space-y-2.5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
 
       <!-- Selector de Empresa (Admin) -->
       <div *ngIf="esAdmin() && empresas().length > 1">
@@ -90,7 +67,7 @@
         <select
           [ngModel]="empresaId()"
           (ngModelChange)="onEmpresaChange($event)"
-          class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+          class="w-full px-2.5 py-1.5 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
           <option *ngFor="let emp of empresas()" [value]="emp.id">{{ emp.nombre }}</option>
         </select>
       </div>
@@ -103,7 +80,7 @@
         <select
           [ngModel]="sedeId()"
           (ngModelChange)="onSedeChange($event)"
-          class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+          class="w-full px-2.5 py-1.5 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
           <option value="">Todas las Sedes (Consolidado)</option>
           <option *ngFor="let s of sedes()" [value]="s.id">{{ s.nombre }}</option>
         </select>
@@ -117,7 +94,7 @@
         <select
           [ngModel]="anio()"
           (ngModelChange)="onAnioChange($event)"
-          class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+          class="w-full px-2.5 py-1.5 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
           <option *ngFor="let a of aniosDisponibles" [value]="a">{{ a }}</option>
         </select>
       </div>
@@ -130,7 +107,7 @@
         <select
           [ngModel]="mes()"
           (ngModelChange)="onMesChange($event)"
-          class="w-full px-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
+          class="w-full px-2.5 py-1.5 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
           <option *ngFor="let m of mesesNombres" [value]="m.valor">{{ m.nombre }}</option>
         </select>
       </div>
@@ -196,7 +173,7 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
     <!-- Card 1: Total Indicadores -->
-    <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-md flex items-center gap-3">
+    <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border flex items-center gap-3">
       <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
         <ion-icon name="list-outline" class="text-2xl"></ion-icon>
       </div>
@@ -210,7 +187,7 @@
     </div>
 
     <!-- Card 2: En Cumplimiento -->
-    <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-md flex items-center gap-3">
+    <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border flex items-center gap-3">
       <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
         <ion-icon name="checkmark-done-circle-outline" class="text-2xl"></ion-icon>
       </div>
@@ -224,7 +201,7 @@
     </div>
 
     <!-- Card 3: En Desviación -->
-    <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-md flex items-center gap-3">
+    <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border flex items-center gap-3">
       <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
         <ion-icon name="alert-circle-outline" class="text-2xl"></ion-icon>
       </div>
@@ -238,7 +215,7 @@
     </div>
 
     <!-- Card 4: Porcentaje Cumplimiento Global -->
-    <div class="p-4 rounded-2xl bg-dark-secondary border border-dark-border shadow-md flex flex-col justify-center">
+    <div class="p-3 rounded-lg bg-dark-secondary border border-dark-border flex flex-col justify-center">
       <div class="flex items-center justify-between mb-1">
         <p class="text-[11px] font-medium text-dark-text uppercase tracking-wider">Cumplimiento Global</p>
         <span class="text-sm font-bold"
@@ -551,7 +528,7 @@
         <button
           type="button"
           (click)="abrirNuevoIndicador()"
-          class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-brand-primary hover:bg-blue-600 text-white shadow-lg shadow-brand-primary/25 transition-all cursor-pointer">
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-brand-primary hover:bg-blue-600 text-white shadow-sm transition active:scale-95 cursor-pointer">
           <ion-icon name="add-circle-outline" class="text-base"></ion-icon>
           <span>Registrar Primer Indicador</span>
         </button>
@@ -560,7 +537,7 @@
           type="button"
           (click)="inicializarPlantilla()"
           [disabled]="inicializando()"
-          class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl border border-dark-border bg-dark-primary hover:bg-dark-accent text-[rgb(var(--color-heading))] transition-all cursor-pointer">
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-dark-border bg-dark-accent hover:bg-dark-border text-dark-text-light transition active:scale-95 cursor-pointer">
           <ion-icon name="layers-outline" class="text-base text-purple-400"></ion-icon>
           <span>Cargar Plantilla Estándar (9 Indicadores)</span>
         </button>

@@ -69,8 +69,7 @@ export const MENU_ITEMS: MenuItem[] = [
       },
       { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'checkbox-outline', route: '/auditorias/programacion' },
       { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/investigacion-atel' },
-      { id: 'cumplimiento-legal', label: 'Cumplimiento Legal', icon: 'shield-checkmark-outline', route: '/matriz-legal' },
-      { id: 'revision-alta-direccion', label: 'Revisión por la Alta Dirección', icon: 'eye-outline', route: '/gestion-sst/plan-mejora' }
+      { id: 'revision-alta-direccion', label: 'Revisión por la Alta Dirección', icon: 'eye-outline' }
     ]
   },
   {

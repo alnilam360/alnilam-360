@@ -31,13 +31,13 @@
             </div>
             <div class="flex items-center gap-2">
                 <button *ngIf="registros.length > 0" (click)="exportarExcel()"
-                    class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-emerald-600/25">
-                    <ion-icon name="download-outline" class="text-lg"></ion-icon>
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-semibold transition active:scale-95 shadow-sm">
+                    <ion-icon name="download-outline" class="text-sm"></ion-icon>
                     <span>Exportar Excel</span>
                 </button>
                 <button *ngIf="empresa" (click)="nuevoRegistro()"
-                    class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25">
-                    <ion-icon name="add-outline" class="text-lg"></ion-icon>
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-semibold transition active:scale-95 shadow-sm">
+                    <ion-icon name="add-outline" class="text-sm"></ion-icon>
                     <span>Nuevo Riesgo</span>
                 </button>
             </div>
@@ -51,7 +51,7 @@
                     <label class="text-xs font-semibold text-[rgb(var(--color-heading))]">Empresa:</label>
                 </div>
                 <select [ngModel]="empresaSeleccionadaId" (ngModelChange)="onSeleccionEmpresa($event)"
-                    class="flex-1 px-3 py-2 bg-dark-secondary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
+                    class="flex-1 px-2.5 py-1.5 bg-dark-secondary border border-dark-border rounded-lg text-xs text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary transition">
                     <option [ngValue]="null">— Seleccione una empresa —</option>
                     <option *ngFor="let e of empresasDisponibles" [ngValue]="e.id">{{ e.nombre }}</option>
                 </select>

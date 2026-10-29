@@ -222,5 +222,66 @@
         }
       </div>
     </div>
+
+    <!-- ─── Resumen (formato matriz: estados en filas) ────────────────────── -->
+    @for (bloque of bloques(); track bloque.dom) {
+      <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
+        <div class="px-3.5 py-2 border-b border-dark-border flex items-center gap-2">
+          <ion-icon [name]="bloque.dom === 'SG_SST' ? 'shield-checkmark-outline' : 'leaf-outline'" class="text-brand-primary text-sm"></ion-icon>
+          <h4 class="text-xs sm:text-sm font-bold text-white m-0">Resumen · {{ DOMINIO_LABEL[bloque.dom] }}</h4>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-center text-[11px] border-collapse">
+            <thead>
+              <tr class="bg-dark-primary/50 text-dark-text">
+                <th class="px-2 py-1.5 text-left font-semibold border border-dark-border whitespace-nowrap">ESTADO</th>
+                @for (c of bloque.resumen.componentes; track c.componenteId) {
+                  <th class="px-2 py-1.5 font-semibold border border-dark-border whitespace-nowrap uppercase text-[10px]">{{ c.nombre }}</th>
+                }
+                <th class="px-2 py-1.5 font-semibold border border-dark-border whitespace-nowrap">% Cumpl.</th>
+              </tr>
+            </thead>
+            <tbody class="tabular-numbers">
+              <tr>
+                <td class="px-2 py-1 text-left font-bold border border-dark-border bg-emerald-500/15 text-emerald-300 whitespace-nowrap">
+                  <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>CUMPLE
+                </td>
+                @for (c of bloque.resumen.componentes; track c.componenteId) {
+                  <td class="px-2 py-1 border border-dark-border text-dark-text-light">{{ c.cumple }}</td>
+                }
+                <td class="px-2 py-1 border border-dark-border font-semibold bg-emerald-500/15 text-emerald-300">{{ pct(bloque.resumen.pctCumple) }}</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 text-left font-bold border border-dark-border bg-amber-500/15 text-amber-300 whitespace-nowrap">
+                  <span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1"></span>EN PROCESO
+                </td>
+                @for (c of bloque.resumen.componentes; track c.componenteId) {
+                  <td class="px-2 py-1 border border-dark-border text-dark-text-light">{{ c.enProceso }}</td>
+                }
+                <td class="px-2 py-1 border border-dark-border font-semibold bg-amber-500/15 text-amber-300">{{ pct(bloque.resumen.pctEnProceso) }}</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 text-left font-bold border border-dark-border bg-rose-500/15 text-rose-300 whitespace-nowrap">
+                  <span class="inline-block w-2 h-2 rounded-full bg-rose-500 mr-1"></span>NO CUMPLE
+                </td>
+                @for (c of bloque.resumen.componentes; track c.componenteId) {
+                  <td class="px-2 py-1 border border-dark-border text-dark-text-light">{{ c.noCumple }}</td>
+                }
+                <td class="px-2 py-1 border border-dark-border font-semibold bg-rose-500/15 text-rose-300">{{ pct(bloque.resumen.pctNoCumple) }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="bg-dark-accent/60 text-white font-bold">
+                <td class="px-2 py-1 text-left border border-dark-border whitespace-nowrap">TOTAL</td>
+                @for (c of bloque.resumen.componentes; track c.componenteId) {
+                  <td class="px-2 py-1 border border-dark-border">{{ c.total }}</td>
+                }
+                <td class="px-2 py-1 border border-dark-border">{{ pct(bloque.resumen.pctCumple) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    }
   }
 </div>
