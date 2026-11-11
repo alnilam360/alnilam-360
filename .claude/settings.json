@@ -1,0 +1,40 @@
+{
+  "includeCoAuthoredBy": false,
+  "attribution": { "commit": "", "pr": "" },
+  "autoCompactWindow": 300000,
+  "hooks": {},
+  "enabledMcpjsonServers": ["supabase"],
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm run build -- *)",
+      "Bash(npm run lint)",
+      "Bash(npm test)",
+      "Bash(npx ng test *)",
+      "Bash(node tools/plan/nuevo-plan.mjs *)",
+      "Bash(node --test *)",
+      "Bash(npx cap sync)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__list_extensions",
+      "mcp__supabase__get_advisors",
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__generate_typescript_types",
+      "mcp__supabase__query_logs",
+      "mcp__supabase__search_docs"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./.mcp.json)",
+      "Read(./src/environments/environment.prod.ts)",
+      "Bash(git push *)",
+      "Bash(git push)"
+    ]
+  }
+}

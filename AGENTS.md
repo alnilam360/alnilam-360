@@ -1,34 +1,31 @@
-# REGLAS DEL SISTEMA MULTI-AGENTE (ALNILAM 360)
+# AGENTS.md — Alnilam 360
 
-Este espacio de trabajo está configurado para operar de forma estricta bajo un modelo de **6 Agentes Especializados**. Cada agente tiene límites de dominio infranqueables y opera bajo la coordinación del **Orquestador**.
+> Este archivo describe el modelo de trabajo con agentes. La **fuente de verdad** operativa es [`CLAUDE.md`](./CLAUDE.md) y las reglas en `.claude/rules/`. El protocolo de orquestación se define una sola vez en [`.claude/skills/orquestar/SKILL.md`](./.claude/skills/orquestar/SKILL.md).
 
-Para consultar el protocolo completo de comunicación y ciclo de vida, consulte [WORKFLOW.md](file:///c:/Users/ING-MOISES/alnilam-360/WORKFLOW.md).
+SG-SST (Colombia). **Ionic 8 + Angular 20 (NgModules) + Tailwind 3 + PrimeNG 19 + Capacitor 8**; **Supabase** (Postgres/Auth/RLS/RPC/Storage) operado por **MCP** (sin CLI local). Multi-empresa por `empresa_id`. Dominio en español, técnico en inglés.
 
----
+## Modelo de agentes (3 niveles)
 
-## Directorio de Agentes
+| Nivel | Rol | Modelo | Alcance | Restricción |
+| :-- | :-- | :-- | :-- | :-- |
+| **N0** | Sesión principal / orquestador | Opus | Plan, tracker, contrato versionado, reparto, decisiones, fusión de informes | **No escribe código de implementación** |
+| **N1** | `capa-datos` | Sonnet | `database/migrations/**`, `database/seeds/**`, modelos TS afectados | No toca UI/estilos |
+| **N1** | `cliente-web` | Sonnet | `src/app/**`, estilos | No escribe SQL ni toca `database/**` |
+| **N1** | `cliente-movil` | Sonnet | Capacitor/nativo, `capacitor.config.ts` | — |
+| **N1** | `relevador` | Haiku | Inventarios de **solo lectura** (`ruta:línea`) | No edita, no decide seguridad/aritmética |
+| **N2** | `verificador` | Opus (inherit) | Build/lint/tests + conformidad con el contrato | **No edita**, solo reporta |
 
-> El orden de la tabla refleja el pipeline secuencial obligatorio: **Orquestador → Arquitecto → Backend → Frontend → Diseñador UI/UX → QA**.
+Definición de cada agente: `.claude/agents/<nombre>.md`.
 
-| Agente | Nombre del Rol | Stack / Alcance Principal | Restricción Estricta | Regla Detallada |
-| :---: | :--- | :--- | :--- | :---: |
-| **1** | **ORQUESTADOR** | Planificación, Despacho, Descomposición DAG, Validación y Resumen. | **PROHIBIDO escribir código de implementación.** | [.agents/rules/01-orquestador.md](file:///c:/Users/ING-MOISES/alnilam-360/.agents/rules/01-orquestador.md) |
-| **2** | **ARQUITECTO** | Análisis de `.csv`/`.xlsx`/`.json`, investigación normativa SG-SST, modelo E-R y especificación técnica con criterios de aceptación. | **PROHIBIDO escribir código de implementación (solo especifica).** | [.agents/rules/02-arquitecto.md](file:///c:/Users/ING-MOISES/alnilam-360/.agents/rules/02-arquitecto.md) |
-| **3** | **BACKEND** | Supabase (PostgreSQL, RLS, RPC, Triggers, Auth, Storage, Edge Functions), Contratos DTO. | **PROHIBIDO tocar estilos CSS/SCSS o vistas HTML.** | [.agents/rules/03-backend.md](file:///c:/Users/ING-MOISES/alnilam-360/.agents/rules/03-backend.md) |
-| **4** | **FRONTEND** | Componentes Ionic Framework 8, Angular 20, TypeScript, Tailwind CSS, PrimeNG, Layouts responsivos, Temas claro/oscuro. | **PROHIBIDO interactuar directamente con DB o escribir SQL.** | [.agents/rules/04-frontend.md](file:///c:/Users/ING-MOISES/alnilam-360/.agents/rules/04-frontend.md) |
-| **5** | **DISEÑADOR UI/UX** | Auditoría visual post-Frontend, Design Tokens, Paletas, Tipografía, Accesibilidad (WCAG 2.2), CSS/SCSS puro. | **PROHIBIDO escribir TypeScript o lógica de negocio.** | [.agents/rules/05-disenador-ui-ux.md](file:///c:/Users/ING-MOISES/alnilam-360/.agents/rules/05-disenador-ui-ux.md) |
-| **6** | **QA** | Planes de prueba, Validación de casos cruzados, Detección de fallos y Reportes estructurados. | **PROHIBIDO corregir código o parches (solo reporta).** | [.agents/rules/06-qa.md](file:///c:/Users/ING-MOISES/alnilam-360/.agents/rules/06-qa.md) |
+## Principios
 
----
+1. **Segregación de funciones:** un archivo = un dueño por sesión; si otro lo necesita, lo reporta como `pendiente`, no lo pisa.
+2. **Contrato explícito primero:** tablas/columnas, firmas de RPC, tipos y vectores dorados en `gestion/fase_de_desarrollo/NN_<slug>_expediente.json`; cambiarlo sube `version` y re-despacha solo a quien lo consume.
+3. **Pista de datos en serie, clientes después:** migración → RLS → funciones → modelos TS → verificar; luego el cliente consume.
+4. **Cero regresiones:** `verificador` intenta refutar que la tarea está bien (RLS y aislamiento entre empresas incluidos) antes de cerrar.
+5. **Comunicación inter-agente** por `<paquete>`/`<informe>` (ver la skill `orquestar`). Un especialista nunca hace `git add`/`commit`.
 
-## Principios Fundamentales del Espacio de Trabajo
+## Cuándo orquestar
+Tarea que toca **≥ 2 especialistas o ≥ 4 archivos** ⇒ orquestar. Si no, un solo especialista (igual Sonnet) con brief mínimo.
 
-1. **Segregación Estricta de Funciones (Separation of Concerns)**:
-   - Ningún agente puede asumir tareas de otro rol.
-   - El Orquestador despacha en orden: primero el `@Arquitecto` (especificación y modelo de datos), luego el `@Backend` (persistencia y contratos), luego el `@Frontend` (implementación), luego el `@Diseñador UI/UX` (auditoría de estilos) y finalmente `@QA`.
-2. **Contratos Explícitos**:
-   - La comunicación inter-agente se realiza mediante DTOs, tokens y tickets formales especificados en [WORKFLOW.md](file:///c:/Users/ING-MOISES/alnilam-360/WORKFLOW.md).
-3. **Calidad y Cero Regresiones**:
-   - Todo cambio debe someterse a la revisión de QA antes de que el Orquestador lo presente al usuario.
-4. **Resumen Consolidado**:
-   - Al finalizar cualquier requerimiento, el Orquestador debe entregar un reporte ejecutivo desglosando la contribución de cada rol.
+> Nota: el modelo anterior de 6 agentes conceptuales (Orquestador/Arquitecto/Backend/Frontend/Diseñador/QA) fue reemplazado por este esquema N0/N1/N2.

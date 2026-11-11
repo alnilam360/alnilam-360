@@ -77,10 +77,19 @@ Thumbs.db
 .agent/
 agent/
 .kiro/
-.claude/
 .antigravity/
 .agents/
 .vscode/
+
+# .claude: versionar SOLO la estructura compartida del proyecto;
+# lo personal (settings.local.json) y los skills de terceros quedan fuera.
+.claude/*
+!.claude/settings.json
+!.claude/rules/
+!.claude/agents/
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/orquestar/
 
 # Data sheets & Excel
 *.xlsx
