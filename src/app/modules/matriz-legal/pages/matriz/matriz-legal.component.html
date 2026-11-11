@@ -8,7 +8,7 @@
   </nav>
 
   <!-- ─── Header ──────────────────────────────────────────────────────────── -->
-  <header class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-3 border-b border-dark-border">
+  <header class="flex flex-col gap-3 pb-3 border-b border-dark-border">
     <div class="space-y-1 min-w-0">
       <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-primary/10 border border-brand-primary/25 text-brand-primary">
         <ion-icon name="shield-checkmark-outline" class="text-xs"></ion-icon>
@@ -20,7 +20,7 @@
       </p>
     </div>
 
-    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-shrink-0">
+    <div class="flex items-center gap-2 flex-wrap">
       @if (esAdmin() && empresas().length > 1) {
         <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
           <ion-icon name="business-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
@@ -47,6 +47,35 @@
         </select>
       </div>
 
+      <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
+        <ion-icon name="repeat-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+        <label for="ml-periodicidad" class="text-gray-400 text-[11px] font-medium select-none">Periodicidad:</label>
+        <select id="ml-periodicidad" style="color-scheme: dark;" class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
+                [value]="periodicidad()" (change)="onPeriodicidadChange($any($event.target).value)">
+          @for (p of PERIODICIDADES; track p) {
+            <option [value]="p" class="bg-[#1a1d26] text-gray-100 font-medium">{{ PERIODICIDAD_LABEL[p] }}</option>
+          }
+        </select>
+      </div>
+
+      @if (opcionesNumero().length > 1) {
+        <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
+          <label for="ml-numero" class="text-gray-400 text-[11px] font-medium select-none">Corte:</label>
+          <select id="ml-numero" style="color-scheme: dark;" class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
+                  [value]="numero()" (change)="onNumeroChange($any($event.target).value)">
+            @for (o of opcionesNumero(); track o.valor) {
+              <option [value]="o.valor" class="bg-[#1a1d26] text-gray-100 font-medium">{{ o.etiqueta }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <button class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 min-h-10 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0 disabled:opacity-50"
+              (click)="verDocumentoCorte()" [disabled]="cargando() || abriendoDoc()">
+        <ion-icon name="document-attach-outline" class="text-sm text-brand-primary"></ion-icon>
+        <span>{{ docsCorte().length ? 'Ver documento' : 'Subir documento' }}</span>
+      </button>
+
       <button class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0 disabled:opacity-50"
               (click)="exportar()" [disabled]="cargando()">
         <ion-icon name="download-outline" class="text-sm text-brand-primary"></ion-icon>
@@ -68,12 +97,96 @@
     </div>
   }
 
+  <!-- ─── Corte actual + pestañas ─────────────────────────────────────────── -->
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <div class="inline-flex rounded-lg border border-dark-border overflow-hidden" role="tablist">
+      <button type="button" role="tab" [attr.aria-selected]="vista() === 'matriz'" (click)="setVista('matriz')"
+              class="ml-tab" [class.ml-tab--activo]="vista() === 'matriz'">Evaluación</button>
+      <button type="button" role="tab" [attr.aria-selected]="vista() === 'documentos'" (click)="setVista('documentos')"
+              class="ml-tab" [class.ml-tab--activo]="vista() === 'documentos'">Documentos ({{ docsTodos().length }})</button>
+    </div>
+    <span class="text-xs text-dark-text">Corte: <strong class="text-white">{{ tituloCorte() }}</strong></span>
+  </div>
+
   <!-- ─── Carga ───────────────────────────────────────────────────────────── -->
   @if (cargando()) {
     <div class="flex items-center justify-center gap-2 py-16 text-dark-text text-xs">
       <ion-spinner name="crescent" class="w-5 h-5"></ion-spinner>
       <span>Cargando matriz…</span>
     </div>
+  } @else if (vista() === 'documentos') {
+
+    <!-- ─── Documentos certificantes ──────────────────────────────────────── -->
+    <section class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm p-3.5 space-y-3" aria-label="Subir documento">
+      <h4 class="text-xs sm:text-sm font-bold text-white m-0">Subir documento</h4>
+      <form [formGroup]="formDoc" (ngSubmit)="subirDocumento()" class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+        <label class="text-[11px] text-dark-text flex flex-col gap-1 md:col-span-2">Archivo (PDF, XLSX o XLS, máx. 15 MB)
+          <input #inputArchivo type="file" accept=".pdf,.xlsx,.xls" (change)="onArchivoSeleccionado($event)" class="ml-field">
+        </label>
+        <label class="text-[11px] text-dark-text flex flex-col gap-1">Nombre
+          <input type="text" formControlName="nombre" maxlength="150" class="ml-field">
+        </label>
+        <label class="text-[11px] text-dark-text flex flex-col gap-1">Versión
+          <input type="text" formControlName="version" maxlength="30" class="ml-field">
+        </label>
+        <label class="text-[11px] text-dark-text flex flex-col gap-1">Fecha de revisión
+          <input type="date" formControlName="fecha_revision" class="ml-field">
+        </label>
+        <label class="text-xs text-dark-text-light flex items-center gap-2 min-h-10">
+          <input type="checkbox" formControlName="atarCorte">
+          Asociar al corte {{ tituloCorte() }} (si no, queda como general)
+        </label>
+        <div class="md:col-span-2">
+          <button type="submit" [disabled]="subiendo() || !archivo() || formDoc.invalid"
+                  class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 min-h-10 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer disabled:opacity-50">
+            <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
+            <span>{{ subiendo() ? 'Subiendo…' : 'Subir' }}</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden" aria-label="Historial de documentos">
+      <div class="px-3.5 py-2 border-b border-dark-border">
+        <h4 class="text-xs sm:text-sm font-bold text-white m-0">Historial de documentos</h4>
+      </div>
+      @if (docsTodos().length === 0) {
+        <p class="px-3.5 py-6 text-center text-xs text-dark-text m-0">Aún no hay documentos cargados.</p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-dark-border text-dark-text">
+                <th class="px-3 py-2 font-semibold">Nombre</th>
+                <th class="px-3 py-2 font-semibold">Versión</th>
+                <th class="px-3 py-2 font-semibold">Corte</th>
+                <th class="px-3 py-2 font-semibold">Revisión</th>
+                <th class="px-3 py-2 font-semibold">Archivo</th>
+                <th class="px-3 py-2 font-semibold text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (d of docsTodos(); track d.id) {
+                <tr class="border-b border-dark-border/60 hover:bg-dark-accent/40 transition-colors">
+                  <td class="px-3 py-1.5 text-dark-text-light font-medium">{{ d.nombre }}</td>
+                  <td class="px-3 py-1.5 text-dark-text">{{ d.version || '—' }}</td>
+                  <td class="px-3 py-1.5 whitespace-nowrap text-dark-text">{{ etiquetaDoc(d) }}</td>
+                  <td class="px-3 py-1.5 whitespace-nowrap text-dark-text">{{ d.fecha_revision || '—' }}</td>
+                  <td class="px-3 py-1.5 text-dark-text truncate max-w-[14rem]" [title]="d.archivo_nombre">{{ d.archivo_nombre }}</td>
+                  <td class="px-3 py-1.5 whitespace-nowrap text-right">
+                    <button type="button" class="ml-icon-btn" (click)="abrirDocumento(d)" [disabled]="abriendoDoc()" [attr.aria-label]="'Ver ' + d.nombre">
+                      <ion-icon name="eye-outline"></ion-icon></button>
+                    <button type="button" class="ml-icon-btn ml-icon-btn--danger" (click)="eliminarDocumento(d)" [attr.aria-label]="'Eliminar ' + d.nombre">
+                      <ion-icon name="trash-outline"></ion-icon></button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
   } @else {
 
     <!-- ─── KPIs ──────────────────────────────────────────────────────────── -->

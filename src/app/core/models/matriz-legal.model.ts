@@ -52,12 +52,34 @@ export interface MatrizLegalComponente {
   updated_at?: string;
 }
 
-/** Fila de conteos: empresa × componente × periodo. */
+// ── Periodicidad por corte ────────────────────────────────────────────────────
+export type Periodicidad = 'MENSUAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'ANUAL';
+
+export const PERIODICIDADES = ['MENSUAL', 'TRIMESTRAL', 'SEMESTRAL', 'ANUAL'] as const;
+
+export const PERIODICIDAD_LABEL: Record<Periodicidad, string> = {
+  MENSUAL: 'Mensual',
+  TRIMESTRAL: 'Trimestral',
+  SEMESTRAL: 'Semestral',
+  ANUAL: 'Anual',
+};
+
+/** Rango válido de numero_periodo por periodicidad (espeja el CHECK de BD). */
+export const NUMERO_PERIODO_RANGO: Record<Periodicidad, { min: number; max: number }> = {
+  ANUAL: { min: 1, max: 1 },
+  SEMESTRAL: { min: 1, max: 2 },
+  TRIMESTRAL: { min: 1, max: 4 },
+  MENSUAL: { min: 1, max: 12 },
+};
+
+/** Fila de conteos: empresa × componente × corte (periodo=año, periodicidad, numero). */
 export interface MatrizLegalEvaluacionRow {
   id?: string;
   empresa_id: string;
   componente_id: string;
   periodo: number;
+  periodicidad: Periodicidad;
+  numero_periodo: number;
   cumple: number;
   en_proceso: number;
   no_cumple: number;
@@ -69,9 +91,30 @@ export interface MatrizLegalEvaluacionRow {
 export interface ConteoUpsert {
   componente_id: string;
   periodo: number;
+  periodicidad: Periodicidad;
+  numero_periodo: number;
   cumple: number;
   en_proceso: number;
   no_cumple: number;
+}
+
+/** Documento de cumplimiento (tabla matriz_legal_documento). Sin periodo = general. */
+export interface MatrizLegalDocumento {
+  id: string;
+  empresa_id: string;
+  periodo: number | null;
+  periodicidad: Periodicidad | null;
+  numero_periodo: number | null;
+  nombre: string;
+  version: string | null;
+  archivo_path: string;
+  archivo_nombre: string;
+  mime_type: string | null;
+  tamano_bytes: number | null;
+  fecha_revision: string | null;   // DATE (YYYY-MM-DD)
+  subido_por: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // ── Tipos derivados para tabla + gráfica ───────────────────────────────────────
@@ -98,6 +141,8 @@ export interface ResumenDominio {
 /** Shape devuelto por el RPC get_matriz_legal_resumen. */
 export interface MatrizLegalResumen {
   periodo: number;
+  periodicidad?: Periodicidad;
+  numero?: number;
   sgSst: ResumenDominio;
   ambiental: ResumenDominio;
 }

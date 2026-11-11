@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { MatrizLegalService } from '../../../../core/services/matriz-legal.service';
 import { Empresa } from '../../../../core/models/models';
@@ -7,12 +8,17 @@ import {
   ConteoUpsert,
   Dominio,
   DOMINIO_LABEL,
+  MatrizLegalDocumento,
   MatrizLegalResumen,
+  PERIODICIDADES,
+  PERIODICIDAD_LABEL,
+  Periodicidad,
   ResumenDominio,
   construirResumenDominio,
   conteoVacio,
   periodoActual,
 } from '../../../../core/models/matriz-legal.model';
+import { etiquetaCorte, opcionesNumero } from '../../funciones/periodicidad.funcion';
 
 type CampoConteo = 'cumple' | 'enProceso' | 'noCumple';
 
@@ -26,12 +32,15 @@ type CampoConteo = 'cumple' | 'enProceso' | 'noCumple';
   standalone: false,
   templateUrl: './matriz-legal.component.html',
   styleUrls: ['./matriz-legal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Default,
 })
 export class MatrizLegalComponent implements OnInit {
   private tenant = inject(TenantService);
   private service = inject(MatrizLegalService);
 
   readonly DOMINIO_LABEL = DOMINIO_LABEL;
+  readonly PERIODICIDADES = PERIODICIDADES;
+  readonly PERIODICIDAD_LABEL = PERIODICIDAD_LABEL;
 
   cargando = signal<boolean>(true);
   guardando = signal<boolean>(false);
@@ -44,6 +53,25 @@ export class MatrizLegalComponent implements OnInit {
 
   periodo = signal<number>(periodoActual());
   periodos = signal<number[]>([periodoActual()]);
+  periodicidad = signal<Periodicidad>('ANUAL');
+  numero = signal<number>(1);
+  opcionesNumero = computed(() => opcionesNumero(this.periodicidad()));
+  tituloCorte = computed(() => etiquetaCorte(this.periodo(), this.periodicidad(), this.numero()));
+
+  // Documentos certificantes.
+  vista = signal<'matriz' | 'documentos'>('matriz');
+  docsCorte = signal<MatrizLegalDocumento[]>([]);
+  docsTodos = signal<MatrizLegalDocumento[]>([]);
+  subiendo = signal<boolean>(false);
+  abriendoDoc = signal<boolean>(false);
+  archivo = signal<File | null>(null);
+  @ViewChild('inputArchivo') inputArchivo?: ElementRef<HTMLInputElement>;
+  formDoc = new FormGroup({
+    nombre: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(150)] }),
+    version: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(30)] }),
+    fecha_revision: new FormControl('', { nonNullable: true }),
+    atarCorte: new FormControl(true, { nonNullable: true }),
+  });
 
   // Estado editable: conteos por dominio.
   filasSgSst = signal<ConteoComponente[]>([]);
@@ -96,6 +124,17 @@ export class MatrizLegalComponent implements OnInit {
     await this.cargar();
   }
 
+  async onPeriodicidadChange(valor: string): Promise<void> {
+    this.periodicidad.set(valor as Periodicidad);
+    this.numero.set(1);
+    await this.cargar();
+  }
+
+  async onNumeroChange(n: number): Promise<void> {
+    this.numero.set(Number(n));
+    await this.cargar();
+  }
+
   async cargar(): Promise<void> {
     const empId = this.empresaId();
     if (!empId) { this.cargando.set(false); return; }
@@ -104,10 +143,11 @@ export class MatrizLegalComponent implements OnInit {
     try {
       const [componentes, conteos, periodos] = await Promise.all([
         this.service.getComponentes(empId),
-        this.service.getConteos(empId, this.periodo()),
+        this.service.getConteos(empId, this.periodo(), this.periodicidad(), this.numero()),
         this.service.getPeriodos(empId),
       ]);
       this.periodos.set(periodos);
+      await this.cargarDocumentos();
 
       const porId = new Map(conteos.map(c => [c.componente_id, c]));
       const aFila = (comp: typeof componentes[number]): ConteoComponente => {
@@ -198,11 +238,13 @@ export class MatrizLegalComponent implements OnInit {
       const filas: ConteoUpsert[] = [...this.filasSgSst(), ...this.filasAmbiental()].map(f => ({
         componente_id: f.componenteId,
         periodo: this.periodo(),
+        periodicidad: this.periodicidad(),
+        numero_periodo: this.numero(),
         cumple: f.cumple,
         en_proceso: f.enProceso,
         no_cumple: f.noCumple,
       }));
-      await this.service.guardarConteos(empId, this.periodo(), filas);
+      await this.service.guardarConteos(empId, filas);
       await this.cargar();
     } catch (e) {
       console.error('Error guardando conteos:', e);
@@ -215,6 +257,8 @@ export class MatrizLegalComponent implements OnInit {
   async exportar(): Promise<void> {
     const resumen: MatrizLegalResumen = {
       periodo: this.periodo(),
+      periodicidad: this.periodicidad(),
+      numero: this.numero(),
       sgSst: this.resumenSgSst(),
       ambiental: this.resumenAmbiental(),
     };
@@ -223,6 +267,110 @@ export class MatrizLegalComponent implements OnInit {
     } catch (e) {
       console.error('Error exportando a Excel:', e);
       this.error.set('No se pudo exportar el archivo.');
+    }
+  }
+
+  // ── Documentos certificantes ─────────────────────────────────────────────────
+  private corteActual() {
+    return { periodo: this.periodo(), periodicidad: this.periodicidad(), numero: this.numero() };
+  }
+
+  etiquetaDoc(d: MatrizLegalDocumento): string {
+    return d.periodo && d.periodicidad && d.numero_periodo
+      ? etiquetaCorte(d.periodo, d.periodicidad, d.numero_periodo) : 'General';
+  }
+
+  trackDoc(_: number, d: MatrizLegalDocumento): string {
+    return d.id;
+  }
+
+  async cargarDocumentos(): Promise<void> {
+    const empId = this.empresaId();
+    if (!empId) return;
+    try {
+      const [todos, corte] = await Promise.all([
+        this.service.listarDocumentos(empId),
+        this.service.listarDocumentos(empId, this.corteActual()),
+      ]);
+      this.docsTodos.set(todos);
+      this.docsCorte.set(corte);
+    } catch (e) {
+      this.error.set(this.mensajeError(e, 'No se pudieron cargar los documentos.'));
+    }
+  }
+
+  setVista(v: 'matriz' | 'documentos'): void {
+    this.vista.set(v);
+  }
+
+  /** Abre el documento del corte; si no hay ninguno, lleva al formulario de subida. */
+  async verDocumentoCorte(): Promise<void> {
+    const doc = this.docsCorte()[0];
+    if (!doc) {
+      this.formDoc.patchValue({ atarCorte: true });
+      this.vista.set('documentos');
+      return;
+    }
+    await this.abrirDocumento(doc);
+  }
+
+  async abrirDocumento(doc: MatrizLegalDocumento): Promise<void> {
+    this.abriendoDoc.set(true);
+    const ventana = window.open('', '_blank');
+    try {
+      const url = await this.service.obtenerUrlDocumento(doc);
+      if (ventana) { ventana.opener = null; ventana.location.href = url; }
+      else window.location.href = url;
+    } catch (e) {
+      ventana?.close();
+      this.error.set(this.mensajeError(e, 'No se pudo abrir el documento.'));
+    } finally {
+      this.abriendoDoc.set(false);
+    }
+  }
+
+  onArchivoSeleccionado(ev: Event): void {
+    const file = (ev.target as HTMLInputElement).files?.[0] ?? null;
+    const invalido = file ? this.service.validarArchivoDoc(file) : null;
+    this.error.set(invalido);
+    this.archivo.set(invalido ? null : file);
+    if (file && !invalido && !this.formDoc.controls.nombre.value) {
+      this.formDoc.patchValue({ nombre: file.name.replace(/\.[^.]+$/, '') });
+    }
+  }
+
+  async subirDocumento(): Promise<void> {
+    const file = this.archivo();
+    const empId = this.empresaId();
+    if (!file || !empId || this.formDoc.invalid) { this.formDoc.markAllAsTouched(); return; }
+    const v = this.formDoc.getRawValue();
+    this.subiendo.set(true);
+    this.error.set(null);
+    try {
+      await this.service.subirDocumento(empId, file, {
+        nombre: v.nombre.trim(),
+        version: v.version.trim() || null,
+        fecha_revision: v.fecha_revision || null,
+        corte: v.atarCorte ? this.corteActual() : null,
+      });
+      this.formDoc.reset({ nombre: '', version: '', fecha_revision: '', atarCorte: true });
+      this.archivo.set(null);
+      if (this.inputArchivo) this.inputArchivo.nativeElement.value = '';
+      await this.cargarDocumentos();
+    } catch (e) {
+      this.error.set(this.mensajeError(e, 'No se pudo subir el documento.'));
+    } finally {
+      this.subiendo.set(false);
+    }
+  }
+
+  async eliminarDocumento(doc: MatrizLegalDocumento): Promise<void> {
+    if (!window.confirm(`¿Eliminar el documento "${doc.nombre}"?`)) return;
+    try {
+      await this.service.eliminarDocumento(doc);
+      await this.cargarDocumentos();
+    } catch (e) {
+      this.error.set(this.mensajeError(e, 'No se pudo eliminar el documento.'));
     }
   }
 }

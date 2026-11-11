@@ -7,6 +7,8 @@ import {
   MatrizLegalResumen,
   ResumenDominio,
   ConteoUpsert,
+  MatrizLegalDocumento,
+  Periodicidad,
   periodoActual,
 } from '../models/matriz-legal.model';
 
@@ -46,48 +48,60 @@ export class MatrizLegalService {
   }
 
   // ── Resumen para tabla + gráfica (RPC: cálculo autoritativo con guarda /0) ──
-  async getResumen(periodo: number = periodoActual()): Promise<MatrizLegalResumen> {
-    const { data, error } = await this.sb.client
-      .rpc('get_matriz_legal_resumen', { p_periodo: periodo });
+  async getResumen(
+    periodo: number = periodoActual(),
+    periodicidad: Periodicidad = 'ANUAL',
+    numero = 1,
+  ): Promise<MatrizLegalResumen> {
+    const { data, error } = await this.sb.client.rpc('get_matriz_legal_resumen', {
+      p_periodo: periodo, p_periodicidad: periodicidad, p_numero: numero,
+    });
     if (error) throw error;
     return data as unknown as MatrizLegalResumen;
   }
 
-  // ── Conteos crudos del periodo (para edición en la tabla) ───────────────────
-  async getConteos(empresaId: string, periodo: number): Promise<MatrizLegalEvaluacionRow[]> {
+  // ── Conteos crudos del corte (para edición en la tabla) ─────────────────────
+  async getConteos(
+    empresaId: string, periodo: number, periodicidad: Periodicidad, numero: number,
+  ): Promise<MatrizLegalEvaluacionRow[]> {
     const { data, error } = await this.sb.client
       .from('matriz_legal_evaluacion')
       .select('*')
       .eq('empresa_id', empresaId)
-      .eq('periodo', periodo);
+      .eq('periodo', periodo)
+      .eq('periodicidad', periodicidad)
+      .eq('numero_periodo', numero);
     if (error) throw error;
     return (data ?? []) as MatrizLegalEvaluacionRow[];
   }
 
-  // ── Periodos con datos registrados (para el selector de año) ────────────────
-  async getPeriodos(empresaId: string): Promise<number[]> {
+  // ── Cortes con datos registrados (años para el selector de periodo) ─────────
+  async getCortes(empresaId: string): Promise<Pick<MatrizLegalEvaluacionRow, 'periodo' | 'periodicidad' | 'numero_periodo'>[]> {
     const { data, error } = await this.sb.client
       .from('matriz_legal_evaluacion')
-      .select('periodo')
+      .select('periodo,periodicidad,numero_periodo')
       .eq('empresa_id', empresaId);
     if (error) throw error;
-    const set = new Set<number>((data ?? []).map(r => (r as { periodo: number }).periodo));
-    set.add(periodoActual());
+    return (data ?? []) as Pick<MatrizLegalEvaluacionRow, 'periodo' | 'periodicidad' | 'numero_periodo'>[];
+  }
+
+  async getPeriodos(empresaId: string): Promise<number[]> {
+    const set = new Set<number>((await this.getCortes(empresaId)).map(r => r.periodo));
+    const actual = periodoActual();
+    for (const a of [actual - 1, actual, actual + 1]) set.add(a); // rango base editable, además de los años con datos
     return [...set].sort((a, b) => b - a);
   }
 
-  // ── Guardar conteos (upsert por empresa × componente × periodo) ─────────────
-  async guardarConteos(
-    empresaId: string,
-    periodo: number,
-    filas: ConteoUpsert[],
-  ): Promise<void> {
+  // ── Guardar conteos (upsert por empresa × componente × corte) ───────────────
+  async guardarConteos(empresaId: string, filas: ConteoUpsert[]): Promise<void> {
     this.validarConteos(filas);
     const perfil = await this.tenant.getPerfilSeguro();
     const payload = filas.map(f => ({
       empresa_id: empresaId,
       componente_id: f.componente_id,
-      periodo,
+      periodo: f.periodo,
+      periodicidad: f.periodicidad,
+      numero_periodo: f.numero_periodo,
       cumple: f.cumple,
       en_proceso: f.en_proceso,
       no_cumple: f.no_cumple,
@@ -96,7 +110,87 @@ export class MatrizLegalService {
     }));
     const { error } = await this.sb.client
       .from('matriz_legal_evaluacion')
-      .upsert(payload, { onConflict: 'empresa_id,componente_id,periodo' });
+      .upsert(payload, { onConflict: 'empresa_id,componente_id,periodo,periodicidad,numero_periodo' });
+    if (error) throw error;
+  }
+
+  // ── Documentos certificantes (bucket privado + URL firmada) ─────────────────
+  private readonly BUCKET = 'matriz-legal-docs';
+  private readonly TIPOS_DOC = ['application/pdf', 'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+  private readonly EXT_DOC = /\.(pdf|xlsx|xls)$/i;
+  readonly MAX_DOC_BYTES = 15 * 1024 * 1024;
+
+  validarArchivoDoc(file: File): string | null {
+    if (!this.EXT_DOC.test(file.name) || (file.type && !this.TIPOS_DOC.includes(file.type))) {
+      return 'Solo se permiten archivos PDF, XLSX o XLS.';
+    }
+    if (file.size > this.MAX_DOC_BYTES) return 'El archivo supera el límite de 15 MB.';
+    return null;
+  }
+
+  async listarDocumentos(
+    empresaId: string,
+    corte?: { periodo: number; periodicidad: Periodicidad; numero: number },
+  ): Promise<MatrizLegalDocumento[]> {
+    let q = this.sb.client.from('matriz_legal_documento').select('*').eq('empresa_id', empresaId);
+    if (corte) {
+      q = q.eq('periodo', corte.periodo).eq('periodicidad', corte.periodicidad)
+        .eq('numero_periodo', corte.numero);
+    }
+    const { data, error } = await q.order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as MatrizLegalDocumento[];
+  }
+
+  async subirDocumento(
+    empresaId: string,
+    file: File,
+    meta: {
+      nombre: string; version: string | null; fecha_revision: string | null;
+      corte: { periodo: number; periodicidad: Periodicidad; numero: number } | null;
+    },
+  ): Promise<MatrizLegalDocumento> {
+    const invalido = this.validarArchivoDoc(file);
+    if (invalido) throw new Error(invalido);
+    const limpio = file.name.replace(/[^A-Za-z0-9._-]+/g, '_');
+    const path = `${empresaId}/${meta.corte?.periodo ?? 'general'}/${Date.now()}_${limpio}`;
+    const { error: upErr } = await this.sb.client.storage.from(this.BUCKET)
+      .upload(path, file, { contentType: file.type || undefined, upsert: false });
+    if (upErr) throw upErr;
+    const perfil = await this.tenant.getPerfilSeguro();
+    const { data, error } = await this.sb.client.from('matriz_legal_documento').insert({
+      empresa_id: empresaId,
+      periodo: meta.corte?.periodo ?? null,
+      periodicidad: meta.corte?.periodicidad ?? null,
+      numero_periodo: meta.corte?.numero ?? null,
+      nombre: meta.nombre,
+      version: meta.version,
+      archivo_path: path,
+      archivo_nombre: file.name,
+      mime_type: file.type || null,
+      tamano_bytes: file.size,
+      fecha_revision: meta.fecha_revision ? `${meta.fecha_revision}T12:00:00Z` : null,
+      subido_por: perfil?.id ?? null,
+    }).select('*').single();
+    if (error) {
+      await this.sb.client.storage.from(this.BUCKET).remove([path]);
+      throw error;
+    }
+    return data as MatrizLegalDocumento;
+  }
+
+  async obtenerUrlDocumento(doc: Pick<MatrizLegalDocumento, 'archivo_path'>): Promise<string> {
+    const { data, error } = await this.sb.client.storage.from(this.BUCKET)
+      .createSignedUrl(doc.archivo_path, 60);
+    if (error) throw error;
+    return data.signedUrl;
+  }
+
+  async eliminarDocumento(doc: Pick<MatrizLegalDocumento, 'id' | 'archivo_path'>): Promise<void> {
+    const { error: stErr } = await this.sb.client.storage.from(this.BUCKET).remove([doc.archivo_path]);
+    if (stErr) throw stErr;
+    const { error } = await this.sb.client.from('matriz_legal_documento').delete().eq('id', doc.id);
     if (error) throw error;
   }
 
