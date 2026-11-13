@@ -2,7 +2,9 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { PresupuestoService } from '../../../../core/services/presupuesto.service';
 import { Empresa } from '../../../../core/models/models';
 import { PresupuestoPeriodo, PresupuestoResumen } from '../../../../core/models/presupuesto.model';
-import { formatearCOP, formatearMeta, porcentajeAvance } from '../../funciones/resumen.funcion';
+import {
+  claseVariacion, estadoAvance, formatearCOP, formatearMeta, formatearVariacionPct, porcentajeAvance, variacion, variacionPct,
+} from '../../funciones/resumen.funcion';
 
 @Component({
   selector: 'app-presupuesto-resumen',
@@ -17,6 +19,20 @@ export class ResumenComponent implements OnInit {
   readonly cop = formatearCOP;
   readonly avance = porcentajeAvance;
   readonly meta = formatearMeta;
+  readonly variacion = variacion;
+  readonly variacionPct = variacionPct;
+  readonly pct = formatearVariacionPct;
+  readonly claseVar = claseVariacion;
+
+  private static readonly COLOR_AVANCE = { bajo: 'bg-emerald-500', cerca: 'bg-amber-500', sobre: 'bg-red-500' };
+
+  colorAvance(ejecutado: number, presupuestado: number): string {
+    return ResumenComponent.COLOR_AVANCE[estadoAvance(ejecutado, presupuestado)];
+  }
+
+  sobregasto(ejecutado: number, presupuestado: number): boolean {
+    return estadoAvance(ejecutado, presupuestado) === 'sobre';
+  }
 
   cargando = signal(true);
   error = signal<string | null>(null);

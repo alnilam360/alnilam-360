@@ -1,3 +1,13 @@
 :host {
   display: contents;
 }
+
+/* Anillo de progreso: el color sale de currentColor (clase text-* del elemento), el avance de --pct (0..100). */
+.anillo-progreso {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background: conic-gradient(currentColor calc(var(--pct) * 1%), rgb(var(--color-dark-border)) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+}

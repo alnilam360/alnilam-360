@@ -12,6 +12,36 @@ export function porcentajeAvance(ejecutado: number, presupuestado: number): numb
   return Math.min(Math.max(ejecutado / presupuestado, 0), 1);
 }
 
+/** Diferencia ejecutado - presupuestado (>0 sobregasto). */
+export function variacion(ejecutado: number, presupuestado: number): number {
+  return ejecutado - presupuestado;
+}
+
+/** Variación relativa; sin presupuesto => null. */
+export function variacionPct(ejecutado: number, presupuestado: number): number | null {
+  return presupuestado > 0 ? ejecutado / presupuestado - 1 : null;
+}
+
+/** Semáforo con ratio crudo (sin saturar): >1 sobre, >=0.9 cerca. */
+export function estadoAvance(ejecutado: number, presupuestado: number): 'bajo' | 'cerca' | 'sobre' {
+  if (presupuestado <= 0) return 'bajo';
+  const r = ejecutado / presupuestado;
+  if (r > 1) return 'sobre';
+  return r >= 0.9 ? 'cerca' : 'bajo';
+}
+
+/** Porcentaje con signo; null => guion. */
+export function formatearVariacionPct(v: number | null): string {
+  if (v === null) return '—';
+  return `${v > 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
+}
+
+/** Clase de color de texto según signo de la variación. */
+export function claseVariacion(v: number | null): string {
+  if (v === null || v === 0) return 'text-dark-text';
+  return v > 0 ? 'text-red-400' : 'text-emerald-400';
+}
+
 export function formatearMeta(meta: number | null): string {
   if (meta === null) return '—';
   return `${(meta * 100).toFixed(2)}%`;

@@ -43,6 +43,7 @@
               <th class="px-3 py-2.5 font-semibold text-right">Presupuestado</th>
               <th class="px-3 py-2.5 font-semibold text-right">Ejecutado</th>
               <th class="px-3 py-2.5 font-semibold text-right">Por pagar</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Variación %</th>
               <th class="px-3 py-2.5 font-semibold text-center">Acciones</th>
             </tr>
           </thead>
@@ -54,6 +55,7 @@
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.presupuestado) }}</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.ejecutado) }}</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.presupuestado - f.ejecutado) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums" [ngClass]="claseVar(variacionPct(f.ejecutado, f.presupuestado))">{{ pct(variacionPct(f.ejecutado, f.presupuestado)) }}</td>
               <td class="px-3 py-2 text-center">
                 <div class="flex items-center justify-center gap-1">
                   <button (click)="abrir(f)" title="Editar gasto" aria-label="Editar gasto"
@@ -74,6 +76,7 @@
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(totalPresup()) }}</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(totalEjec()) }}</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(totalPresup() - totalEjec()) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums" [ngClass]="claseVar(variacionPct(totalEjec(), totalPresup()))">{{ pct(variacionPct(totalEjec(), totalPresup())) }}</td>
               <td></td>
             </tr>
           </tfoot>

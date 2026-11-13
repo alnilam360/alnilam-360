@@ -57,12 +57,27 @@ export class PeriodosComponent implements OnInit {
     }
   }
 
-  abrir(p?: PresupuestoPeriodo): void {
+  async abrir(p?: PresupuestoPeriodo): Promise<void> {
     this.errorForm.set(null);
     this.editandoId.set(p?.id ?? null);
     this.form.reset({ mes: p?.mes ?? '', saldo_inicial: p?.saldo_inicial ?? 0, facturado: p?.facturado ?? 0 });
     p ? this.form.controls.mes.disable() : this.form.controls.mes.enable();
     this.modalAbierto.set(true);
+    if (!p) await this.prellenarSaldoInicial();
+  }
+
+  /** Rollover: saldo final del periodo más reciente (lista desc por mes); si falla, queda en 0. */
+  private async prellenarSaldoInicial(): Promise<void> {
+    const previo = this.periodos()[0];
+    if (!previo) return;
+    try {
+      const resumen = await this.service.getResumen(previo.id);
+      if (resumen && !this.form.controls.saldo_inicial.dirty) {
+        this.form.controls.saldo_inicial.setValue(resumen.saldo_final);
+      }
+    } catch {
+      // sin rollover: el alta no se bloquea
+    }
   }
 
   async guardar(): Promise<void> {

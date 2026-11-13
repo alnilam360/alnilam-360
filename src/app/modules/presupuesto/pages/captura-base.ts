@@ -3,7 +3,7 @@ import { AbstractControl } from '@angular/forms';
 import { Empresa } from '../../../core/models/models';
 import { PresupuestoPeriodo } from '../../../core/models/presupuesto.model';
 import { PresupuestoService } from '../../../core/services/presupuesto.service';
-import { formatearCOP } from '../funciones/resumen.funcion';
+import { claseVariacion, formatearCOP, formatearVariacionPct, variacionPct } from '../funciones/resumen.funcion';
 
 /** Estado y flujo comunes de las pantallas de captura (empresa + periodo + CRUD en modal). */
 @Directive()
@@ -12,6 +12,9 @@ export abstract class CapturaBase<T extends { id: string }> implements OnInit {
   abstract readonly form: AbstractControl;
 
   readonly cop = formatearCOP;
+  readonly variacionPct = variacionPct;
+  readonly pct = formatearVariacionPct;
+  readonly claseVar = claseVariacion;
   readonly trackById = (_: number, f: { id: string }) => f.id;
   cargando = signal(true);
   guardando = signal(false);

@@ -17,17 +17,26 @@
     @let r = resumen()!;
     <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
       @for (t of [
-        { l: 'Saldo inicial', v: cop(r.periodo.saldo_inicial) },
-        { l: 'Recaudo', v: cop(r.recaudo) },
-        { l: 'Recaudo real', v: cop(r.recaudo_real) },
-        { l: 'Presupuestado', v: cop(r.total_presupuestado) },
-        { l: 'Ejecutado', v: cop(r.total_ejecutado) },
-        { l: 'Saldo final', v: cop(r.saldo_final) },
-        { l: 'Meta', v: meta(r.meta_porcentual) }
+        { l: 'Saldo inicial', v: cop(r.periodo.saldo_inicial), i: 'pi-wallet' },
+        { l: 'Recaudo', v: cop(r.recaudo), i: 'pi-arrow-down-left' },
+        { l: 'Recaudo real', v: cop(r.recaudo_real), i: 'pi-check-circle' },
+        { l: 'Presupuestado', v: cop(r.total_presupuestado), i: 'pi-sliders-h' },
+        { l: 'Ejecutado', v: cop(r.total_ejecutado), i: 'pi-credit-card' },
+        { l: 'Saldo final', v: cop(r.saldo_final), i: 'pi-flag' },
+        { l: 'Meta', v: meta(r.meta_porcentual), i: 'pi-bullseye' }
       ]; track t.l) {
-        <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl px-4 py-3">
-          <div class="text-xs text-dark-text">{{ t.l }}</div>
-          <div class="text-lg font-bold text-[rgb(var(--color-heading))]">{{ t.v }}</div>
+        <div class="bg-dark-secondary border rounded-2xl shadow-xl px-4 py-3 flex items-start gap-3"
+          [ngClass]="t.l === 'Saldo final' ? 'col-span-2 border-brand-primary/40 bg-brand-primary/5' : 'border-dark-border'">
+          <span class="shrink-0 w-8 h-8 rounded-full bg-brand-primary/15 text-brand-primary flex items-center justify-center">
+            <i class="pi text-sm" [ngClass]="t.i"></i>
+          </span>
+          <div class="min-w-0 flex-1">
+            <div class="text-xs text-dark-text">{{ t.l }}</div>
+            <div class="font-bold text-[rgb(var(--color-heading))]" [ngClass]="t.l === 'Saldo final' ? 'text-2xl' : 'text-lg'">{{ t.v }}</div>
+          </div>
+          @if (t.l === 'Meta' && r.meta_porcentual !== null) {
+            <span class="anillo-progreso shrink-0 text-brand-primary" aria-hidden="true" [style.--pct]="r.meta_porcentual * 100"></span>
+          }
         </div>
       }
     </section>
@@ -41,19 +50,29 @@
               <th class="px-3 py-2.5 font-semibold text-right">Presupuestado</th>
               <th class="px-3 py-2.5 font-semibold text-right">Por pagar</th>
               <th class="px-3 py-2.5 font-semibold text-right">Ejecutado</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Variación</th>
               <th class="px-3 py-2.5 font-semibold w-32">Avance</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-dark-border">
             @for (rb of r.rubros; track rb.codigo) {
               <tr class="font-bold text-[rgb(var(--color-heading))] hover:bg-dark-primary/40">
-                <td class="px-3 py-2">{{ rb.nombre }}</td>
+                <td class="px-3 py-2">
+                  {{ rb.nombre }}
+                  @if (sobregasto(rb.ejecutado, rb.presupuestado)) {
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-500/20 text-red-400">Sobregasto</span>
+                  }
+                </td>
                 <td class="px-3 py-2 text-right tabular-nums">{{ cop(rb.presupuestado) }}</td>
                 <td class="px-3 py-2 text-right tabular-nums">{{ cop(rb.por_pagar) }}</td>
                 <td class="px-3 py-2 text-right tabular-nums">{{ cop(rb.ejecutado) }}</td>
+                <td class="px-3 py-2 text-right tabular-nums" [ngClass]="claseVar(variacion(rb.ejecutado, rb.presupuestado))">
+                  {{ cop(variacion(rb.ejecutado, rb.presupuestado)) }}
+                  <div class="text-[10px]">{{ pct(variacionPct(rb.ejecutado, rb.presupuestado)) }}</div>
+                </td>
                 <td class="px-3 py-2">
                   <div class="h-1.5 rounded-full bg-dark-border overflow-hidden">
-                    <span class="block h-full bg-brand-primary" [style.width.%]="avance(rb.ejecutado, rb.presupuestado) * 100"></span>
+                    <span class="block h-full" [ngClass]="colorAvance(rb.ejecutado, rb.presupuestado)" [style.width.%]="avance(rb.ejecutado, rb.presupuestado) * 100"></span>
                   </div>
                 </td>
               </tr>
@@ -63,6 +82,10 @@
                   <td class="px-3 py-2 text-right tabular-nums">{{ cop(sb.presupuestado) }}</td>
                   <td class="px-3 py-2 text-right tabular-nums">{{ cop(sb.por_pagar) }}</td>
                   <td class="px-3 py-2 text-right tabular-nums">{{ cop(sb.ejecutado) }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums" [ngClass]="claseVar(variacion(sb.ejecutado, sb.presupuestado))">
+                    {{ cop(variacion(sb.ejecutado, sb.presupuestado)) }}
+                    <div class="text-[10px]">{{ pct(variacionPct(sb.ejecutado, sb.presupuestado)) }}</div>
+                  </td>
                   <td class="px-3 py-2"></td>
                 </tr>
               }
