@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { PermissionGuard } from './core/guards/permission.guard';
 
 const routes: Routes = [
   {
@@ -225,7 +226,7 @@ const routes: Routes = [
       },
 
       // Presupuesto
-      { path: 'presupuesto', loadChildren: () => import('./modules/presupuesto/presupuesto.module').then(m => m.PresupuestoModule) },
+      { path: 'presupuesto', canActivate: [PermissionGuard], data: { modulo: 'presupuesto' }, loadChildren: () => import('./modules/presupuesto/presupuesto.module').then(m => m.PresupuestoModule) },
 
       // Configuración
       {
