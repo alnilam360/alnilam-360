@@ -1,20 +1,44 @@
-<div class="max-w-3xl mx-auto px-3 sm:px-5 py-4 space-y-3">
-  <h1 class="text-xl font-bold m-0">Catálogo de rubros</h1>
-  <p class="text-xs opacity-70 m-0">Catálogo global: es el mismo para todas las empresas y es de solo lectura.</p>
-  @if (error(); as msg) {
-    <ion-text color="danger"><p>Error al cargar: {{ msg }}</p></ion-text>
-  } @else if (cargando()) {
-    <ion-spinner name="crescent"></ion-spinner>
-  } @else {
-    <ion-list>
-      @for (r of arbol(); track r.codigo) {
-        <ion-item-group>
-          <ion-item-divider><ion-label>{{ r.codigo }} · {{ r.nombre }}</ion-label></ion-item-divider>
-          @for (s of r.subrubros; track s.codigo) {
-            <ion-item><ion-label>{{ s.codigo }} · {{ s.nombre }}</ion-label></ion-item>
-          }
-        </ion-item-group>
+<div class="space-y-6">
+  <div>
+    <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+      <i class="pi pi-list text-brand-primary text-2xl"></i>
+      Catálogo de rubros
+    </h1>
+    <p class="text-xs text-dark-text mt-0.5">Catálogo global: es el mismo para todas las empresas y es de solo lectura.</p>
+  </div>
+
+  <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+    <div class="px-4 pb-4">
+      @if (error(); as msg) {
+        <div class="mt-4 px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">Error al cargar: {{ msg }}</div>
+      } @else if (cargando()) {
+        <div class="flex items-center justify-center py-12"><i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i></div>
+      } @else {
+        <div class="overflow-x-auto mt-2">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+              <tr>
+                <th class="px-3 py-2.5 font-semibold w-28">Código</th>
+                <th class="px-3 py-2.5 font-semibold">Nombre</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-dark-border">
+              @for (r of arbol(); track r.codigo) {
+                <tr class="font-bold text-[rgb(var(--color-heading))] bg-dark-primary/30">
+                  <td class="px-3 py-2">{{ r.codigo }}</td>
+                  <td class="px-3 py-2">{{ r.nombre }}</td>
+                </tr>
+                @for (s of r.subrubros; track s.codigo) {
+                  <tr class="hover:bg-dark-primary/40">
+                    <td class="px-3 py-2 pl-6 text-dark-text">{{ s.codigo }}</td>
+                    <td class="px-3 py-2">{{ s.nombre }}</td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
       }
-    </ion-list>
-  }
+    </div>
+  </div>
 </div>

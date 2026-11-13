@@ -1,67 +1,120 @@
-<div class="max-w-3xl mx-auto px-3 sm:px-5 py-4 space-y-3">
-  <header class="flex flex-wrap items-end gap-3">
-    <h1 class="text-xl font-bold m-0 flex-1">Socios</h1>
-    @if (esAdmin() && empresas().length > 1) {
-      <ion-select label="Empresa" labelPlacement="stacked" interface="popover" class="w-60"
-                  [value]="empresaId()" (ionChange)="cargar($event.detail.value)">
-        @for (e of empresas(); track e.id) { <ion-select-option [value]="e.id">{{ e.nombre }}</ion-select-option> }
-      </ion-select>
-    }
-    <ion-select label="Periodo (reparto)" labelPlacement="stacked" interface="popover" class="w-44"
-                [value]="periodoId()" (ionChange)="elegirPeriodo($event.detail.value)">
-      @for (p of periodos(); track p.id) { <ion-select-option [value]="p.id">{{ p.mes }}</ion-select-option> }
-    </ion-select>
-    <ion-button (click)="abrir()" [disabled]="!empresaId()"><ion-icon slot="start" name="add-outline"></ion-icon>Nuevo socio</ion-button>
-  </header>
+<div class="space-y-6">
+  <app-presupuesto-cabecera titulo="Socios" subtitulo="Porcentajes de participación y reparto del saldo final"
+    icono="pi-users" [esAdmin]="esAdmin()" [empresas]="empresas()" [empresaId]="empresaId()"
+    [periodos]="periodos()" [periodoId]="periodoId()"
+    (empresaChange)="cargar($event)" (periodoChange)="elegirPeriodo($event)"></app-presupuesto-cabecera>
 
-  @if (error(); as msg) {
-    <ion-text color="danger"><p>Error: {{ msg }}</p></ion-text>
-  }
-  @if (cargando()) {
-    <ion-spinner name="crescent"></ion-spinner>
-  } @else {
-    <p class="text-sm m-0">
-      Suma de socios activos: <strong>{{ sumaPct() }}%</strong>
-      @if (!sumaOk()) { <ion-text color="warning"> · La suma debería ser 100%.</ion-text> }
-    </p>
-    @if (filas().length === 0 && !error()) {
-      <p class="text-sm opacity-70">No hay socios registrados.</p>
-    }
-    <ion-list>
-      @for (f of filas(); track f.socio.id) {
-        <ion-item>
-          <ion-label>
-            <h2>{{ f.socio.nombre }} @if (!f.socio.activo) { <ion-badge color="medium">Inactivo</ion-badge> }</h2>
-            <p>{{ f.pct }}% @if (f.reparto !== null) { · Reparto del saldo final: {{ cop(f.reparto) }} }</p>
-          </ion-label>
-          <ion-button slot="end" fill="clear" aria-label="Editar socio" (click)="abrir(f.socio)"><ion-icon name="create-outline"></ion-icon></ion-button>
-          <ion-button slot="end" fill="clear" color="danger" aria-label="Quitar socio" (click)="socioAEliminar.set(f.socio)"><ion-icon name="trash-outline"></ion-icon></ion-button>
-        </ion-item>
-      }
-    </ion-list>
-  }
+  <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border bg-dark-primary/30">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Socios</h3>
+      <button (click)="abrir()" [disabled]="!empresaId()"
+        class="flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+        <i class="pi pi-plus text-sm"></i>
+        <span>Nuevo socio</span>
+      </button>
+    </div>
 
-  <ion-modal [isOpen]="modalAbierto()" (didDismiss)="modalAbierto.set(false)">
-    <ng-template>
-      <ion-header><ion-toolbar>
-        <ion-title>{{ editandoId() ? 'Editar socio' : 'Nuevo socio' }}</ion-title>
-        <ion-buttons slot="end"><ion-button (click)="modalAbierto.set(false)">Cerrar</ion-button></ion-buttons>
-      </ion-toolbar></ion-header>
-      <ion-content class="ion-padding">
-        <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
-          <ion-input label="Nombre" labelPlacement="stacked" formControlName="nombre"></ion-input>
-          <ion-input label="Porcentaje (0-100)" labelPlacement="stacked" type="number" min="0" max="100" step="0.01" formControlName="porcentaje"></ion-input>
-          <ion-checkbox formControlName="activo">Activo</ion-checkbox>
-          @if (errorForm(); as msg) { <ion-text color="danger"><p>{{ msg }}</p></ion-text> }
-          <ion-button type="submit" expand="block" [disabled]="form.invalid || guardando()">
-            {{ guardando() ? 'Guardando…' : 'Guardar' }}
-          </ion-button>
-        </form>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+    <div class="px-4 pb-4">
+      <div *ngIf="error() as msg" class="mt-4 px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">{{ msg }}</div>
 
-  <ion-alert [isOpen]="socioAEliminar() !== null" header="Quitar socio"
-             [message]="'¿Eliminar a ' + (socioAEliminar()?.nombre ?? '') + '?'"
-             [buttons]="botonesEliminar" (didDismiss)="socioAEliminar.set(null)"></ion-alert>
+      <div *ngIf="cargando()" class="flex items-center justify-center py-12">
+        <i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i>
+      </div>
+
+      <ng-container *ngIf="!cargando()">
+        <p class="mt-4 text-xs text-dark-text">
+          Suma de socios activos: <b class="text-[rgb(var(--color-heading))]">{{ sumaPct() }}%</b>
+          <span *ngIf="!sumaOk()" class="text-amber-400"> · La suma debería ser 100%.</span>
+        </p>
+
+        <div *ngIf="filas().length === 0 && !error()"
+          class="flex flex-col items-center justify-center py-12 text-center border border-dashed border-dark-border rounded-xl my-4">
+          <i class="pi pi-users text-3xl text-dark-text mb-2"></i>
+          <p class="text-xs text-dark-text font-medium">No hay socios registrados</p>
+        </div>
+
+        <div *ngIf="filas().length > 0" class="overflow-x-auto mt-2">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+              <tr>
+                <th class="px-3 py-2.5 font-semibold">Socio</th>
+                <th class="px-3 py-2.5 font-semibold text-right">%</th>
+                <th class="px-3 py-2.5 font-semibold text-right">Reparto del saldo final</th>
+                <th class="px-3 py-2.5 font-semibold text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-dark-border">
+              <tr *ngFor="let f of filas(); trackBy: trackSocio" class="hover:bg-dark-primary/40 transition-colors duration-150">
+                <td class="px-3 py-2 font-medium text-[rgb(var(--color-heading))]">
+                  {{ f.socio.nombre }}
+                  <span *ngIf="!f.socio.activo"
+                    class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-500/20 text-slate-400">Inactivo</span>
+                </td>
+                <td class="px-3 py-2 text-right tabular-nums">{{ f.pct }}%</td>
+                <td class="px-3 py-2 text-right tabular-nums">{{ f.reparto !== null ? cop(f.reparto) : '—' }}</td>
+                <td class="px-3 py-2 text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <button (click)="abrir(f.socio)" title="Editar socio" aria-label="Editar socio"
+                      class="p-1.5 rounded-lg text-dark-text hover:text-blue-400 hover:bg-dark-accent transition-all duration-200">
+                      <i class="pi pi-pencil text-sm"></i>
+                    </button>
+                    <button (click)="socioAEliminar.set(f.socio)" title="Quitar socio" aria-label="Quitar socio"
+                      class="p-1.5 rounded-lg text-dark-text hover:text-red-400 hover:bg-dark-accent transition-all duration-200">
+                      <i class="pi pi-trash text-sm"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+    </div>
+  </div>
 </div>
+
+<div *ngIf="modalAbierto()"
+  class="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+  (click)="modalAbierto.set(false)">
+  <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">{{ editandoId() ? 'Editar socio' : 'Nuevo socio' }}</h3>
+      <button (click)="modalAbierto.set(false)" title="Cerrar formulario" aria-label="Cerrar formulario"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        <i class="pi pi-times text-lg"></i>
+      </button>
+    </div>
+
+    <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="md:col-span-2">
+          <label class="block text-xs font-medium text-dark-text mb-1">Nombre <span class="text-red-400">*</span></label>
+          <input type="text" formControlName="nombre" class="form-input">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Porcentaje (0-100)</label>
+          <input type="number" min="0" max="100" step="0.01" formControlName="porcentaje" class="form-input">
+        </div>
+        <label class="flex items-center gap-2 text-xs text-dark-text md:self-end md:pb-2">
+          <input type="checkbox" formControlName="activo" class="form-checkbox"> Activo
+        </label>
+        <p *ngIf="errorForm() as msg" class="md:col-span-2 text-xs text-red-400">{{ msg }}</p>
+      </form>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+      <button (click)="modalAbierto.set(false)"
+        class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        Cancelar
+      </button>
+      <button (click)="guardar()" [disabled]="form.invalid || guardando()"
+        class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ guardando() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-presupuesto-confirmar *ngIf="socioAEliminar() as s" [nombre]="s.nombre" [guardando]="false"
+  (confirmar)="eliminar()" (cancelar)="socioAEliminar.set(null)"></app-presupuesto-confirmar>

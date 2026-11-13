@@ -1,0 +1,156 @@
+<div class="space-y-6">
+  <app-presupuesto-cabecera titulo="Recaudo" subtitulo="Cuentas de cobro a clientes y su estado de pago"
+    icono="pi-wallet" [esAdmin]="esAdmin()" [empresas]="empresas()" [empresaId]="empresaId()"
+    [periodos]="periodos()" [periodoId]="periodoId()"
+    (empresaChange)="elegirEmpresa($event)" (periodoChange)="elegirPeriodo($event)"></app-presupuesto-cabecera>
+
+  <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border bg-dark-primary/30">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Recaudo de clientes</h3>
+      <button (click)="abrir()" [disabled]="!periodoId()"
+        class="flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+        <i class="pi pi-plus text-sm"></i>
+        <span>Agregar recaudo</span>
+      </button>
+    </div>
+
+    <div class="px-4 pb-4">
+      <div *ngIf="error()" class="mt-4 px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">{{ error() }}</div>
+
+      <div *ngIf="cargando()" class="flex items-center justify-center py-12">
+        <i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i>
+      </div>
+
+      <div *ngIf="!cargando() && !error() && !periodoId()"
+        class="flex flex-col items-center justify-center py-12 text-center border border-dashed border-dark-border rounded-xl my-4">
+        <i class="pi pi-calendar text-3xl text-dark-text mb-2"></i>
+        <p class="text-xs text-dark-text font-medium">Crea o selecciona un periodo</p>
+      </div>
+
+      <div *ngIf="!cargando() && !error() && periodoId() && filas().length === 0"
+        class="flex flex-col items-center justify-center py-12 text-center border border-dashed border-dark-border rounded-xl my-4">
+        <i class="pi pi-wallet text-3xl text-dark-text mb-2"></i>
+        <p class="text-xs text-dark-text font-medium">No hay recaudos registrados en este periodo</p>
+      </div>
+
+      <div *ngIf="!cargando() && filas().length > 0" class="overflow-x-auto mt-2">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+            <tr>
+              <th class="px-3 py-2.5 font-semibold">Cliente</th>
+              <th class="px-3 py-2.5 font-semibold">NIT</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Valor</th>
+              <th class="px-3 py-2.5 font-semibold text-center">Estado</th>
+              <th class="px-3 py-2.5 font-semibold">Fecha límite</th>
+              <th class="px-3 py-2.5 font-semibold text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-dark-border">
+            <tr *ngFor="let f of filas(); trackBy: trackById" class="hover:bg-dark-primary/40 transition-colors duration-150">
+              <td class="px-3 py-2 font-medium text-[rgb(var(--color-heading))]">{{ f.cliente_nombre }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ f.cliente_nit || '—' }}</td>
+              <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.valor) }}</td>
+              <td class="px-3 py-2 text-center">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium capitalize" [ngClass]="pill(f.estado)">{{ f.estado }}</span>
+              </td>
+              <td class="px-3 py-2 text-dark-text">{{ f.fecha_limite_pago ? (f.fecha_limite_pago | date:'dd/MM/yyyy') : '—' }}</td>
+              <td class="px-3 py-2 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <button (click)="abrir(f)" title="Editar recaudo" aria-label="Editar recaudo"
+                    class="p-1.5 rounded-lg text-dark-text hover:text-blue-400 hover:bg-dark-accent transition-all duration-200">
+                    <i class="pi pi-pencil text-sm"></i>
+                  </button>
+                  <button (click)="aEliminar.set(f)" title="Eliminar recaudo" aria-label="Eliminar recaudo"
+                    class="p-1.5 rounded-lg text-dark-text hover:text-red-400 hover:bg-dark-accent transition-all duration-200">
+                    <i class="pi pi-trash text-sm"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot class="border-t border-dark-border font-semibold text-[rgb(var(--color-heading))]">
+            <tr>
+              <td class="px-3 py-2" colspan="2">Total recaudo</td>
+              <td class="px-3 py-2 text-right tabular-nums">{{ cop(totalRecaudo()) }}</td>
+              <td colspan="3"></td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2" colspan="2">Recaudo real (pago)</td>
+              <td class="px-3 py-2 text-right tabular-nums">{{ cop(totalPago()) }}</td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="modalAbierto()"
+  class="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+  (click)="modalAbierto.set(false)">
+  <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">{{ editandoId() ? 'Editar recaudo' : 'Nuevo recaudo' }}</h3>
+      <button (click)="modalAbierto.set(false)" title="Cerrar formulario" aria-label="Cerrar formulario"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        <i class="pi pi-times text-lg"></i>
+      </button>
+    </div>
+
+    <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <form [formGroup]="form" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Cliente <span class="text-red-400">*</span></label>
+          <input type="text" formControlName="cliente_nombre" class="form-input">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">NIT</label>
+          <input type="text" formControlName="cliente_nit" class="form-input">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Valor <span class="text-red-400">*</span></label>
+          <input type="number" min="0" formControlName="valor" class="form-input">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Estado</label>
+          <select formControlName="estado" class="form-input">
+            <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Fecha de corte</label>
+          <input type="date" formControlName="fecha_corte" class="form-input">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Entrega cuenta de cobro</label>
+          <input type="date" formControlName="fecha_entrega_cuenta_cobro" class="form-input">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Fecha límite de pago</label>
+          <input type="date" formControlName="fecha_limite_pago" class="form-input">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-medium text-dark-text mb-1">Observaciones</label>
+          <textarea rows="2" formControlName="observaciones" class="form-input"></textarea>
+        </div>
+        <p *ngIf="errorForm()" class="md:col-span-2 text-xs text-red-400">{{ errorForm() }}</p>
+      </form>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+      <button (click)="modalAbierto.set(false)"
+        class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        Cancelar
+      </button>
+      <button (click)="guardar()" [disabled]="form.invalid || guardando()"
+        class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ guardando() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-presupuesto-confirmar *ngIf="aEliminar() as f" [nombre]="f.cliente_nombre" [guardando]="guardando()"
+  (confirmar)="eliminar()" (cancelar)="aEliminar.set(null)"></app-presupuesto-confirmar>

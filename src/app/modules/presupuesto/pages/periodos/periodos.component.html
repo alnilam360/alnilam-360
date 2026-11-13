@@ -1,52 +1,116 @@
-<div class="max-w-3xl mx-auto px-3 sm:px-5 py-4 space-y-3">
-  <header class="flex flex-wrap items-end gap-3">
-    <h1 class="text-xl font-bold m-0 flex-1">Periodos</h1>
-    @if (esAdmin() && empresas().length > 1) {
-      <ion-select label="Empresa" labelPlacement="stacked" interface="popover" class="w-60"
-                  [value]="empresaId()" (ionChange)="cargar($event.detail.value)">
-        @for (e of empresas(); track e.id) { <ion-select-option [value]="e.id">{{ e.nombre }}</ion-select-option> }
-      </ion-select>
-    }
-    <ion-button (click)="abrir()" [disabled]="!empresaId()"><ion-icon slot="start" name="add-outline"></ion-icon>Nuevo periodo</ion-button>
-  </header>
+<div class="space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
+        <i class="pi pi-calendar text-brand-primary text-2xl"></i>
+        Periodos
+      </h1>
+      <p class="text-xs text-dark-text mt-0.5">Meses del presupuesto con saldo inicial y facturado</p>
+    </div>
+    <div *ngIf="esAdmin() && empresas().length > 1" class="min-w-[180px]">
+      <select [ngModel]="empresaId()" (ngModelChange)="cargar($event)"
+        class="w-full px-3 py-1.5 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary">
+        <option *ngFor="let e of empresas()" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+    </div>
+  </div>
 
-  @if (error(); as msg) {
-    <ion-text color="danger"><p>Error al cargar: {{ msg }}</p></ion-text>
-  } @else if (cargando()) {
-    <ion-spinner name="crescent"></ion-spinner>
-  } @else if (periodos().length === 0) {
-    <p class="text-sm opacity-70">Aún no hay periodos.</p>
-  } @else {
-    <ion-list>
-      @for (p of periodos(); track p.id) {
-        <ion-item>
-          <ion-label>
-            <h2>{{ p.mes }} @if (p.cerrado) { <ion-badge color="medium">Cerrado</ion-badge> }</h2>
-            <p>Saldo inicial: {{ cop(p.saldo_inicial) }} · Facturado: {{ cop(p.facturado) }}</p>
-          </ion-label>
-          <ion-button slot="end" fill="clear" aria-label="Editar periodo" (click)="abrir(p)"><ion-icon name="create-outline"></ion-icon></ion-button>
-        </ion-item>
-      }
-    </ion-list>
-  }
+  <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border bg-dark-primary/30">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Periodos</h3>
+      <button (click)="abrir()" [disabled]="!empresaId()"
+        class="flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+        <i class="pi pi-plus text-sm"></i>
+        <span>Nuevo periodo</span>
+      </button>
+    </div>
 
-  <ion-modal [isOpen]="modalAbierto()" (didDismiss)="modalAbierto.set(false)">
-    <ng-template>
-      <ion-header><ion-toolbar>
-        <ion-title>{{ editandoId() ? 'Editar periodo' : 'Nuevo periodo' }}</ion-title>
-        <ion-buttons slot="end"><ion-button (click)="modalAbierto.set(false)">Cerrar</ion-button></ion-buttons>
-      </ion-toolbar></ion-header>
-      <ion-content class="ion-padding">
-        <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
-          <ion-input label="Mes" labelPlacement="stacked" type="month" formControlName="mes"></ion-input>
-          <ion-input label="Saldo inicial (COP)" labelPlacement="stacked" type="number" formControlName="saldo_inicial"></ion-input>
-          <ion-input label="Facturado (COP)" labelPlacement="stacked" type="number" min="0" formControlName="facturado"></ion-input>
-          @if (errorForm(); as msg) { <ion-text color="danger"><p>{{ msg }}</p></ion-text> }
-          <ion-button type="submit" expand="block" [disabled]="form.invalid || guardando()">
-            {{ guardando() ? 'Guardando…' : 'Guardar' }}
-          </ion-button>
-        </form>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+    <div class="px-4 pb-4">
+      <div *ngIf="error() as msg" class="mt-4 px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">Error al cargar: {{ msg }}</div>
+
+      <div *ngIf="cargando()" class="flex items-center justify-center py-12">
+        <i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i>
+      </div>
+
+      <div *ngIf="!cargando() && !error() && periodos().length === 0"
+        class="flex flex-col items-center justify-center py-12 text-center border border-dashed border-dark-border rounded-xl my-4">
+        <i class="pi pi-calendar text-3xl text-dark-text mb-2"></i>
+        <p class="text-xs text-dark-text font-medium">Aún no hay periodos</p>
+      </div>
+
+      <div *ngIf="!cargando() && periodos().length > 0" class="overflow-x-auto mt-2">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+            <tr>
+              <th class="px-3 py-2.5 font-semibold">Mes</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Saldo inicial</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Facturado</th>
+              <th class="px-3 py-2.5 font-semibold">Estado</th>
+              <th class="px-3 py-2.5 font-semibold text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-dark-border">
+            <tr *ngFor="let p of periodos(); trackBy: trackById" class="hover:bg-dark-primary/40 transition-colors duration-150">
+              <td class="px-3 py-2 font-medium text-[rgb(var(--color-heading))]">{{ p.mes }}</td>
+              <td class="px-3 py-2 text-right tabular-nums">{{ cop(p.saldo_inicial) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums">{{ cop(p.facturado) }}</td>
+              <td class="px-3 py-2">
+                <span *ngIf="p.cerrado" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-500/20 text-slate-400">Cerrado</span>
+              </td>
+              <td class="px-3 py-2 text-center">
+                <button (click)="abrir(p)" title="Editar periodo" aria-label="Editar periodo"
+                  class="p-1.5 rounded-lg text-dark-text hover:text-blue-400 hover:bg-dark-accent transition-all duration-200">
+                  <i class="pi pi-pencil text-sm"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="modalAbierto()"
+  class="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4"
+  (click)="modalAbierto.set(false)">
+  <div class="relative w-full max-w-2xl my-8 bg-dark-secondary border border-dark-border rounded-2xl shadow-2xl"
+    (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">{{ editandoId() ? 'Editar periodo' : 'Nuevo periodo' }}</h3>
+      <button (click)="modalAbierto.set(false)" title="Cerrar formulario" aria-label="Cerrar formulario"
+        class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        <i class="pi pi-times text-lg"></i>
+      </button>
+    </div>
+
+    <div class="px-4 py-4 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="md:col-span-2">
+          <label class="block text-xs font-medium text-dark-text mb-1">Mes <span class="text-red-400">*</span></label>
+          <input type="month" formControlName="mes" class="form-input">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Saldo inicial (COP)</label>
+          <input type="number" formControlName="saldo_inicial" class="form-input">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-dark-text mb-1">Facturado (COP)</label>
+          <input type="number" min="0" formControlName="facturado" class="form-input">
+        </div>
+        <p *ngIf="errorForm() as msg" class="md:col-span-2 text-xs text-red-400">{{ msg }}</p>
+      </form>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-dark-border bg-dark-primary/50">
+      <button (click)="modalAbierto.set(false)"
+        class="px-3 py-2 text-sm rounded-lg border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
+        Cancelar
+      </button>
+      <button (click)="guardar()" [disabled]="form.invalid || guardando()"
+        class="px-4 py-2 text-sm rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25 disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ guardando() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
 </div>

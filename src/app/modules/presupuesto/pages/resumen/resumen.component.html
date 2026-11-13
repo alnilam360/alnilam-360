@@ -1,24 +1,18 @@
-<div class="max-w-[1400px] mx-auto px-3 sm:px-5 py-4 space-y-4">
-  <header class="flex flex-wrap items-end gap-3">
-    <h1 class="text-xl font-bold m-0 flex-1">Resumen del mes</h1>
-    @if (esAdmin() && empresas().length > 1) {
-      <ion-select label="Empresa" labelPlacement="stacked" interface="popover" class="w-60"
-                  [value]="empresaId()" (ionChange)="cargarEmpresa($event.detail.value)">
-        @for (e of empresas(); track e.id) { <ion-select-option [value]="e.id">{{ e.nombre }}</ion-select-option> }
-      </ion-select>
-    }
-    <ion-select label="Periodo" labelPlacement="stacked" interface="popover" class="w-44"
-                [value]="periodoId()" (ionChange)="cargarPeriodo($event.detail.value)">
-      @for (p of periodos(); track p.id) { <ion-select-option [value]="p.id">{{ p.mes }}</ion-select-option> }
-    </ion-select>
-  </header>
+<div class="space-y-6">
+  <app-presupuesto-cabecera titulo="Resumen del mes" subtitulo="Presupuestado vs ejecutado del periodo"
+    icono="pi-chart-pie" [esAdmin]="esAdmin()" [empresas]="empresas()" [empresaId]="empresaId()"
+    [periodos]="periodos()" [periodoId]="periodoId()"
+    (empresaChange)="cargarEmpresa($event)" (periodoChange)="cargarPeriodo($event)"></app-presupuesto-cabecera>
 
   @if (error(); as msg) {
-    <ion-text color="danger"><p>Error al cargar: {{ msg }}</p></ion-text>
+    <div class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">Error al cargar: {{ msg }}</div>
   } @else if (cargando()) {
-    <div class="flex justify-center py-10"><ion-spinner name="crescent"></ion-spinner></div>
+    <div class="flex items-center justify-center py-12"><i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i></div>
   } @else if (!resumen()) {
-    <p class="text-sm opacity-70">Crea un periodo en la sección Periodos para ver el resumen.</p>
+    <div class="flex flex-col items-center justify-center py-12 text-center border border-dashed border-dark-border rounded-xl">
+      <i class="pi pi-calendar text-3xl text-dark-text mb-2"></i>
+      <p class="text-xs text-dark-text font-medium">Crea un periodo en la sección Periodos para ver el resumen.</p>
+    </div>
   } @else {
     @let r = resumen()!;
     <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -31,42 +25,51 @@
         { l: 'Saldo final', v: cop(r.saldo_final) },
         { l: 'Meta', v: meta(r.meta_porcentual) }
       ]; track t.l) {
-        <ion-card class="m-0"><ion-card-content>
-          <div class="text-xs opacity-70">{{ t.l }}</div>
-          <div class="text-lg font-bold">{{ t.v }}</div>
-        </ion-card-content></ion-card>
+        <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl px-4 py-3">
+          <div class="text-xs text-dark-text">{{ t.l }}</div>
+          <div class="text-lg font-bold text-[rgb(var(--color-heading))]">{{ t.v }}</div>
+        </div>
       }
     </section>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="text-left opacity-70">
-            <th class="p-2">Rubro / Subrubro</th><th class="p-2 text-right">Presupuestado</th>
-            <th class="p-2 text-right">Por pagar</th><th class="p-2 text-right">Ejecutado</th><th class="p-2 w-32">Avance</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (rb of r.rubros; track rb.codigo) {
-            <tr class="font-bold border-t border-dark-border">
-              <td class="p-2">{{ rb.nombre }}</td>
-              <td class="p-2 text-right">{{ cop(rb.presupuestado) }}</td>
-              <td class="p-2 text-right">{{ cop(rb.por_pagar) }}</td>
-              <td class="p-2 text-right">{{ cop(rb.ejecutado) }}</td>
-              <td class="p-2"><div class="barra-avance"><span [style.width.%]="avance(rb.ejecutado, rb.presupuestado) * 100"></span></div></td>
+    <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+            <tr>
+              <th class="px-3 py-2.5 font-semibold">Rubro / Subrubro</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Presupuestado</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Por pagar</th>
+              <th class="px-3 py-2.5 font-semibold text-right">Ejecutado</th>
+              <th class="px-3 py-2.5 font-semibold w-32">Avance</th>
             </tr>
-            @for (sb of rb.subrubros; track sb.codigo) {
-              <tr>
-                <td class="p-2 pl-6">{{ sb.nombre }}</td>
-                <td class="p-2 text-right">{{ cop(sb.presupuestado) }}</td>
-                <td class="p-2 text-right">{{ cop(sb.por_pagar) }}</td>
-                <td class="p-2 text-right">{{ cop(sb.ejecutado) }}</td>
-                <td class="p-2"></td>
+          </thead>
+          <tbody class="divide-y divide-dark-border">
+            @for (rb of r.rubros; track rb.codigo) {
+              <tr class="font-bold text-[rgb(var(--color-heading))] hover:bg-dark-primary/40">
+                <td class="px-3 py-2">{{ rb.nombre }}</td>
+                <td class="px-3 py-2 text-right tabular-nums">{{ cop(rb.presupuestado) }}</td>
+                <td class="px-3 py-2 text-right tabular-nums">{{ cop(rb.por_pagar) }}</td>
+                <td class="px-3 py-2 text-right tabular-nums">{{ cop(rb.ejecutado) }}</td>
+                <td class="px-3 py-2">
+                  <div class="h-1.5 rounded-full bg-dark-border overflow-hidden">
+                    <span class="block h-full bg-brand-primary" [style.width.%]="avance(rb.ejecutado, rb.presupuestado) * 100"></span>
+                  </div>
+                </td>
               </tr>
+              @for (sb of rb.subrubros; track sb.codigo) {
+                <tr class="hover:bg-dark-primary/40">
+                  <td class="px-3 py-2 pl-6 text-dark-text">{{ sb.nombre }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ cop(sb.presupuestado) }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ cop(sb.por_pagar) }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums">{{ cop(sb.ejecutado) }}</td>
+                  <td class="px-3 py-2"></td>
+                </tr>
+              }
             }
-          }
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   }
 </div>

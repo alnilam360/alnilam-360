@@ -11,6 +11,7 @@ import { formatearCOP } from '../../funciones/resumen.funcion';
   selector: 'app-presupuesto-socios',
   standalone: false,
   templateUrl: './socios.component.html',
+  styleUrls: ['./socios.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class SociosComponent implements OnInit {
@@ -40,10 +41,7 @@ export class SociosComponent implements OnInit {
     pct: Math.round(s.porcentaje * 10000) / 100,
     reparto: this.saldoFinal() === null ? null : repartoPresupuestadoSocio(this.saldoFinal()!, s.porcentaje),
   })));
-  botonesEliminar = [
-    { text: 'Cancelar', role: 'cancel' },
-    { text: 'Eliminar', role: 'destructive', handler: () => { void this.eliminar(); } },
-  ];
+  trackSocio = (_: number, f: { socio: PresupuestoSocio }) => f.socio.id;
 
   form = new FormGroup({
     nombre: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(100)] }),

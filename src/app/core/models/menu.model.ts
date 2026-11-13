@@ -119,6 +119,10 @@ export const MENU_ITEMS: MenuItem[] = [
     isUtility: true,
     children: [
       { id: 'pres-resumen', label: 'Resumen del mes', icon: 'pie-chart-outline', route: '/presupuesto/resumen' },
+      { id: 'pres-recaudo', label: 'Recaudo', icon: 'cash-outline', route: '/presupuesto/recaudo' },
+      { id: 'pres-nomina', label: 'Nomina', icon: 'people-circle-outline', route: '/presupuesto/nomina' },
+      { id: 'pres-gastos', label: 'Gastos', icon: 'card-outline', route: '/presupuesto/gastos' },
+      { id: 'pres-cxp', label: 'Cuentas por pagar', icon: 'receipt-outline', route: '/presupuesto/cuentas-por-pagar' },
       { id: 'pres-socios', label: 'Socios', icon: 'people-outline', route: '/presupuesto/socios' },
       { id: 'pres-periodos', label: 'Periodos', icon: 'calendar-outline', route: '/presupuesto/periodos' },
       { id: 'pres-catalogo', label: 'Catalogo de rubros', icon: 'list-outline', route: '/presupuesto/catalogo' }

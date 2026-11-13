@@ -9,12 +9,14 @@ import { formatearCOP } from '../../funciones/resumen.funcion';
   selector: 'app-presupuesto-periodos',
   standalone: false,
   templateUrl: './periodos.component.html',
+  styleUrls: ['./periodos.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class PeriodosComponent implements OnInit {
   private service = inject(PresupuestoService);
 
   readonly cop = formatearCOP;
+  readonly trackById = (_: number, f: { id: string }) => f.id;
   cargando = signal(true);
   guardando = signal(false);
   error = signal<string | null>(null);
