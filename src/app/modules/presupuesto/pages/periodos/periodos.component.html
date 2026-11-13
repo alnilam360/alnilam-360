@@ -1,0 +1,52 @@
+<div class="max-w-3xl mx-auto px-3 sm:px-5 py-4 space-y-3">
+  <header class="flex flex-wrap items-end gap-3">
+    <h1 class="text-xl font-bold m-0 flex-1">Periodos</h1>
+    @if (esAdmin() && empresas().length > 1) {
+      <ion-select label="Empresa" labelPlacement="stacked" interface="popover" class="w-60"
+                  [value]="empresaId()" (ionChange)="cargar($event.detail.value)">
+        @for (e of empresas(); track e.id) { <ion-select-option [value]="e.id">{{ e.nombre }}</ion-select-option> }
+      </ion-select>
+    }
+    <ion-button (click)="abrir()" [disabled]="!empresaId()"><ion-icon slot="start" name="add-outline"></ion-icon>Nuevo periodo</ion-button>
+  </header>
+
+  @if (error(); as msg) {
+    <ion-text color="danger"><p>Error al cargar: {{ msg }}</p></ion-text>
+  } @else if (cargando()) {
+    <ion-spinner name="crescent"></ion-spinner>
+  } @else if (periodos().length === 0) {
+    <p class="text-sm opacity-70">Aún no hay periodos.</p>
+  } @else {
+    <ion-list>
+      @for (p of periodos(); track p.id) {
+        <ion-item>
+          <ion-label>
+            <h2>{{ p.mes }} @if (p.cerrado) { <ion-badge color="medium">Cerrado</ion-badge> }</h2>
+            <p>Saldo inicial: {{ cop(p.saldo_inicial) }} · Facturado: {{ cop(p.facturado) }}</p>
+          </ion-label>
+          <ion-button slot="end" fill="clear" aria-label="Editar periodo" (click)="abrir(p)"><ion-icon name="create-outline"></ion-icon></ion-button>
+        </ion-item>
+      }
+    </ion-list>
+  }
+
+  <ion-modal [isOpen]="modalAbierto()" (didDismiss)="modalAbierto.set(false)">
+    <ng-template>
+      <ion-header><ion-toolbar>
+        <ion-title>{{ editandoId() ? 'Editar periodo' : 'Nuevo periodo' }}</ion-title>
+        <ion-buttons slot="end"><ion-button (click)="modalAbierto.set(false)">Cerrar</ion-button></ion-buttons>
+      </ion-toolbar></ion-header>
+      <ion-content class="ion-padding">
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
+          <ion-input label="Mes" labelPlacement="stacked" type="month" formControlName="mes"></ion-input>
+          <ion-input label="Saldo inicial (COP)" labelPlacement="stacked" type="number" formControlName="saldo_inicial"></ion-input>
+          <ion-input label="Facturado (COP)" labelPlacement="stacked" type="number" min="0" formControlName="facturado"></ion-input>
+          @if (errorForm(); as msg) { <ion-text color="danger"><p>{{ msg }}</p></ion-text> }
+          <ion-button type="submit" expand="block" [disabled]="form.invalid || guardando()">
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </ion-button>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</div>

@@ -1,0 +1,20 @@
+<div class="max-w-3xl mx-auto px-3 sm:px-5 py-4 space-y-3">
+  <h1 class="text-xl font-bold m-0">Catálogo de rubros</h1>
+  <p class="text-xs opacity-70 m-0">Catálogo global: es el mismo para todas las empresas y es de solo lectura.</p>
+  @if (error(); as msg) {
+    <ion-text color="danger"><p>Error al cargar: {{ msg }}</p></ion-text>
+  } @else if (cargando()) {
+    <ion-spinner name="crescent"></ion-spinner>
+  } @else {
+    <ion-list>
+      @for (r of arbol(); track r.codigo) {
+        <ion-item-group>
+          <ion-item-divider><ion-label>{{ r.codigo }} · {{ r.nombre }}</ion-label></ion-item-divider>
+          @for (s of r.subrubros; track s.codigo) {
+            <ion-item><ion-label>{{ s.codigo }} · {{ s.nombre }}</ion-label></ion-item>
+          }
+        </ion-item-group>
+      }
+    </ion-list>
+  }
+</div>

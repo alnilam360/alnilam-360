@@ -1,0 +1,72 @@
+<div class="max-w-[1400px] mx-auto px-3 sm:px-5 py-4 space-y-4">
+  <header class="flex flex-wrap items-end gap-3">
+    <h1 class="text-xl font-bold m-0 flex-1">Resumen del mes</h1>
+    @if (esAdmin() && empresas().length > 1) {
+      <ion-select label="Empresa" labelPlacement="stacked" interface="popover" class="w-60"
+                  [value]="empresaId()" (ionChange)="cargarEmpresa($event.detail.value)">
+        @for (e of empresas(); track e.id) { <ion-select-option [value]="e.id">{{ e.nombre }}</ion-select-option> }
+      </ion-select>
+    }
+    <ion-select label="Periodo" labelPlacement="stacked" interface="popover" class="w-44"
+                [value]="periodoId()" (ionChange)="cargarPeriodo($event.detail.value)">
+      @for (p of periodos(); track p.id) { <ion-select-option [value]="p.id">{{ p.mes }}</ion-select-option> }
+    </ion-select>
+  </header>
+
+  @if (error(); as msg) {
+    <ion-text color="danger"><p>Error al cargar: {{ msg }}</p></ion-text>
+  } @else if (cargando()) {
+    <div class="flex justify-center py-10"><ion-spinner name="crescent"></ion-spinner></div>
+  } @else if (!resumen()) {
+    <p class="text-sm opacity-70">Crea un periodo en la sección Periodos para ver el resumen.</p>
+  } @else {
+    @let r = resumen()!;
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      @for (t of [
+        { l: 'Saldo inicial', v: cop(r.periodo.saldo_inicial) },
+        { l: 'Recaudo', v: cop(r.recaudo) },
+        { l: 'Recaudo real', v: cop(r.recaudo_real) },
+        { l: 'Presupuestado', v: cop(r.total_presupuestado) },
+        { l: 'Ejecutado', v: cop(r.total_ejecutado) },
+        { l: 'Saldo final', v: cop(r.saldo_final) },
+        { l: 'Meta', v: meta(r.meta_porcentual) }
+      ]; track t.l) {
+        <ion-card class="m-0"><ion-card-content>
+          <div class="text-xs opacity-70">{{ t.l }}</div>
+          <div class="text-lg font-bold">{{ t.v }}</div>
+        </ion-card-content></ion-card>
+      }
+    </section>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left opacity-70">
+            <th class="p-2">Rubro / Subrubro</th><th class="p-2 text-right">Presupuestado</th>
+            <th class="p-2 text-right">Por pagar</th><th class="p-2 text-right">Ejecutado</th><th class="p-2 w-32">Avance</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rb of r.rubros; track rb.codigo) {
+            <tr class="font-bold border-t border-dark-border">
+              <td class="p-2">{{ rb.nombre }}</td>
+              <td class="p-2 text-right">{{ cop(rb.presupuestado) }}</td>
+              <td class="p-2 text-right">{{ cop(rb.por_pagar) }}</td>
+              <td class="p-2 text-right">{{ cop(rb.ejecutado) }}</td>
+              <td class="p-2"><div class="barra-avance"><span [style.width.%]="avance(rb.ejecutado, rb.presupuestado) * 100"></span></div></td>
+            </tr>
+            @for (sb of rb.subrubros; track sb.codigo) {
+              <tr>
+                <td class="p-2 pl-6">{{ sb.nombre }}</td>
+                <td class="p-2 text-right">{{ cop(sb.presupuestado) }}</td>
+                <td class="p-2 text-right">{{ cop(sb.por_pagar) }}</td>
+                <td class="p-2 text-right">{{ cop(sb.ejecutado) }}</td>
+                <td class="p-2"></td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

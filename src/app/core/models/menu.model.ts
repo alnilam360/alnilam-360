@@ -112,6 +112,19 @@ export const MENU_ITEMS: MenuItem[] = [
     ]
   },
   {
+    id: 'presupuesto',
+    label: 'Presupuesto',
+    subtitle: 'Presupuesto y Finanzas',
+    icon: 'cash-outline',
+    isUtility: true,
+    children: [
+      { id: 'pres-resumen', label: 'Resumen del mes', icon: 'pie-chart-outline', route: '/presupuesto/resumen' },
+      { id: 'pres-socios', label: 'Socios', icon: 'people-outline', route: '/presupuesto/socios' },
+      { id: 'pres-periodos', label: 'Periodos', icon: 'calendar-outline', route: '/presupuesto/periodos' },
+      { id: 'pres-catalogo', label: 'Catalogo de rubros', icon: 'list-outline', route: '/presupuesto/catalogo' }
+    ]
+  },
+  {
     id: 'ayuda',
     label: 'Ayuda y Soporte',
     subtitle: 'Centro de Ayuda',

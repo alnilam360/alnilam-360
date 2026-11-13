@@ -224,6 +224,9 @@ const routes: Routes = [
         ]
       },
 
+      // Presupuesto
+      { path: 'presupuesto', loadChildren: () => import('./modules/presupuesto/presupuesto.module').then(m => m.PresupuestoModule) },
+
       // Configuración
       {
         path: 'configuracion',
