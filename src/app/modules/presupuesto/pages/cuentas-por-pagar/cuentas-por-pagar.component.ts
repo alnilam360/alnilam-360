@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { PresupuestoCuentaPorPagar } from '../../../../core/models/presupuesto.model';
 import { fechaAInput, fechaAISO, saldoPorPagar, sumar } from '../../funciones/capturas.funcion';
-import { CapturaBase } from '../captura-base';
+import { CapturaConCentros } from '../captura-con-centros';
 
 const montoCtrl = () => new FormControl(0, { nonNullable: true, validators: [Validators.required, Validators.min(0)] });
 
@@ -13,7 +13,7 @@ const montoCtrl = () => new FormControl(0, { nonNullable: true, validators: [Val
   styleUrls: ['./cuentas-por-pagar.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class CuentasPorPagarComponent extends CapturaBase<PresupuestoCuentaPorPagar> {
+export class CuentasPorPagarComponent extends CapturaConCentros<PresupuestoCuentaPorPagar> {
   readonly saldo = saldoPorPagar;
   totalPorPagar = computed(() => sumar(this.filas(), f => f.por_pagar));
   totalPresup = computed(() => sumar(this.filas(), f => f.presupuestado));
@@ -23,6 +23,7 @@ export class CuentasPorPagarComponent extends CapturaBase<PresupuestoCuentaPorPa
   readonly form = new FormGroup({
     fecha: new FormControl('', { nonNullable: true }),
     detalle: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(200)] }),
+    centro_costo_id: new FormControl<string | null>(null),
     por_pagar: montoCtrl(),
     presupuestado: montoCtrl(),
     ejecutado: montoCtrl(),
@@ -30,7 +31,7 @@ export class CuentasPorPagarComponent extends CapturaBase<PresupuestoCuentaPorPa
 
   abrir(c?: PresupuestoCuentaPorPagar): void {
     this.form.reset({
-      fecha: fechaAInput(c?.fecha), detalle: c?.detalle ?? '', por_pagar: c?.por_pagar ?? 0,
+      fecha: fechaAInput(c?.fecha), detalle: c?.detalle ?? '', centro_costo_id: c?.centro_costo_id ?? null, por_pagar: c?.por_pagar ?? 0,
       presupuestado: c?.presupuestado ?? 0, ejecutado: c?.ejecutado ?? 0,
     });
     this.abrirModal(c?.id ?? null);

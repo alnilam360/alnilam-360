@@ -7,6 +7,7 @@ import { SharedModule } from '../../shared/shared.module';
 
 import { ResumenComponent } from './pages/resumen/resumen.component';
 import { SociosComponent } from './pages/socios/socios.component';
+import { CentrosCostoComponent } from './pages/centros-costo/centros-costo.component';
 import { PeriodosComponent } from './pages/periodos/periodos.component';
 import { CatalogoComponent } from './pages/catalogo/catalogo.component';
 
@@ -24,6 +25,7 @@ const routes: Routes = [
   { path: 'nomina', component: NominaComponent },
   { path: 'cuentas-por-pagar', component: CuentasPorPagarComponent },
   { path: 'socios', component: SociosComponent },
+  { path: 'centros-costo', component: CentrosCostoComponent },
   { path: 'periodos', component: PeriodosComponent },
   { path: 'catalogo', component: CatalogoComponent },
   { path: '', redirectTo: 'resumen', pathMatch: 'full' },
@@ -31,7 +33,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    ResumenComponent, SociosComponent, PeriodosComponent, CatalogoComponent,
+    ResumenComponent, SociosComponent, CentrosCostoComponent, PeriodosComponent, CatalogoComponent,
     GastosComponent, RecaudoComponent, NominaComponent, CuentasPorPagarComponent,
     CapturaCabeceraComponent, CapturaConfirmarComponent,
   ],

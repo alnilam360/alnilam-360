@@ -38,6 +38,7 @@
           <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
             <tr>
               <th class="px-3 py-2.5 font-semibold">Detalle</th>
+              <th class="px-3 py-2.5 font-semibold">Centro</th>
               <th class="px-3 py-2.5 font-semibold">Fecha</th>
               <th class="px-3 py-2.5 font-semibold text-right">Por pagar</th>
               <th class="px-3 py-2.5 font-semibold text-right">Presupuestado</th>
@@ -50,6 +51,7 @@
           <tbody class="divide-y divide-dark-border">
             <tr *ngFor="let f of filas(); trackBy: trackById" class="hover:bg-dark-primary/40 transition-colors duration-150">
               <td class="px-3 py-2 font-medium text-[rgb(var(--color-heading))]">{{ f.detalle }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ (f.centro_costo_id && nombresCentro().get(f.centro_costo_id)) || '—' }}</td>
               <td class="px-3 py-2 text-dark-text">{{ f.fecha ? (f.fecha | date:'dd/MM/yyyy') : '—' }}</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.por_pagar) }}</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.presupuestado) }}</td>
@@ -72,7 +74,7 @@
           </tbody>
           <tfoot class="border-t border-dark-border font-semibold text-[rgb(var(--color-heading))]">
             <tr>
-              <td class="px-3 py-2" colspan="2">Total</td>
+              <td class="px-3 py-2" colspan="3">Total</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(totalPorPagar()) }}</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(totalPresup()) }}</td>
               <td class="px-3 py-2 text-right tabular-nums">{{ cop(totalEjec()) }}</td>
@@ -109,6 +111,13 @@
         <div>
           <label class="block text-xs font-medium text-dark-text mb-1">Fecha</label>
           <input type="date" formControlName="fecha" class="form-input">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-medium text-dark-text mb-1">Centro de costo (opcional)</label>
+          <select formControlName="centro_costo_id" class="form-input">
+            <option [ngValue]="null">— Sin centro —</option>
+            <option *ngFor="let c of centros(); trackBy: trackById" [ngValue]="c.id">{{ c.nombre }}</option>
+          </select>
         </div>
         <div>
           <label class="block text-xs font-medium text-dark-text mb-1">Por pagar</label>

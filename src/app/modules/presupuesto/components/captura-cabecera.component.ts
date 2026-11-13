@@ -23,7 +23,7 @@ import { PresupuestoPeriodo } from '../../../core/models/presupuesto.model';
             <option *ngFor="let e of empresas" [value]="e.id">{{ e.nombre }}</option>
           </select>
         </div>
-        <div class="min-w-[160px]">
+        <div *ngIf="mostrarPeriodo" class="min-w-[160px]">
           <select [ngModel]="periodoId" (ngModelChange)="periodoChange.emit($event)"
             class="w-full px-3 py-1.5 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary font-medium">
             <option *ngIf="periodos.length === 0" value="">Sin periodos</option>
@@ -42,6 +42,7 @@ export class CapturaCabeceraComponent {
   @Input() empresaId = '';
   @Input() periodos: PresupuestoPeriodo[] = [];
   @Input() periodoId = '';
+  @Input() mostrarPeriodo = true;
   @Output() empresaChange = new EventEmitter<string>();
   @Output() periodoChange = new EventEmitter<string>();
 }

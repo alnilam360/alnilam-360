@@ -21,13 +21,13 @@ const T_MOV = 'presupuesto_movimiento';
 const T_REC = 'presupuesto_recaudo';
 const T_NOM = 'presupuesto_nomina';
 const T_CXP = 'presupuesto_cuenta_por_pagar';
-const COLS_MOV = 'id, empresa_id, periodo_id, subrubro_codigo, fecha, detalle, presupuestado, ejecutado';
+const COLS_MOV = 'id, empresa_id, periodo_id, subrubro_codigo, fecha, detalle, presupuestado, ejecutado, centro_costo_id';
 const COLS_REC = 'id, empresa_id, periodo_id, cliente_nombre, cliente_nit, valor, fecha_corte, '
   + 'fecha_entrega_cuenta_cobro, fecha_limite_pago, observaciones, estado';
 const COLS_NOM = 'id, empresa_id, periodo_id, cargo, nombre_trabajador, cedula, sueldo_basico, dias_trabajados, '
   + 'dev_basico, dev_auxilio_transporte, dev_auxilio_comunicacion, dev_rodamiento, dev_bono_adicional, '
   + 'ded_salud, ded_pension, ded_otras, pago_nomina';
-const COLS_CXP = 'id, empresa_id, periodo_id, fecha, detalle, por_pagar, presupuestado, ejecutado';
+const COLS_CXP = 'id, empresa_id, periodo_id, fecha, detalle, por_pagar, presupuestado, ejecutado, centro_costo_id';
 
 type SinClave<T> = Omit<T, 'id' | 'empresa_id' | 'periodo_id' | 'created_at' | 'updated_at'>;
 export type MovimientoNuevo = SinClave<PresupuestoMovimiento>;

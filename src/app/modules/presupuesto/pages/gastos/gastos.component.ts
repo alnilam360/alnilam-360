@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { PresupuestoMovimiento, PresupuestoSubrubro } from '../../../../core/models/presupuesto.model';
 import { fechaAInput, fechaAISO, sumar } from '../../funciones/capturas.funcion';
-import { CapturaBase } from '../captura-base';
+import { CapturaConCentros } from '../captura-con-centros';
 
 const RUBROS_GASTO = [2000, 3000, 4000];
 const montoCtrl = () => new FormControl(0, { nonNullable: true, validators: [Validators.required, Validators.min(0)] });
@@ -14,7 +14,7 @@ const montoCtrl = () => new FormControl(0, { nonNullable: true, validators: [Val
   styleUrls: ['./gastos.component.scss'],
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class GastosComponent extends CapturaBase<PresupuestoMovimiento> {
+export class GastosComponent extends CapturaConCentros<PresupuestoMovimiento> {
   subrubros = signal<PresupuestoSubrubro[]>([]);
   nombres = computed(() => new Map(this.subrubros().map(s => [s.codigo, s.nombre])));
   totalPresup = computed(() => sumar(this.filas(), f => f.presupuestado));
@@ -24,6 +24,7 @@ export class GastosComponent extends CapturaBase<PresupuestoMovimiento> {
     subrubro_codigo: new FormControl<number | null>(null, { validators: [Validators.required] }),
     fecha: new FormControl('', { nonNullable: true }),
     detalle: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(200)] }),
+    centro_costo_id: new FormControl<string | null>(null),
     presupuestado: montoCtrl(),
     ejecutado: montoCtrl(),
   });
@@ -41,7 +42,7 @@ export class GastosComponent extends CapturaBase<PresupuestoMovimiento> {
   abrir(m?: PresupuestoMovimiento): void {
     this.form.reset({
       subrubro_codigo: m?.subrubro_codigo ?? null, fecha: fechaAInput(m?.fecha), detalle: m?.detalle ?? '',
-      presupuestado: m?.presupuestado ?? 0, ejecutado: m?.ejecutado ?? 0,
+      centro_costo_id: m?.centro_costo_id ?? null, presupuestado: m?.presupuestado ?? 0, ejecutado: m?.ejecutado ?? 0,
     });
     this.abrirModal(m?.id ?? null);
   }
@@ -53,7 +54,7 @@ export class GastosComponent extends CapturaBase<PresupuestoMovimiento> {
     const v = this.form.getRawValue();
     const datos = {
       subrubro_codigo: v.subrubro_codigo as number, fecha: fechaAISO(v.fecha), detalle: v.detalle.trim(),
-      presupuestado: v.presupuestado, ejecutado: v.ejecutado,
+      centro_costo_id: v.centro_costo_id, presupuestado: v.presupuestado, ejecutado: v.ejecutado,
     };
     if (id) await this.service.actualizarMovimiento(id, datos);
     else await this.service.crearMovimiento(this.empresaId(), this.periodoId(), datos);

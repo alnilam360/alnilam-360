@@ -41,6 +41,15 @@ export interface PresupuestoMovimiento extends Auditable {
   detalle: string;
   presupuestado: number;
   ejecutado: number;
+  centro_costo_id: string | null;
+}
+
+export interface PresupuestoCentroCosto extends Auditable {
+  id: string;
+  empresa_id: string;
+  nombre: string;
+  codigo: string | null;
+  activo: boolean;
 }
 
 export interface PresupuestoRecaudo extends Auditable {
@@ -86,6 +95,7 @@ export interface PresupuestoCuentaPorPagar extends Auditable {
   por_pagar: number;
   presupuestado: number;
   ejecutado: number;
+  centro_costo_id: string | null;
 }
 
 export interface PresupuestoSocio extends Auditable {
@@ -138,6 +148,14 @@ export interface PresupuestoResumen {
   total_ejecutado: number;
   saldo_final: number;
   rubros: ResumenRubro[];
+}
+
+// ── RPC get_presupuesto_centros (2026_11_13_02) ──────────────────────────────
+export interface ResumenCentro {
+  centro_id: string | null; // null = "Sin centro"
+  nombre: string;
+  presupuestado: number;
+  ejecutado: number;
 }
 
 export function repartoPresupuestadoSocio(saldoFinal: number, porcentaje: number): number {

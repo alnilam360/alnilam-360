@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { PresupuestoService } from '../../../../core/services/presupuesto.service';
 import { Empresa } from '../../../../core/models/models';
-import { PresupuestoPeriodo, PresupuestoResumen } from '../../../../core/models/presupuesto.model';
+import { PresupuestoCentroService } from '../../../../core/services/presupuesto-centro.service';
+import { PresupuestoPeriodo, PresupuestoResumen, ResumenCentro } from '../../../../core/models/presupuesto.model';
 import {
   claseVariacion, estadoAvance, formatearCOP, formatearMeta, formatearVariacionPct, porcentajeAvance, variacion, variacionPct,
 } from '../../funciones/resumen.funcion';
@@ -15,6 +16,7 @@ import {
 })
 export class ResumenComponent implements OnInit {
   private service = inject(PresupuestoService);
+  private centroService = inject(PresupuestoCentroService);
 
   readonly cop = formatearCOP;
   readonly avance = porcentajeAvance;
@@ -42,6 +44,8 @@ export class ResumenComponent implements OnInit {
   periodos = signal<PresupuestoPeriodo[]>([]);
   periodoId = signal('');
   resumen = signal<PresupuestoResumen | null>(null);
+  centros = signal<ResumenCentro[]>([]);
+  readonly trackCentro = (i: number, c: ResumenCentro) => c.centro_id ?? `sin-centro-${i}`;
 
   async ngOnInit(): Promise<void> {
     try {
@@ -73,9 +77,19 @@ export class ResumenComponent implements OnInit {
     this.error.set(null);
     try {
       this.resumen.set(id ? await this.service.getResumen(id) : null);
+      await this.cargarCentros(id);
       this.cargando.set(false);
     } catch (e) {
       this.fallar(e);
+    }
+  }
+
+  // La sección por centro es secundaria: si falla queda vacía sin romper el resumen.
+  private async cargarCentros(periodoId: string): Promise<void> {
+    try {
+      this.centros.set(periodoId ? await this.centroService.getResumenCentros(periodoId) : []);
+    } catch {
+      this.centros.set([]);
     }
   }
 
