@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import { PoliticaSstEstado } from '../../../core/models/politica-sst.model';
 
 export type AccionFlujo = 'enviar_revision' | 'devolver_borrador' | 'aprobar' | 'publicar' | 'nueva_version';
@@ -8,7 +7,7 @@ export type AccionFlujo = 'enviar_revision' | 'devolver_borrador' | 'aprobar' | 
 @Component({
   selector: 'app-documento-flujo-aprobacion',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-dark-secondary/60 border border-dark-border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -20,18 +19,18 @@ export type AccionFlujo = 'enviar_revision' | 'devolver_borrador' | 'aprobar' | 
               class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-200"
               [ngClass]="getStepClasses(step.key)"
             >
-              <ion-icon [name]="step.icon" class="text-sm shrink-0"></ion-icon>
+              <i class="pi text-sm shrink-0" [ngClass]="step.icon"></i>
               <span>{{ step.label }}</span>
             </div>
             @if (!$last) {
-              <ion-icon name="chevron-forward-outline" class="text-slate-600 text-xs"></ion-icon>
+              <i class="pi pi-chevron-right text-slate-600 text-xs"></i>
             }
           </div>
         }
 
         @if (estado() === 'obsoleto') {
           <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 ml-2">
-            <ion-icon name="archive-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-inbox text-sm"></i>
             <span>Versión Obsoleta</span>
           </div>
         }
@@ -46,7 +45,7 @@ export type AccionFlujo = 'enviar_revision' | 'devolver_borrador' | 'aprobar' | 
             [disabled]="disabled() || !canSendRevision()"
             class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-md shadow-blue-600/20 transition-all duration-200"
           >
-            <ion-icon name="paper-plane-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-send text-sm"></i>
             <span>Enviar a Revisión</span>
           </button>
         }
@@ -58,7 +57,7 @@ export type AccionFlujo = 'enviar_revision' | 'devolver_borrador' | 'aprobar' | 
             [disabled]="disabled()"
             class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 transition-all duration-200"
           >
-            <ion-icon name="arrow-undo-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-undo text-sm"></i>
             <span>Devolver a Borrador</span>
           </button>
 
@@ -68,7 +67,7 @@ export type AccionFlujo = 'enviar_revision' | 'devolver_borrador' | 'aprobar' | 
             [disabled]="disabled() || !canAprobar()"
             class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-md shadow-emerald-600/20 transition-all duration-200"
           >
-            <ion-icon name="checkmark-done-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-check-circle text-sm"></i>
             <span>Aprobar (Firma Rep. Legal)</span>
           </button>
         }
@@ -80,7 +79,7 @@ export type AccionFlujo = 'enviar_revision' | 'devolver_borrador' | 'aprobar' | 
             [disabled]="disabled()"
             class="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all duration-200"
           >
-            <ion-icon name="megaphone-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-megaphone text-sm"></i>
             <span>Publicar como Vigente</span>
           </button>
         }
@@ -92,7 +91,7 @@ export type AccionFlujo = 'enviar_revision' | 'devolver_borrador' | 'aprobar' | 
             [disabled]="disabled()"
             class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-brand-primary hover:bg-blue-600 text-white shadow-md shadow-brand-primary/20 transition-all duration-200"
           >
-            <ion-icon name="add-circle-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-plus-circle text-sm"></i>
             <span>+ Crear Nueva Versión</span>
           </button>
         }
@@ -109,10 +108,10 @@ export class DocumentoFlujoAprobacionComponent {
   readonly accion = output<AccionFlujo>();
 
   readonly steps = [
-    { key: 'borrador', label: '1. Borrador', icon: 'create-outline' },
-    { key: 'en_revision', label: '2. En Revisión', icon: 'eye-outline' },
-    { key: 'aprobado', label: '3. Aprobado', icon: 'shield-checkmark-outline' },
-    { key: 'publicado', label: '4. Publicado', icon: 'checkmark-circle-outline' }
+    { key: 'borrador', label: '1. Borrador', icon: 'pi-pencil' },
+    { key: 'en_revision', label: '2. En Revisión', icon: 'pi-eye' },
+    { key: 'aprobado', label: '3. Aprobado', icon: 'pi-verified' },
+    { key: 'publicado', label: '4. Publicado', icon: 'pi-check-circle' }
   ];
 
   getStepClasses(stepKey: string): string {

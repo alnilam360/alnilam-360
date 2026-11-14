@@ -3,7 +3,7 @@
   <!-- HEADER -->
   <div class="flex items-center gap-3 px-4 py-3 border-b border-dark-border bg-dark-secondary shrink-0">
     <div class="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center shrink-0">
-      <ion-icon name="calendar-outline" class="text-brand-primary text-base"></ion-icon>
+      <i class="pi pi-calendar text-brand-primary text-base"></i>
     </div>
     <div class="flex-1 min-w-0">
       <h3 class="text-sm font-bold text-[rgb(var(--color-heading))]">
@@ -14,17 +14,17 @@
     <button (click)="cancelar()"
             class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))]
                    hover:bg-dark-accent border border-transparent hover:border-dark-border transition-all">
-      <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      <i class="pi pi-times text-lg"></i>
     </button>
   </div>
 
   <!-- ERROR -->
   <div *ngIf="errorMsg"
        class="shrink-0 mx-4 mt-3 flex items-start gap-2.5 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-    <ion-icon name="alert-circle-outline" class="text-red-400 text-base shrink-0 mt-0.5"></ion-icon>
+    <i class="pi pi-exclamation-circle text-red-400 text-base shrink-0 mt-0.5"></i>
     <span class="text-xs text-red-300 flex-1">{{ errorMsg }}</span>
     <button (click)="errorMsg = null" class="text-red-400 hover:text-red-200">
-      <ion-icon name="close-outline" class="text-base"></ion-icon>
+      <i class="pi pi-times text-base"></i>
     </button>
   </div>
 
@@ -50,7 +50,7 @@
 
     <!-- PROGRAMA -->
     <div class="campo-auxiliar">
-      <ion-icon name="layers-outline" class="campo-icon"></ion-icon>
+      <i class="pi pi-clone campo-icon"></i>
       <div class="campo-body">
         <span class="campo-label">Programa <span class="text-brand-danger">*</span></span>
         <select [(ngModel)]="form.programa_id" name="programa_id" class="campo-input">
@@ -62,7 +62,7 @@
 
     <!-- ACTIVIDAD -->
     <div class="campo-auxiliar">
-      <ion-icon name="construct-outline" class="campo-icon mt-0.5"></ion-icon>
+      <i class="pi pi-wrench campo-icon mt-0.5"></i>
       <div class="campo-body">
         <span class="campo-label">Actividad <span class="text-brand-danger">*</span></span>
         <textarea rows="3" [(ngModel)]="form.actividad" name="actividad"
@@ -73,7 +73,7 @@
 
     <!-- CIUDAD -->
     <div class="campo-auxiliar">
-      <ion-icon name="location-outline" class="campo-icon"></ion-icon>
+      <i class="pi pi-map-marker campo-icon"></i>
       <div class="campo-body">
         <span class="campo-label">Ciudad / Sede</span>
         <select [(ngModel)]="form.ciudad" name="ciudad" class="campo-input">
@@ -85,7 +85,7 @@
 
     <!-- GRUPO OBJETIVO -->
     <div class="campo-auxiliar">
-      <ion-icon name="people-outline" class="campo-icon"></ion-icon>
+      <i class="pi pi-users campo-icon"></i>
       <div class="campo-body">
         <span class="campo-label">Grupo Objetivo <span class="text-brand-danger">*</span></span>
         <select [ngModel]="grupoSeleccionadoId"
@@ -100,7 +100,7 @@
 
     <!-- RESPONSABLE -->
     <div class="campo-auxiliar">
-      <ion-icon name="person-outline" class="campo-icon"></ion-icon>
+      <i class="pi pi-user campo-icon"></i>
       <div class="campo-body">
         <span class="campo-label">Responsable <span class="text-brand-danger">*</span></span>
         <select [(ngModel)]="form.responsable_id" name="responsable_id" class="campo-input">
@@ -112,7 +112,7 @@
 
     <!-- EVIDENCIA -->
     <div class="campo-auxiliar">
-      <ion-icon name="document-text-outline" class="campo-icon mt-0.5"></ion-icon>
+      <i class="pi pi-file campo-icon mt-0.5"></i>
       <div class="campo-body">
         <span class="campo-label">Evidencia</span>
         <textarea rows="2" [(ngModel)]="form.evidencia" name="evidencia"
@@ -134,8 +134,8 @@
             class="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white
                    bg-brand-primary hover:bg-blue-600 rounded-lg shadow-lg shadow-brand-primary/25
                    disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-      <ion-icon *ngIf="guardando" name="hourglass-outline" class="text-base animate-spin"></ion-icon>
-      <ion-icon *ngIf="!guardando" name="save-outline" class="text-base"></ion-icon>
+      <i *ngIf="guardando" class="pi pi-stopwatch text-base animate-spin"></i>
+      <i *ngIf="!guardando" class="pi pi-save text-base"></i>
       {{ actividad ? 'Actualizar' : 'Guardar' }}
     </button>
   </div>

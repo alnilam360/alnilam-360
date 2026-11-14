@@ -2,17 +2,17 @@
 
   <!-- Loading inicial (resolviendo rol) -->
   <div *ngIf="inicializando" class="flex items-center justify-center py-16">
-    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    <span class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin text-brand-primary w-6 h-6"></span>
   </div>
 
   <ng-container *ngIf="!inicializando">
 
     <!-- Error banner -->
     <div *ngIf="errorMsg" class="mb-4 flex items-start gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-      <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+      <i class="pi pi-exclamation-circle text-red-400 text-xl flex-shrink-0 mt-0.5"></i>
       <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
       <button (click)="errorMsg = null" class="p-1 text-red-400 hover:text-red-300">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
 
@@ -29,7 +29,7 @@
       </div>
       <button (click)="abrirConfirmNueva()" [disabled]="!empresa || !resolucion"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-semibold transition active:scale-95 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap">
-        <ion-icon name="add-outline" class="text-sm"></ion-icon>
+        <i class="pi pi-plus text-sm"></i>
         <span>Nueva Evaluación Anual</span>
       </button>
     </div>
@@ -38,7 +38,7 @@
     <div *ngIf="esAdmin" class="mb-4 p-3 bg-brand-primary/5 border border-brand-primary/30 rounded-xl">
       <div class="flex flex-col sm:flex-row sm:items-center gap-3">
         <div class="flex items-center gap-2 flex-shrink-0">
-          <ion-icon name="business-outline" class="text-brand-primary text-lg"></ion-icon>
+          <i class="pi pi-building text-brand-primary text-lg"></i>
           <label class="text-xs font-semibold text-[rgb(var(--color-heading))]">
             Empresa:
           </label>
@@ -59,7 +59,7 @@
     <!-- Estado: admin sin empresa seleccionada -->
     <div *ngIf="esAdmin && !empresaSeleccionadaId && !loading"
       class="p-10 bg-dark-secondary border border-dashed border-dark-border rounded-xl text-center">
-      <ion-icon name="business-outline" class="text-4xl text-dark-text mb-2"></ion-icon>
+      <i class="pi pi-building text-4xl text-dark-text mb-2"></i>
       <p class="text-sm text-[rgb(var(--color-heading))] font-medium">
         Seleccione una empresa para comenzar
       </p>
@@ -70,7 +70,7 @@
 
     <!-- Loading de datos (después de seleccionar) -->
     <div *ngIf="loading && !inicializando" class="flex items-center justify-center py-10">
-      <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+      <span class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin text-brand-primary w-6 h-6"></span>
     </div>
 
     <!-- Info del universo aplicable -->
@@ -108,7 +108,7 @@
       </div>
 
       <div *ngIf="evaluaciones.length === 0" class="py-10 text-center">
-        <ion-icon name="clipboard-outline" class="text-4xl text-dark-text mb-2"></ion-icon>
+        <i class="pi pi-clipboard text-4xl text-dark-text mb-2"></i>
         <p class="text-xs text-dark-text">No se ha registrado ninguna evaluación aún.</p>
         <p class="text-[11px] text-dark-text/60 mt-1">Haga clic en "Nueva Evaluación Anual" para comenzar.</p>
       </div>
@@ -143,7 +143,7 @@
           <button *ngIf="ev.estado === 'Borrador'" (click)="eliminarEvaluacion(ev); $event.stopPropagation()"
             title="Eliminar borrador"
             class="p-1 rounded text-dark-text hover:text-red-400 hover:bg-dark-accent transition">
-            <ion-icon name="trash-outline" class="text-base"></ion-icon>
+            <i class="pi pi-trash text-base"></i>
           </button>
         </div>
       </div>
@@ -162,7 +162,7 @@
       <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Nueva Evaluación Anual</h3>
       <button (click)="cerrarConfirmNueva()"
         class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
     <div class="px-4 py-4 space-y-3">
@@ -185,8 +185,8 @@
       </button>
       <button (click)="confirmarNuevaEvaluacion()" [disabled]="creandoNueva"
         class="px-3 py-1.5 text-xs rounded-lg bg-brand-primary hover:bg-blue-600 text-white font-semibold transition active:scale-95 shadow-sm disabled:opacity-50 inline-flex items-center gap-1.5">
-        <ion-spinner *ngIf="creandoNueva" name="crescent"
-          style="--color: white; width: 14px; height: 14px;"></ion-spinner>
+        <span *ngIf="creandoNueva" class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin"
+           style="width:14px;height:14px;border-color:#fff;border-top-color:transparent;"></span>
         <span>{{ creandoNueva ? 'Creando...' : 'Crear Evaluación' }}</span>
       </button>
     </div>

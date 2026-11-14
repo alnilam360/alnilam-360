@@ -1,4 +1,4 @@
-// El host ocupa el 100% del contenedor ion-modal
+// El host vive dentro del overlay Tailwind del dashboard
 :host {
   display: flex;
   flex-direction: column;

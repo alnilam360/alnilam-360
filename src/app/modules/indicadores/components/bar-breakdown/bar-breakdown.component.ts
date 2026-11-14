@@ -8,7 +8,7 @@ import { ConteoEtiqueta } from '../../../../core/models/matriz-at.model';
   template: `
     <div class="bg-dark-secondary border border-dark-border rounded-xl p-4 h-full flex flex-col">
       <div class="flex items-center gap-2 mb-3">
-        <ion-icon [name]="icon" class="text-brand-primary"></ion-icon>
+        <i class="pi text-brand-primary" [ngClass]="icon"></i>
         <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">{{ titulo }}</span>
       </div>
 
@@ -33,7 +33,7 @@ import { ConteoEtiqueta } from '../../../../core/models/matriz-at.model';
 })
 export class BarBreakdownComponent {
   @Input() titulo = 'Por área';
-  @Input() icon = 'grid-outline';
+  @Input() icon = 'pi-th-large';
   @Input() dimension = 'área';
   @Input() set conteos(list: ConteoEtiqueta[]) {
     this.filas = list;

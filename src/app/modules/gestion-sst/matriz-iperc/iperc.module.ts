@@ -1,8 +1,7 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../../shared/shared.module';
 
 // PrimeNG
@@ -29,7 +28,6 @@ const routes: Routes = [
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        IonicModule,
         SharedModule,
         RouterModule.forChild(routes),
         // PrimeNG
@@ -37,7 +35,6 @@ const routes: Routes = [
         InputNumberModule,
         ToggleSwitchModule,
         TextareaModule
-    ],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA]
+    ]
 })
 export class IpercModule { }

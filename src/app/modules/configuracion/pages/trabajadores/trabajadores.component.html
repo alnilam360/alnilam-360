@@ -17,7 +17,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
-          <ion-icon name="people-circle-outline" class="text-brand-primary text-2xl"></ion-icon>
+          <i class="pi pi-users text-brand-primary text-2xl"></i>
           Gestión de Trabajadores
         </h1>
         <p class="text-xs text-dark-text mt-0.5">
@@ -72,7 +72,7 @@
       <button *ngIf="isModal" (click)="cerrar.emit()"
         class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200"
         title="Cerrar modal" aria-label="Cerrar modal">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
   </div>
@@ -80,8 +80,7 @@
   <!-- Toolbar -->
   <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-dark-primary/30">
     <div class="relative flex-1 w-full sm:max-w-md">
-      <ion-icon name="search-outline"
-        class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></ion-icon>
+      <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></i>
       <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar por nombre, documento, cargo o sede..."
         class="w-full pl-9 pr-3 py-2 text-xs bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200">
     </div>
@@ -89,14 +88,14 @@
       <button (click)="openCargueMasivoModal()"
         class="w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm"
         title="Cargue masivo de trabajadores por archivo plano (.csv, .txt, .xlsx)">
-        <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
+        <i class="pi pi-cloud-upload text-sm"></i>
         <span>Cargue Masivo (Plano / Excel)</span>
       </button>
 
       <button (click)="openFormModal()"
         class="w-full sm:w-auto flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm"
         title="Registrar nuevo trabajador en el sistema">
-        <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
+        <i class="pi pi-user-plus text-sm"></i>
         <span>Agregar Trabajador</span>
       </button>
     </div>
@@ -105,12 +104,12 @@
   <!-- Table -->
   <div class="px-4 pb-4 max-h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar">
     <div *ngIf="loading" class="flex items-center justify-center py-12">
-      <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+      <span class="w-6 h-6 text-brand-primary inline-block border-2 border-current border-t-transparent rounded-full animate-spin"></span>
     </div>
 
     <div *ngIf="!loading && filteredTrabajadores.length === 0"
       class="flex flex-col items-center justify-center py-12 text-center border border-dashed border-dark-border rounded-xl my-4">
-      <ion-icon name="people-outline" class="text-3xl text-dark-text mb-2"></ion-icon>
+      <i class="pi pi-users text-3xl text-dark-text mb-2"></i>
       <p class="text-xs text-dark-text font-medium">{{ searchQuery ? 'No se encontraron trabajadores que coincidan con la búsqueda' : 'No hay trabajadores registrados' }}</p>
       <p class="text-[11px] text-dark-text/70 mt-1">{{ searchQuery ? 'Pruebe con otro documento, nombre o cargo' : 'Haga clic en "Agregar Trabajador" para registrar la primera ficha' }}</p>
     </div>
@@ -183,12 +182,12 @@
                 <button (click)="openFormModal(t)"
                   class="p-1.5 rounded-lg text-dark-text hover:text-blue-400 hover:bg-dark-accent transition-all duration-200"
                   title="Editar trabajador" aria-label="Editar trabajador">
-                  <ion-icon name="create-outline" class="text-sm"></ion-icon>
+                  <i class="pi pi-pencil text-sm"></i>
                 </button>
                 <button (click)="deleteTrabajador(t.id!, t.nombre)"
                   class="p-1.5 rounded-lg text-dark-text hover:text-red-400 hover:bg-dark-accent transition-all duration-200"
                   title="Eliminar trabajador" aria-label="Eliminar trabajador">
-                  <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                  <i class="pi pi-trash text-sm"></i>
                 </button>
               </div>
             </td>
@@ -213,7 +212,7 @@
       <button (click)="closeFormModal()"
         class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200"
         title="Cerrar formulario" aria-label="Cerrar formulario">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
 
@@ -233,7 +232,7 @@
         <!-- Identificación -->
         <div>
           <h4 class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="person-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-user text-sm text-brand-primary"></i>
             Identificación
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -265,7 +264,7 @@
         <!-- Información Laboral -->
         <div>
           <h4 class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="briefcase-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-briefcase text-sm text-brand-primary"></i>
             Información Laboral
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -295,7 +294,7 @@
         <!-- Seguridad Social -->
         <div>
           <h4 class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="shield-checkmark-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-verified text-sm text-brand-primary"></i>
             Seguridad Social
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">

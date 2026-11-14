@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { PoliticaSst } from '../../../core/models/politica-sst.model';
@@ -11,7 +10,6 @@ import { BadgeVencimientoComponent } from '../badge-vencimiento/badge-vencimient
   standalone: true,
   imports: [
     CommonModule,
-    IonicModule,
     TableModule,
     ButtonModule,
     BadgeVencimientoComponent

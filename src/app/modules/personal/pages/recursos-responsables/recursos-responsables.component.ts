@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { RecursosResponsablesService } from '../../../../core/services/recursos-responsables.service';
 import {
@@ -25,7 +24,7 @@ export type TabSeccion = 'recursos' | 'copasst' | 'convivencia' | 'brigada' | 'r
 @Component({
   selector: 'app-recursos-responsables',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './recursos-responsables.component.html',
   styleUrls: ['./recursos-responsables.component.scss']
 })

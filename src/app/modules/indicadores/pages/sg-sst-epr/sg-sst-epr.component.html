@@ -1,6 +1,6 @@
 <div class="max-w-[1600px] mx-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3.5">
   <div *ngIf="inicializando()" class="flex items-center justify-center py-16">
-    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    <span class="text-brand-primary w-6 h-6 inline-block border-2 border-current border-t-transparent rounded-full animate-spin"></span>
   </div>
 
   <ng-container *ngIf="!inicializando()">
@@ -29,15 +29,15 @@
     <div class="inline-flex rounded-lg bg-dark-secondary border border-dark-border p-0.5">
       <button (click)="tab.set('indicadores')" class="px-3 py-1.5 text-xs font-medium rounded-lg transition flex items-center gap-2"
               [ngClass]="tab() === 'indicadores' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
-        <ion-icon name="stats-chart-outline"></ion-icon> Tablero % Cumplimiento
+        <i class="pi pi-chart-bar"></i> Tablero % Cumplimiento
       </button>
       <button (click)="tab.set('evaluacion')" class="px-3 py-1.5 text-xs font-medium rounded-lg transition flex items-center gap-2"
               [ngClass]="tab() === 'evaluacion' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
-        <ion-icon name="checkbox-outline"></ion-icon> Evaluación E-P-R (24 ítems)
+        <i class="pi pi-check-square"></i> Evaluación E-P-R (24 ítems)
       </button>
       <button (click)="tab.set('analisis')" class="px-3 py-1.5 text-xs font-medium rounded-lg transition flex items-center gap-2"
               [ngClass]="tab() === 'analisis' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
-        <ion-icon name="document-text-outline"></ion-icon> Análisis y Planes
+        <i class="pi pi-file"></i> Análisis y Planes
       </button>
     </div>
 
@@ -131,7 +131,7 @@
 
           <button (click)="guardarEvaluacion()"
                   class="px-4 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow">
-            <ion-icon name="save-outline"></ion-icon> Guardar Calificación
+            <i class="pi pi-save"></i> Guardar Calificación
           </button>
         </div>
 

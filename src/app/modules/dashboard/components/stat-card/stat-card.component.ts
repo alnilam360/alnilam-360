@@ -11,6 +11,6 @@ export class StatCardComponent {
   @Input() value: string | number = 0;
   @Input() change: number = 0;
   @Input() changeType: 'increase' | 'decrease' = 'increase';
-  @Input() icon: string = 'analytics-outline';
+  @Input() icon: string = 'pi-chart-line';
   @Input() iconBg: string = 'bg-blue-500/20';
 }

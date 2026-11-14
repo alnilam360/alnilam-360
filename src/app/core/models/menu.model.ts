@@ -18,7 +18,7 @@ export const MENU_ITEMS: MenuItem[] = [
     id: 'dashboard',
     label: 'Inicio',
     subtitle: 'Dashboard Ejecutivo',
-    icon: 'home-outline',
+    icon: 'pi-home',
     route: '/dashboard'
   },
   {
@@ -31,11 +31,11 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'PLANEAR',
     phvaGroup: 'P',
     children: [
-      { id: 'politica-objetivos', label: 'Política, Objetivos y Metas', icon: 'flag-outline', route: '/documentos/controlados/politicas' },
-      { id: 'evaluacion-inicial', label: 'Evaluación Inicial', icon: 'clipboard-outline', route: '/gestion-sst/evaluaciones' },
-      { id: 'plan-anual-trabajo', label: 'Plan Anual de Trabajo', icon: 'calendar-outline', route: '/gestion-sst/planes/plan-trabajo' },
-      { id: 'matriz-legal', label: 'Matriz Legal', icon: 'document-text-outline', route: '/matriz-legal' },
-      { id: 'recursos-responsables', label: 'Recursos y Responsables', icon: 'people-outline', route: '/personal/roles' }
+      { id: 'politica-objetivos', label: 'Política, Objetivos y Metas', icon: 'pi-flag', route: '/documentos/controlados/politicas' },
+      { id: 'evaluacion-inicial', label: 'Evaluación Inicial', icon: 'pi-clipboard', route: '/gestion-sst/evaluaciones' },
+      { id: 'plan-anual-trabajo', label: 'Plan Anual de Trabajo', icon: 'pi-calendar', route: '/gestion-sst/planes/plan-trabajo' },
+      { id: 'matriz-legal', label: 'Matriz Legal', icon: 'pi-file', route: '/matriz-legal' },
+      { id: 'recursos-responsables', label: 'Recursos y Responsables', icon: 'pi-users', route: '/personal/roles' }
     ]
   },
   {
@@ -43,11 +43,11 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'HACER',
     phvaGroup: 'H',
     children: [
-      { id: 'gestion-peligros', label: 'Gestión de Peligros y Riesgos', icon: 'warning-outline', route: '/gestion-sst/matriz-iperc' },
-      { id: 'gestion-salud', label: 'Gestión de la Salud', icon: 'heart-outline', route: '/formatos/seguimiento-examenes' },
-      { id: 'capacitacion-competencias', label: 'Capacitación y Competencias', icon: 'school-outline', route: '/gestion-sst/planes/capacitaciones' },
-      { id: 'contratistas-proveedores', label: 'Contratistas y Proveedores', icon: 'business-outline', route: '/personal/asignaciones' },
-      { id: 'comunicacion-participacion', label: 'Comunicación y Participación', icon: 'megaphone-outline', route: '/gestion-sst/planes/estilos-vida' }
+      { id: 'gestion-peligros', label: 'Gestión de Peligros y Riesgos', icon: 'pi-exclamation-triangle', route: '/gestion-sst/matriz-iperc' },
+      { id: 'gestion-salud', label: 'Gestión de la Salud', icon: 'pi-heart', route: '/formatos/seguimiento-examenes' },
+      { id: 'capacitacion-competencias', label: 'Capacitación y Competencias', icon: 'pi-book', route: '/gestion-sst/planes/capacitaciones' },
+      { id: 'contratistas-proveedores', label: 'Contratistas y Proveedores', icon: 'pi-building', route: '/personal/asignaciones' },
+      { id: 'comunicacion-participacion', label: 'Comunicación y Participación', icon: 'pi-megaphone', route: '/gestion-sst/planes/estilos-vida' }
     ]
   },
   {
@@ -58,18 +58,18 @@ export const MENU_ITEMS: MenuItem[] = [
       {
         id: 'indicadores-grupo',
         label: 'Matriz de Indicadores',
-        icon: 'stats-chart-outline',
+        icon: 'pi-chart-bar',
         children: [
-          { id: 'ind-matriz-consolidada', label: '0. Matriz de Indicadores', icon: 'grid-outline', route: '/indicadores/matriz-indicadores' },
-          { id: 'ind-accidentalidad', label: '1. Accidentalidad (AT)', icon: 'bandage-outline', route: '/indicadores/accidentalidad' },
-          { id: 'ind-enfermedad-laboral', label: '2. Enfermedad Laboral (EL)', icon: 'medkit-outline', route: '/indicadores/enfermedad-laboral' },
-          { id: 'ind-ausentismo', label: '3. Ausentismo Laboral', icon: 'time-outline', route: '/indicadores/ausentismo' },
-          { id: 'ind-sg-sst', label: '4. Estructura, Proceso y Resultado', icon: 'pie-chart-outline', route: '/indicadores/sg-sst' }
+          { id: 'ind-matriz-consolidada', label: '0. Matriz de Indicadores', icon: 'pi-th-large', route: '/indicadores/matriz-indicadores' },
+          { id: 'ind-accidentalidad', label: '1. Accidentalidad (AT)', icon: 'pi-heart', route: '/indicadores/accidentalidad' },
+          { id: 'ind-enfermedad-laboral', label: '2. Enfermedad Laboral (EL)', icon: 'pi-heart', route: '/indicadores/enfermedad-laboral' },
+          { id: 'ind-ausentismo', label: '3. Ausentismo Laboral', icon: 'pi-clock', route: '/indicadores/ausentismo' },
+          { id: 'ind-sg-sst', label: '4. Estructura, Proceso y Resultado', icon: 'pi-chart-pie', route: '/indicadores/sg-sst' }
         ]
       },
-      { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'checkbox-outline', route: '/auditorias' },
-      { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/investigacion-atel' },
-      { id: 'revision-alta-direccion', label: 'Revisión por la Alta Dirección', icon: 'eye-outline' }
+      { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'pi-check-square', route: '/auditorias' },
+      { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'pi-search', route: '/investigacion-atel' },
+      { id: 'revision-alta-direccion', label: 'Revisión por la Alta Dirección', icon: 'pi-eye' }
     ]
   },
   {
@@ -77,16 +77,16 @@ export const MENU_ITEMS: MenuItem[] = [
     label: 'ACTUAR',
     phvaGroup: 'A',
     children: [
-      { id: 'acciones-correctivas', label: 'Acciones Correctivas', icon: 'construct-outline', route: '/acciones-correctivas' },
-      { id: 'acciones-preventivas', label: 'Acciones Preventivas', icon: 'shield-outline', route: '/gestion-sst/incidentes/actos-condiciones' },
-      { id: 'mejora-continua', label: 'Mejora Continua', icon: 'trending-up-outline', route: '/gestion-sst/plan-mejora' }
+      { id: 'acciones-correctivas', label: 'Acciones Correctivas', icon: 'pi-wrench', route: '/acciones-correctivas' },
+      { id: 'acciones-preventivas', label: 'Acciones Preventivas', icon: 'pi-shield', route: '/gestion-sst/incidentes/actos-condiciones' },
+      { id: 'mejora-continua', label: 'Mejora Continua', icon: 'pi-arrow-up', route: '/gestion-sst/plan-mejora' }
     ]
   },
   {
     id: 'documentos',
     label: 'Documentos',
     subtitle: 'Gestión Documental',
-    icon: 'folder-outline',
+    icon: 'pi-folder',
     isUtility: true,
     route: '/documentos/controlados/politicas'
   },
@@ -94,7 +94,7 @@ export const MENU_ITEMS: MenuItem[] = [
     id: 'reportes',
     label: 'Reportes',
     subtitle: 'Informes y Estadísticas',
-    icon: 'bar-chart-outline',
+    icon: 'pi-chart-bar',
     isUtility: true,
     route: '/reportes/indicadores'
   },
@@ -102,38 +102,38 @@ export const MENU_ITEMS: MenuItem[] = [
     id: 'configuracion',
     label: 'Configuración',
     subtitle: 'Administración del Sistema',
-    icon: 'settings-outline',
+    icon: 'pi-cog',
     isUtility: true,
     children: [
-      { id: 'conf-empresas', label: 'Empresas', icon: 'business-outline', route: '/configuracion/empresas' },
-      { id: 'conf-roles', label: 'Roles', icon: 'shield-outline', route: '/configuracion/roles' },
-      { id: 'conf-usuarios', label: 'Usuarios', icon: 'people-outline', route: '/configuracion/usuarios' },
-      { id: 'conf-trabajadores', label: 'Trabajadores', icon: 'people-circle-outline', route: '/configuracion/trabajadores' }
+      { id: 'conf-empresas', label: 'Empresas', icon: 'pi-building', route: '/configuracion/empresas' },
+      { id: 'conf-roles', label: 'Roles', icon: 'pi-shield', route: '/configuracion/roles' },
+      { id: 'conf-usuarios', label: 'Usuarios', icon: 'pi-users', route: '/configuracion/usuarios' },
+      { id: 'conf-trabajadores', label: 'Trabajadores', icon: 'pi-users', route: '/configuracion/trabajadores' }
     ]
   },
   {
     id: 'presupuesto',
     label: 'Presupuesto',
     subtitle: 'Presupuesto y Finanzas',
-    icon: 'cash-outline',
+    icon: 'pi-money-bill',
     isUtility: true,
     children: [
-      { id: 'pres-resumen', label: 'Resumen del mes', icon: 'pie-chart-outline', route: '/presupuesto/resumen' },
-      { id: 'pres-recaudo', label: 'Recaudo', icon: 'cash-outline', route: '/presupuesto/recaudo' },
-      { id: 'pres-nomina', label: 'Nomina', icon: 'people-circle-outline', route: '/presupuesto/nomina' },
-      { id: 'pres-gastos', label: 'Gastos', icon: 'card-outline', route: '/presupuesto/gastos' },
-      { id: 'pres-cxp', label: 'Cuentas por pagar', icon: 'receipt-outline', route: '/presupuesto/cuentas-por-pagar' },
-      { id: 'pres-socios', label: 'Socios', icon: 'people-outline', route: '/presupuesto/socios' },
-      { id: 'pres-centros', label: 'Centros de costo', icon: 'git-network-outline', route: '/presupuesto/centros-costo' },
-      { id: 'pres-periodos', label: 'Periodos', icon: 'calendar-outline', route: '/presupuesto/periodos' },
-      { id: 'pres-catalogo', label: 'Catalogo de rubros', icon: 'list-outline', route: '/presupuesto/catalogo' }
+      { id: 'pres-resumen', label: 'Resumen del mes', icon: 'pi-chart-pie', route: '/presupuesto/resumen' },
+      { id: 'pres-recaudo', label: 'Recaudo', icon: 'pi-money-bill', route: '/presupuesto/recaudo' },
+      { id: 'pres-nomina', label: 'Nomina', icon: 'pi-users', route: '/presupuesto/nomina' },
+      { id: 'pres-gastos', label: 'Gastos', icon: 'pi-credit-card', route: '/presupuesto/gastos' },
+      { id: 'pres-cxp', label: 'Cuentas por pagar', icon: 'pi-receipt', route: '/presupuesto/cuentas-por-pagar' },
+      { id: 'pres-socios', label: 'Socios', icon: 'pi-users', route: '/presupuesto/socios' },
+      { id: 'pres-centros', label: 'Centros de costo', icon: 'pi-sitemap', route: '/presupuesto/centros-costo' },
+      { id: 'pres-periodos', label: 'Periodos', icon: 'pi-calendar', route: '/presupuesto/periodos' },
+      { id: 'pres-catalogo', label: 'Catalogo de rubros', icon: 'pi-list', route: '/presupuesto/catalogo' }
     ]
   },
   {
     id: 'ayuda',
     label: 'Ayuda y Soporte',
     subtitle: 'Centro de Ayuda',
-    icon: 'help-circle-outline',
+    icon: 'pi-question-circle',
     isUtility: true
   }
 ];

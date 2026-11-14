@@ -5,25 +5,25 @@
     </p>
     <div class="flex items-center gap-2">
       <button (click)="copiarTrabajadoresATodos()" class="text-[11px] text-dark-text hover:text-brand-primary flex items-center gap-1">
-        <ion-icon name="copy-outline"></ion-icon> N.º trab. a todos
+        <i class="pi pi-copy"></i> N.º trab. a todos
       </button>
       <button (click)="copiarMetasATodos()" class="text-[11px] text-dark-text hover:text-brand-primary flex items-center gap-1">
-        <ion-icon name="copy-outline"></ion-icon> Metas a todos
+        <i class="pi pi-copy"></i> Metas a todos
       </button>
     </div>
   </div>
 
   <div *ngIf="error()" class="flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
-    <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+    <i class="pi pi-exclamation-circle text-red-400 text-xl flex-shrink-0 mt-0.5"></i>
     <p class="text-sm text-red-300 flex-1">{{ error() }}</p>
   </div>
   <div *ngIf="ok()" class="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
-    <ion-icon name="checkmark-circle-outline" class="text-emerald-400 text-lg"></ion-icon>
+    <i class="pi pi-check-circle text-emerald-400 text-lg"></i>
     <p class="text-sm text-emerald-300">Parámetros guardados.</p>
   </div>
 
   <div *ngIf="loading()" class="flex items-center justify-center py-12">
-    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    <span class="text-brand-primary w-6 h-6 inline-block border-2 border-current border-t-transparent rounded-full animate-spin"></span>
   </div>
 
   <div *ngIf="!loading()" class="overflow-x-auto bg-dark-secondary border border-dark-border rounded-xl">
@@ -56,7 +56,7 @@
   <div class="flex justify-end">
     <button (click)="guardar()" [disabled]="guardando()"
             class="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition disabled:opacity-50">
-      <ion-spinner *ngIf="guardando()" name="crescent" class="w-4 h-4"></ion-spinner>
+      <span *ngIf="guardando()" class="w-4 h-4 inline-block border-2 border-current border-t-transparent rounded-full animate-spin"></span>
       <span>Guardar parámetros</span>
     </button>
   </div>

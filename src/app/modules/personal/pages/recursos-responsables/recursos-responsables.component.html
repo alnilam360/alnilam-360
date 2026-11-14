@@ -3,7 +3,7 @@
   <!-- ─── 1. BREADCRUMBS COMPACTO ────────────────────────────────────────────── -->
   <nav class="flex items-center gap-1.5 text-xs text-dark-text select-none" aria-label="Ruta de navegación">
     <span class="hover:text-dark-text-light transition-colors">Personal &amp; RRHH</span>
-    <ion-icon name="chevron-forward-outline" class="text-[10px] opacity-40"></ion-icon>
+    <i class="pi pi-chevron-right text-[10px] opacity-40"></i>
     <span class="font-semibold text-dark-text-light">Recursos y Responsables SG-SST</span>
   </nav>
 
@@ -12,7 +12,7 @@
     <div class="space-y-1 min-w-0">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-primary/10 border border-brand-primary/25 text-brand-primary">
-          <ion-icon name="shield-checkmark-outline" class="text-xs"></ion-icon>
+          <i class="pi pi-verified text-xs"></i>
           Res. 0312/2019 Est. 1.1.1 - 1.1.8 · Dec. 1072/2015
         </span>
       </div>
@@ -29,7 +29,7 @@
       <!-- Selector de Empresa (Admin) -->
       @if (esAdmin() && empresasDisponibles().length > 1) {
         <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
-          <ion-icon name="business-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+          <i class="pi pi-building text-brand-primary text-sm flex-shrink-0"></i>
           <label for="empresa-header-select" class="text-gray-400 text-[11px] font-medium select-none">Empresa:</label>
           <select
             id="empresa-header-select"
@@ -46,7 +46,7 @@
 
       <!-- Selector de Período Optimizado para Modo Oscuro -->
       <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
-        <ion-icon name="calendar-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+        <i class="pi pi-calendar text-brand-primary text-sm flex-shrink-0"></i>
         <label for="periodo-select" class="text-gray-400 text-[11px] font-medium select-none">Período:</label>
         <select
           id="periodo-select"
@@ -65,7 +65,7 @@
         <button
           class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
           (click)="abrirModalRecurso()">
-          <ion-icon name="add-circle-outline" class="text-sm"></ion-icon>
+          <i class="pi pi-plus-circle text-sm"></i>
           <span>Asignar Recurso</span>
         </button>
       } @else if (activeTab() === 'copasst') {
@@ -73,13 +73,13 @@
           <button
             class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
             (click)="abrirModalActa('COPASST')">
-            <ion-icon name="document-text-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-file text-sm text-brand-primary"></i>
             <span>+ Acta</span>
           </button>
           <button
             class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
             (click)="abrirModalMiembro('COPASST')">
-            <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-user-plus text-sm"></i>
             <span>+ Integrante</span>
           </button>
         </div>
@@ -88,13 +88,13 @@
           <button
             class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
             (click)="abrirModalActa('COMITE_CONVIVENCIA')">
-            <ion-icon name="document-text-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-file text-sm text-brand-primary"></i>
             <span>+ Acta</span>
           </button>
           <button
             class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
             (click)="abrirModalMiembro('COMITE_CONVIVENCIA')">
-            <ion-icon name="person-add-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-user-plus text-sm"></i>
             <span>+ Integrante</span>
           </button>
         </div>
@@ -103,13 +103,13 @@
           <button
             class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
             (click)="abrirModalActa('BRIGADA_EMERGENCIA')">
-            <ion-icon name="document-text-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-file text-sm text-brand-primary"></i>
             <span>+ Acta</span>
           </button>
           <button
             class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0"
             (click)="abrirModalMiembro('BRIGADA_EMERGENCIA')">
-            <ion-icon name="shield-half-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-shield text-sm"></i>
             <span>+ Brigadista</span>
           </button>
         </div>
@@ -123,7 +123,7 @@
       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
       [ngClass]="activeTab() === 'recursos' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
       (click)="setTab('recursos')">
-      <ion-icon name="wallet-outline" class="text-sm"></ion-icon>
+      <i class="pi pi-wallet text-sm"></i>
       <span>1. Recursos Asignados</span>
       <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'recursos' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
         {{ recursos().length }}
@@ -134,7 +134,7 @@
       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
       [ngClass]="activeTab() === 'copasst' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
       (click)="setTab('copasst')">
-      <ion-icon name="people-outline" class="text-sm"></ion-icon>
+      <i class="pi pi-users text-sm"></i>
       <span>2. COPASST</span>
       <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'copasst' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
         {{ miembrosCopasst().length }}
@@ -145,7 +145,7 @@
       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
       [ngClass]="activeTab() === 'convivencia' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
       (click)="setTab('convivencia')">
-      <ion-icon name="chatbubbles-outline" class="text-sm"></ion-icon>
+      <i class="pi pi-comments text-sm"></i>
       <span>3. Convivencia Laboral</span>
       <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'convivencia' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
         {{ miembrosConvivencia().length }}
@@ -156,7 +156,7 @@
       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
       [ngClass]="activeTab() === 'brigada' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
       (click)="setTab('brigada')">
-      <ion-icon name="flame-outline" class="text-sm"></ion-icon>
+      <i class="pi pi-bolt text-sm"></i>
       <span>4. Brigada Emergencia</span>
       <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'brigada' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
         {{ miembrosBrigada().length }}
@@ -167,7 +167,7 @@
       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap cursor-pointer"
       [ngClass]="activeTab() === 'raci' ? 'bg-brand-primary/15 text-brand-primary font-semibold border border-brand-primary/25' : 'text-dark-text hover:text-dark-text-light hover:bg-dark-accent/60'"
       (click)="setTab('raci')">
-      <ion-icon name="grid-outline" class="text-sm"></ion-icon>
+      <i class="pi pi-th-large text-sm"></i>
       <span>5. Matriz RACI</span>
       <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold" [ngClass]="activeTab() === 'raci' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-accent text-dark-text'">
         {{ actividadesRaci().length }}
@@ -183,7 +183,7 @@
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3" aria-label="Métricas de Presupuesto">
       <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-blue-500/40 transition-colors flex items-center gap-3">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-blue-500/10 text-blue-400 border border-blue-500/20">
-          <ion-icon name="cash-outline"></ion-icon>
+          <i class="pi pi-money-bill"></i>
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Presupuesto Asignado</span>
@@ -196,7 +196,7 @@
 
       <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-emerald-500/40 transition-colors flex items-center gap-3">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          <ion-icon name="checkmark-done-circle-outline"></ion-icon>
+          <i class="pi pi-check-circle"></i>
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Monto Ejecutado</span>
@@ -212,7 +212,7 @@
 
       <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-purple-500/40 transition-colors flex items-center gap-3">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-purple-500/10 text-purple-400 border border-purple-500/20">
-          <ion-icon name="pie-chart-outline"></ion-icon>
+          <i class="pi pi-chart-pie"></i>
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Saldo Disponible</span>
@@ -225,7 +225,7 @@
 
       <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-amber-500/40 transition-colors flex items-center gap-3">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20">
-          <ion-icon name="layers-outline"></ion-icon>
+          <i class="pi pi-clone"></i>
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Total Recursos</span>
@@ -252,7 +252,7 @@
 
         <div class="flex items-center gap-2 flex-wrap">
           <div class="relative flex items-center">
-            <ion-icon name="search-outline" class="absolute left-2.5 text-dark-text text-xs pointer-events-none"></ion-icon>
+            <i class="pi pi-search absolute left-2.5 text-dark-text text-xs pointer-events-none"></i>
             <input
               type="text"
               placeholder="Buscar recurso..."
@@ -294,7 +294,7 @@
             @if (recursosFiltrados().length === 0) {
               <tr>
                 <td colspan="8" class="px-3 py-8 text-center">
-                  <ion-icon name="folder-open-outline" class="text-3xl text-dark-text/40 mb-1"></ion-icon>
+                  <i class="pi pi-folder-open text-3xl text-dark-text/40 mb-1"></i>
                   <p class="text-xs font-semibold text-white m-0">No se encontraron recursos</p>
                   <p class="text-[11px] text-dark-text m-0 mt-0.5">Haga clic en "+ Asignar Recurso" para registrar un nuevo recurso.</p>
                 </td>
@@ -360,13 +360,13 @@
                         class="p-1 rounded text-dark-text hover:text-white hover:bg-dark-accent transition cursor-pointer"
                         (click)="abrirModalRecurso(r)"
                         title="Editar recurso">
-                        <ion-icon name="create-outline" class="text-sm"></ion-icon>
+                        <i class="pi pi-pencil text-sm"></i>
                       </button>
                       <button
                         class="p-1 rounded text-dark-text hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                         (click)="eliminarRecurso(r.id)"
                         title="Eliminar recurso">
-                        <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                        <i class="pi pi-trash text-sm"></i>
                       </button>
                     </div>
                   </td>
@@ -399,7 +399,7 @@
               'bg-amber-500/15 text-amber-400 border border-amber-500/30': comiteActual.por_vencer,
               'bg-red-500/15 text-red-400 border border-red-500/30': comiteActual.estado === 'vencido'
             }">
-            <ion-icon [name]="comiteActual.estado === 'vigente' ? 'shield-checkmark-outline' : comiteActual.por_vencer ? 'alert-circle-outline' : 'warning-outline'"></ion-icon>
+            <i class="pi" [ngClass]="comiteActual.estado === 'vigente' ? 'pi-verified' : comiteActual.por_vencer ? 'pi-exclamation-circle' : 'pi-exclamation-triangle'"></i>
             {{ comiteActual.estado === 'vigente' ? 'Comité Vigente' : comiteActual.estado === 'en_proceso_eleccion' ? 'En Elección' : 'Comité Vencido' }}
           </span>
 
@@ -439,7 +439,7 @@
           <button
             class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-md text-xs font-semibold bg-dark-accent border border-dark-border text-dark-text-light hover:bg-dark-border transition cursor-pointer"
             (click)="abrirModalConformacion(tipoComiteActual)">
-            <ion-icon name="refresh-outline" class="text-xs"></ion-icon>
+            <i class="pi pi-refresh text-xs"></i>
             <span>Nueva Conformación</span>
           </button>
         </div>
@@ -460,7 +460,7 @@
         <button
           class="h-8 inline-flex items-center gap-1 px-3 rounded-md text-xs font-semibold bg-brand-primary text-white hover:bg-blue-600 transition cursor-pointer"
           (click)="abrirModalConformacion(tipoComiteActual)">
-          <ion-icon name="add-circle-outline" class="text-sm"></ion-icon>
+          <i class="pi pi-plus-circle text-sm"></i>
           <span>Conformar Comité</span>
         </button>
       </div>
@@ -478,7 +478,7 @@
 
         <div class="flex items-center gap-2 flex-wrap">
           <div class="relative flex items-center">
-            <ion-icon name="search-outline" class="absolute left-2.5 text-dark-text text-xs pointer-events-none"></ion-icon>
+            <i class="pi pi-search absolute left-2.5 text-dark-text text-xs pointer-events-none"></i>
             <input
               type="text"
               placeholder="Buscar integrante..."
@@ -490,7 +490,7 @@
           <button
             class="h-7.5 inline-flex items-center gap-1 px-2.5 rounded-md text-xs font-medium bg-dark-accent border border-dark-border text-dark-text-light hover:bg-dark-border transition cursor-pointer"
             (click)="abrirModalMiembro(tipoComiteActual)">
-            <ion-icon name="person-add-outline" class="text-xs text-brand-primary"></ion-icon>
+            <i class="pi pi-user-plus text-xs text-brand-primary"></i>
             <span>+ Integrante</span>
           </button>
         </div>
@@ -514,7 +514,7 @@
             @if (miembrosActuales.length === 0) {
               <tr>
                 <td colspan="8" class="px-3 py-8 text-center">
-                  <ion-icon name="people-outline" class="text-3xl text-dark-text/40 mb-1"></ion-icon>
+                  <i class="pi pi-users text-3xl text-dark-text/40 mb-1"></i>
                   <p class="text-xs font-semibold text-white m-0">No hay integrantes vinculados</p>
                   <p class="text-[11px] text-dark-text m-0 mt-0.5">Haga clic en "+ Integrante" para asignar trabajadores desde el censo.</p>
                 </td>
@@ -577,7 +577,7 @@
                         class="p-1 rounded text-dark-text hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                         (click)="retirarMiembro(m.id, tipoComiteActual)"
                         title="Retirar integrante del comité">
-                        <ion-icon name="person-remove-outline" class="text-sm"></ion-icon>
+                        <i class="pi pi-user-minus text-sm"></i>
                       </button>
                     }
                   </td>
@@ -601,7 +601,7 @@
 
         <div class="flex items-center gap-2 flex-wrap">
           <div class="relative flex items-center">
-            <ion-icon name="search-outline" class="absolute left-2.5 text-dark-text text-xs pointer-events-none"></ion-icon>
+            <i class="pi pi-search absolute left-2.5 text-dark-text text-xs pointer-events-none"></i>
             <input
               type="text"
               placeholder="Buscar acta..."
@@ -613,7 +613,7 @@
           <button
             class="h-7.5 inline-flex items-center gap-1 px-2.5 rounded-md text-xs font-medium bg-dark-accent border border-dark-border text-dark-text-light hover:bg-dark-border transition cursor-pointer"
             (click)="abrirModalActa(tipoComiteActual)">
-            <ion-icon name="add-circle-outline" class="text-xs text-brand-primary"></ion-icon>
+            <i class="pi pi-plus-circle text-xs text-brand-primary"></i>
             <span>+ Registrar Acta</span>
           </button>
         </div>
@@ -637,7 +637,7 @@
             @if (actasActuales.length === 0) {
               <tr>
                 <td colspan="8" class="px-3 py-8 text-center">
-                  <ion-icon name="document-text-outline" class="text-3xl text-dark-text/40 mb-1"></ion-icon>
+                  <i class="pi pi-file text-3xl text-dark-text/40 mb-1"></i>
                   <p class="text-xs font-semibold text-white m-0">No hay actas registradas</p>
                   <p class="text-[11px] text-dark-text m-0 mt-0.5">Registre las sesiones periódicas requeridas por los estándares 1.1.6 y 1.1.7.</p>
                 </td>
@@ -667,7 +667,7 @@
                     @if (a.archivo_acta_url) {
                       <a [href]="a.archivo_acta_url" target="_blank" rel="noopener noreferrer"
                         class="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-400 hover:text-blue-300 underline">
-                        <ion-icon name="cloud-download-outline"></ion-icon>
+                        <i class="pi pi-cloud-download"></i>
                         Descargar
                       </a>
                     } @else {
@@ -679,7 +679,7 @@
                       class="p-1 rounded text-dark-text hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                       (click)="eliminarActa(a.id, tipoComiteActual)"
                       title="Eliminar acta">
-                      <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                      <i class="pi pi-trash text-sm"></i>
                     </button>
                   </td>
                 </tr>
@@ -930,7 +930,7 @@
 
           @if (advertenciaSuperposicion()) {
             <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2 text-amber-400 text-xs flex items-center gap-1.5">
-              <ion-icon name="warning-outline" class="text-sm flex-shrink-0"></ion-icon>
+              <i class="pi pi-exclamation-triangle text-sm flex-shrink-0"></i>
               <span>{{ advertenciaSuperposicion() }}</span>
             </div>
           }

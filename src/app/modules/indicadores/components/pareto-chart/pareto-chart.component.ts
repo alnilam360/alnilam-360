@@ -9,7 +9,7 @@ import { ConteoEtiqueta } from '../../../../core/models/matriz-at.model';
     <div class="bg-dark-secondary border border-dark-border rounded-xl p-4 h-full flex flex-col">
       <div class="flex items-center justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
-          <ion-icon name="bar-chart-outline" class="text-brand-primary"></ion-icon>
+          <i class="pi pi-chart-bar text-brand-primary"></i>
           <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">{{ titulo }}</span>
         </div>
         <ng-content></ng-content>

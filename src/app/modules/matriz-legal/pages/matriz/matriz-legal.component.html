@@ -3,7 +3,7 @@
   <!-- ─── Breadcrumb ──────────────────────────────────────────────────────── -->
   <nav class="flex items-center gap-1.5 text-xs text-dark-text select-none" aria-label="Ruta de navegación">
     <span>SG-SST</span>
-    <ion-icon name="chevron-forward-outline" class="text-[10px] opacity-40"></ion-icon>
+    <i class="pi pi-chevron-right text-[10px] opacity-40"></i>
     <span class="font-semibold text-dark-text-light">Cumplimiento Legal</span>
   </nav>
 
@@ -11,7 +11,7 @@
   <header class="flex flex-col gap-3 pb-3 border-b border-dark-border">
     <div class="space-y-1 min-w-0">
       <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-primary/10 border border-brand-primary/25 text-brand-primary">
-        <ion-icon name="shield-checkmark-outline" class="text-xs"></ion-icon>
+        <i class="pi pi-verified text-xs"></i>
         Dec. 1072/2015 · Res. 0312/2019
       </span>
       <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white m-0">Evaluación de Cumplimiento Legal</h1>
@@ -23,7 +23,7 @@
     <div class="flex items-center gap-2 flex-wrap">
       @if (esAdmin() && empresas().length > 1) {
         <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
-          <ion-icon name="business-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+          <i class="pi pi-building text-brand-primary text-sm flex-shrink-0"></i>
           <label for="ml-empresa" class="text-gray-400 text-[11px] font-medium select-none">Empresa:</label>
           <select id="ml-empresa" style="color-scheme: dark;"
                   class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
@@ -36,7 +36,7 @@
       }
 
       <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
-        <ion-icon name="calendar-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+        <i class="pi pi-calendar text-brand-primary text-sm flex-shrink-0"></i>
         <label for="ml-periodo" class="text-gray-400 text-[11px] font-medium select-none">Período:</label>
         <select id="ml-periodo" style="color-scheme: dark;"
                 class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
@@ -48,7 +48,7 @@
       </div>
 
       <div class="flex items-center gap-1.5 selector-pill-dark rounded-lg px-2.5 py-1 text-xs shadow-sm flex-shrink-0">
-        <ion-icon name="repeat-outline" class="text-brand-primary text-sm flex-shrink-0"></ion-icon>
+        <i class="pi pi-sync text-brand-primary text-sm flex-shrink-0"></i>
         <label for="ml-periodicidad" class="text-gray-400 text-[11px] font-medium select-none">Periodicidad:</label>
         <select id="ml-periodicidad" style="color-scheme: dark;" class="bg-transparent border-none text-white font-bold text-xs cursor-pointer outline-none focus:ring-0 pr-1"
                 [value]="periodicidad()" (change)="onPeriodicidadChange($any($event.target).value)">
@@ -72,18 +72,18 @@
 
       <button class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 min-h-10 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0 disabled:opacity-50"
               (click)="verDocumentoCorte()" [disabled]="cargando() || abriendoDoc()">
-        <ion-icon name="document-attach-outline" class="text-sm text-brand-primary"></ion-icon>
+        <i class="pi pi-file-import text-sm text-brand-primary"></i>
         <span>{{ docsCorte().length ? 'Ver documento' : 'Subir documento' }}</span>
       </button>
 
       <button class="inline-flex items-center gap-1.5 bg-dark-accent hover:bg-dark-border text-dark-text-light border border-dark-border rounded-lg px-2.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0 disabled:opacity-50"
               (click)="exportar()" [disabled]="cargando()">
-        <ion-icon name="download-outline" class="text-sm text-brand-primary"></ion-icon>
+        <i class="pi pi-download text-sm text-brand-primary"></i>
         <span>Exportar</span>
       </button>
       <button class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer whitespace-nowrap flex-shrink-0 disabled:opacity-50"
               (click)="guardar()" [disabled]="guardando() || cargando()">
-        <ion-icon name="save-outline" class="text-sm"></ion-icon>
+        <i class="pi pi-save text-sm"></i>
         <span>{{ guardando() ? 'Guardando…' : 'Guardar' }}</span>
       </button>
     </div>
@@ -92,7 +92,7 @@
   <!-- ─── Error ───────────────────────────────────────────────────────────── -->
   @if (error()) {
     <div class="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300" role="alert">
-      <ion-icon name="alert-circle-outline" class="text-sm"></ion-icon>
+      <i class="pi pi-exclamation-circle text-sm"></i>
       <span>{{ error() }}</span>
     </div>
   }
@@ -111,7 +111,7 @@
   <!-- ─── Carga ───────────────────────────────────────────────────────────── -->
   @if (cargando()) {
     <div class="flex items-center justify-center gap-2 py-16 text-dark-text text-xs">
-      <ion-spinner name="crescent" class="w-5 h-5"></ion-spinner>
+      <span class="w-5 h-5 inline-block border-2 border-current border-t-transparent rounded-full animate-spin"></span>
       <span>Cargando matriz…</span>
     </div>
   } @else if (vista() === 'documentos') {
@@ -139,7 +139,7 @@
         <div class="md:col-span-2">
           <button type="submit" [disabled]="subiendo() || !archivo() || formDoc.invalid"
                   class="inline-flex items-center gap-1.5 bg-brand-primary hover:bg-blue-600 text-white rounded-lg px-3 py-1.5 min-h-10 text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer disabled:opacity-50">
-            <ion-icon name="cloud-upload-outline" class="text-sm"></ion-icon>
+            <i class="pi pi-cloud-upload text-sm"></i>
             <span>{{ subiendo() ? 'Subiendo…' : 'Subir' }}</span>
           </button>
         </div>
@@ -175,9 +175,9 @@
                   <td class="px-3 py-1.5 text-dark-text truncate max-w-[14rem]" [title]="d.archivo_nombre">{{ d.archivo_nombre }}</td>
                   <td class="px-3 py-1.5 whitespace-nowrap text-right">
                     <button type="button" class="ml-icon-btn" (click)="abrirDocumento(d)" [disabled]="abriendoDoc()" [attr.aria-label]="'Ver ' + d.nombre">
-                      <ion-icon name="eye-outline"></ion-icon></button>
+                      <i class="pi pi-eye"></i></button>
                     <button type="button" class="ml-icon-btn ml-icon-btn--danger" (click)="eliminarDocumento(d)" [attr.aria-label]="'Eliminar ' + d.nombre">
-                      <ion-icon name="trash-outline"></ion-icon></button>
+                      <i class="pi pi-trash"></i></button>
                   </td>
                 </tr>
               }
@@ -194,7 +194,7 @@
       <!-- % SG-SST -->
       <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-emerald-500/40 transition-colors flex items-center gap-3">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          <ion-icon name="shield-checkmark-outline"></ion-icon>
+          <i class="pi pi-verified"></i>
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Cumplimiento SG-SST</span>
@@ -207,7 +207,7 @@
       <!-- % Ambiental -->
       <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-teal-500/40 transition-colors flex items-center gap-3">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-teal-500/10 text-teal-400 border border-teal-500/20">
-          <ion-icon name="leaf-outline"></ion-icon>
+          <i class="pi pi-globe"></i>
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Cumplimiento Ambiental</span>
@@ -220,7 +220,7 @@
       <!-- Total requisitos -->
       <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-blue-500/40 transition-colors flex items-center gap-3">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-blue-500/10 text-blue-400 border border-blue-500/20">
-          <ion-icon name="layers-outline"></ion-icon>
+          <i class="pi pi-clone"></i>
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Total Requisitos</span>
@@ -231,7 +231,7 @@
       <!-- En proceso / No cumple -->
       <div class="rounded-lg border border-dark-border bg-dark-secondary p-3 shadow-sm hover:border-amber-500/40 transition-colors flex items-center gap-3">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20">
-          <ion-icon name="alert-circle-outline"></ion-icon>
+          <i class="pi pi-exclamation-circle"></i>
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-[10px] font-bold uppercase tracking-wider text-dark-text truncate">Pendiente</span>
@@ -248,7 +248,7 @@
       <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
         <div class="px-3.5 py-2 border-b border-dark-border flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <ion-icon [name]="bloque.dom === 'SG_SST' ? 'shield-checkmark-outline' : 'leaf-outline'" class="text-brand-primary text-sm"></ion-icon>
+            <i class="pi text-brand-primary text-sm" [ngClass]="bloque.dom === 'SG_SST' ? 'pi-verified' : 'pi-globe'"></i>
             <h4 class="text-xs sm:text-sm font-bold text-white m-0">{{ DOMINIO_LABEL[bloque.dom] }}</h4>
           </div>
           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -312,7 +312,7 @@
     <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
       <div class="px-3.5 py-2 border-b border-dark-border flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-          <ion-icon name="bar-chart-outline" class="text-brand-primary text-sm"></ion-icon>
+          <i class="pi pi-chart-bar text-brand-primary text-sm"></i>
           <h4 class="text-xs sm:text-sm font-bold text-white m-0">Nivel de Cumplimiento Legal SST</h4>
         </div>
         <div class="flex items-center gap-3 text-[10px] text-dark-text">
@@ -340,7 +340,7 @@
     @for (bloque of bloques(); track bloque.dom) {
       <div class="rounded-lg border border-dark-border bg-dark-secondary shadow-sm overflow-hidden">
         <div class="px-3.5 py-2 border-b border-dark-border flex items-center gap-2">
-          <ion-icon [name]="bloque.dom === 'SG_SST' ? 'shield-checkmark-outline' : 'leaf-outline'" class="text-brand-primary text-sm"></ion-icon>
+          <i class="pi text-brand-primary text-sm" [ngClass]="bloque.dom === 'SG_SST' ? 'pi-verified' : 'pi-globe'"></i>
           <h4 class="text-xs sm:text-sm font-bold text-white m-0">Resumen · {{ DOMINIO_LABEL[bloque.dom] }}</h4>
         </div>
         <div class="overflow-x-auto">

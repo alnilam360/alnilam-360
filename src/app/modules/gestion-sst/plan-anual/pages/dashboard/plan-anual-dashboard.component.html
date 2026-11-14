@@ -2,7 +2,7 @@
 
   <!-- ── INICIALIZANDO ── -->
   <div *ngIf="inicializando" class="flex items-center justify-center py-16">
-    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    <span class="inline-block text-brand-primary w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
   </div>
 
   <ng-container *ngIf="!inicializando">
@@ -10,11 +10,11 @@
     <!-- ── ERROR GLOBAL ── -->
     <div *ngIf="errorMsg"
          class="mb-4 flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
-      <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+      <i class="pi pi-exclamation-circle text-red-400 text-xl flex-shrink-0 mt-0.5"></i>
       <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
       <button (click)="errorMsg = null"
               class="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
 
@@ -22,7 +22,7 @@
     <div *ngIf="esAdmin" class="p-3 bg-brand-primary/5 border border-brand-primary/30 rounded-lg">
       <div class="flex flex-col sm:flex-row sm:items-center gap-3">
         <div class="flex items-center gap-2 flex-shrink-0">
-          <ion-icon name="business-outline" class="text-brand-primary text-lg"></ion-icon>
+          <i class="pi pi-building text-brand-primary text-lg"></i>
           <label class="text-xs font-semibold text-[rgb(var(--color-heading))]">Empresa:</label>
         </div>
         <select [(ngModel)]="empresaSeleccionadaId" (ngModelChange)="onSeleccionEmpresa($event)"
@@ -47,13 +47,13 @@
 
     <!-- ── LOADING DATOS ── -->
     <div *ngIf="loadingDatos" class="flex items-center justify-center py-10">
-      <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+      <span class="inline-block text-brand-primary w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
     </div>
 
     <!-- ── SIN EMPRESA (admin) ── -->
     <div *ngIf="!loadingDatos && esAdmin && !empresaSeleccionadaId"
          class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
-      <ion-icon name="business-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+      <i class="pi pi-building text-5xl text-dark-text mb-3"></i>
       <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Seleccione una empresa para comenzar</p>
       <p class="text-[11px] text-dark-text mt-1">Elija en el selector superior la empresa sobre la que desea trabajar.</p>
     </div>
@@ -61,7 +61,7 @@
     <!-- ── SIN PLAN ── -->
     <div *ngIf="!loadingDatos && empresaSeleccionadaId && !plan"
          class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
-      <ion-icon name="calendar-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+      <i class="pi pi-calendar text-5xl text-dark-text mb-3"></i>
       <p class="text-sm text-[rgb(var(--color-heading))] font-semibold mb-1">
         Sin plan para {{ empresa?.nombre }} — {{ anioSeleccionado }}
       </p>
@@ -70,8 +70,8 @@
               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600
                      text-white text-xs font-semibold rounded-lg shadow-sm active:scale-95
                      disabled:opacity-40 disabled:cursor-not-allowed transition">
-        <ion-spinner *ngIf="guardandoEncabezado" name="crescent" class="w-4 h-4"></ion-spinner>
-        <ion-icon *ngIf="!guardandoEncabezado" name="add-outline" class="text-sm"></ion-icon>
+        <span *ngIf="guardandoEncabezado" class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+        <i *ngIf="!guardandoEncabezado" class="pi pi-plus text-sm"></i>
         Crear Plan {{ anioSeleccionado }}
       </button>
     </div>
@@ -97,8 +97,8 @@
                        disabled:opacity-50 disabled:cursor-not-allowed
                        text-white text-xs font-semibold rounded-lg
                        shadow-sm transition active:scale-95 shrink-0 self-start">
-          <ion-spinner *ngIf="exportandoExcel" name="crescent" class="w-3.5 h-3.5"></ion-spinner>
-          <ion-icon *ngIf="!exportandoExcel" name="download-outline" class="text-sm"></ion-icon>
+          <span *ngIf="exportandoExcel" class="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+          <i *ngIf="!exportandoExcel" class="pi pi-download text-sm"></i>
           Exportar Excel
         </button>
       </div>
@@ -132,7 +132,7 @@
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-brand-primary/15 border border-brand-primary/30
                             flex items-center justify-center shrink-0">
-                  <ion-icon name="document-text-outline" class="text-brand-primary text-lg"></ion-icon>
+                  <i class="pi pi-file text-brand-primary text-lg"></i>
                 </div>
                 <div>
                   <p class="text-[10px] uppercase tracking-widest text-brand-primary font-semibold">SG-SST · Plan de Trabajo</p>
@@ -147,14 +147,14 @@
                         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dark-border
                                text-dark-text hover:text-brand-primary hover:border-brand-primary/30
                                text-xs font-medium transition-all">
-                  <ion-icon name="pencil-outline" class="text-sm"></ion-icon>
+                  <i class="pi pi-pencil text-sm"></i>
                   Editar
                 </button>
                 <button (click)="encabezadoExpandido = !encabezadoExpandido"
                         class="p-1.5 rounded-lg hover:bg-dark-accent text-dark-text transition-colors">
-                  <ion-icon name="chevron-down-outline"
-                            class="transition-transform duration-200 text-lg"
-                            [class.rotate-180]="encabezadoExpandido"></ion-icon>
+                  <i
+                            class="pi pi-chevron-down transition-transform duration-200 text-lg"
+                            [class.rotate-180]="encabezadoExpandido"></i>
                 </button>
               </div>
             </div>
@@ -168,14 +168,14 @@
               <!-- Fila identificadores documento -->
               <div class="grid grid-cols-2 sm:grid-cols-4 border-t border-dark-border">
                 <div *ngFor="let c of [
-                  {label:'UEN / Empresa', val: encabezadoSst.uen,            icon:'business-outline'},
-                  {label:'Localización',  val: encabezadoSst.localizacion,   icon:'location-outline'},
-                  {label:'Elaborado y Revisado', val: encabezadoSst.elaboradoPor, icon:'person-circle-outline'},
-                  {label:'Autorizado',    val: encabezadoSst.autorizado,     icon:'shield-checkmark-outline'}
+                  {label:'UEN / Empresa', val: encabezadoSst.uen,            icon:'pi-building'},
+                  {label:'Localización',  val: encabezadoSst.localizacion,   icon:'pi-map-marker'},
+                  {label:'Elaborado y Revisado', val: encabezadoSst.elaboradoPor, icon:'pi-user'},
+                  {label:'Autorizado',    val: encabezadoSst.autorizado,     icon:'pi-verified'}
                 ]"
                      class="px-4 py-3 border-r border-b border-dark-border last:border-r-0">
                   <div class="flex items-center gap-1.5 mb-1">
-                    <ion-icon [name]="c.icon" class="text-brand-primary text-[11px]"></ion-icon>
+                    <i class="pi text-brand-primary text-[11px]" [ngClass]="c.icon"></i>
                     <p class="text-[9px] uppercase tracking-widest text-dark-text font-semibold">{{ c.label }}</p>
                   </div>
                   <p class="text-sm text-[rgb(var(--color-heading))] font-semibold leading-tight">{{ c.val || '—' }}</p>
@@ -187,7 +187,7 @@
                 <!-- Objetivo (ocupa 2 columnas en sm) -->
                 <div class="sm:col-span-2 px-4 py-3 border-r border-b border-dark-border sm:border-b-0">
                   <div class="flex items-center gap-1.5 mb-1.5">
-                    <ion-icon name="flag-outline" class="text-brand-primary text-xs"></ion-icon>
+                    <i class="pi pi-flag text-brand-primary text-xs"></i>
                     <p class="text-[9px] uppercase tracking-widest text-dark-text font-semibold">Objetivo del Plan</p>
                   </div>
                   <p class="text-sm text-[rgb(var(--color-heading))] leading-relaxed">{{ plan.objetivo || '—' }}</p>
@@ -196,7 +196,7 @@
                 <!-- Meta % con indicador visual -->
                 <div class="px-4 py-3 flex flex-col justify-between border-b border-dark-border sm:border-b-0">
                   <div class="flex items-center gap-1.5 mb-2">
-                    <ion-icon name="analytics-outline" class="text-brand-primary text-xs"></ion-icon>
+                    <i class="pi pi-chart-line text-brand-primary text-xs"></i>
                     <p class="text-[9px] uppercase tracking-widest text-dark-text font-semibold">Meta de Cumplimiento</p>
                   </div>
                   <div class="flex items-end gap-3">
@@ -214,13 +214,13 @@
               <!-- Alcance, Recursos, Meta -->
               <div class="grid grid-cols-1 sm:grid-cols-3 border-t border-dark-border">
                 <div *ngFor="let c of [
-                  {label:'Alcance',   val: plan.alcance,   icon:'expand-outline'},
-                  {label:'Recursos',  val: plan.recursos,  icon:'wallet-outline'},
-                  {label:'Meta',      val: plan.meta,      icon:'ribbon-outline'}
+                  {label:'Alcance',   val: plan.alcance,   icon:'pi-arrows-alt'},
+                  {label:'Recursos',  val: plan.recursos,  icon:'pi-wallet'},
+                  {label:'Meta',      val: plan.meta,      icon:'pi-star'}
                 ]"
                      class="px-4 py-3 border-r border-dark-border last:border-r-0">
                   <div class="flex items-center gap-1.5 mb-1">
-                    <ion-icon [name]="c.icon" class="text-brand-primary text-xs"></ion-icon>
+                    <i class="pi text-brand-primary text-xs" [ngClass]="c.icon"></i>
                     <p class="text-[9px] uppercase tracking-widest text-dark-text font-semibold">{{ c.label }}</p>
                   </div>
                   <p class="text-sm text-[rgb(var(--color-heading))] leading-relaxed">{{ c.val || '—' }}</p>
@@ -233,28 +233,28 @@
             <form *ngIf="editandoEncabezado" (ngSubmit)="guardarEncabezado()" class="border-t border-dark-border">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
                 <div class="campo-auxiliar">
-                  <ion-icon name="flag-outline" class="campo-icon"></ion-icon>
+                  <i class="pi pi-flag campo-icon"></i>
                   <div class="campo-body">
                     <span class="campo-label">Objetivo del Plan</span>
                     <textarea rows="2" name="objetivo" [(ngModel)]="encabezadoForm.objetivo" class="campo-input"></textarea>
                   </div>
                 </div>
                 <div class="campo-auxiliar">
-                  <ion-icon name="expand-outline" class="campo-icon"></ion-icon>
+                  <i class="pi pi-arrows-alt campo-icon"></i>
                   <div class="campo-body">
                     <span class="campo-label">Alcance</span>
                     <textarea rows="2" name="alcance" [(ngModel)]="encabezadoForm.alcance" class="campo-input"></textarea>
                   </div>
                 </div>
                 <div class="campo-auxiliar">
-                  <ion-icon name="wallet-outline" class="campo-icon"></ion-icon>
+                  <i class="pi pi-wallet campo-icon"></i>
                   <div class="campo-body">
                     <span class="campo-label">Recursos</span>
                     <textarea rows="2" name="recursos" [(ngModel)]="encabezadoForm.recursos" class="campo-input"></textarea>
                   </div>
                 </div>
                 <div class="campo-auxiliar">
-                  <ion-icon name="ribbon-outline" class="campo-icon"></ion-icon>
+                  <i class="pi pi-star campo-icon"></i>
                   <div class="campo-body">
                     <span class="campo-label">Meta</span>
                     <textarea rows="2" name="meta" [(ngModel)]="encabezadoForm.meta" class="campo-input"></textarea>
@@ -263,7 +263,7 @@
               </div>
               <div class="flex items-center gap-4 px-4 pb-4">
                 <div class="campo-auxiliar" style="max-width: 160px">
-                  <ion-icon name="analytics-outline" class="campo-icon"></ion-icon>
+                  <i class="pi pi-chart-line campo-icon"></i>
                   <div class="campo-body">
                     <span class="campo-label">Meta %</span>
                     <input type="number" min="0" max="100" name="meta_porcentaje"
@@ -278,8 +278,8 @@
                   <button type="submit" [disabled]="guardandoEncabezado"
                           class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-brand-primary hover:bg-blue-600
                                  disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-brand-primary/20 transition-all">
-                    <ion-spinner *ngIf="guardandoEncabezado" name="crescent" class="w-3 h-3"></ion-spinner>
-                    <ion-icon *ngIf="!guardandoEncabezado" name="save-outline" class="text-sm"></ion-icon>
+                    <span *ngIf="guardandoEncabezado" class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                    <i *ngIf="!guardandoEncabezado" class="pi pi-save text-sm"></i>
                     Guardar
                   </button>
                 </div>
@@ -318,7 +318,7 @@
             <button (click)="abrirNuevaActividad()"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600
                            text-white text-xs rounded-lg font-semibold transition active:scale-95 shadow-sm shrink-0">
-              <ion-icon name="add-outline" class="text-sm"></ion-icon>
+              <i class="pi pi-plus text-sm"></i>
               <span>Agregar</span>
             </button>
           </div>
@@ -329,7 +329,7 @@
             <!-- Vacío -->
             <div *ngIf="actividadesFiltradas.length === 0"
                  class="p-12 text-center">
-              <ion-icon name="clipboard-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+              <i class="pi pi-clipboard text-5xl text-dark-text mb-3"></i>
               <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Sin actividades registradas</p>
               <p class="text-[11px] text-dark-text mt-1">Haga clic en "Agregar" para comenzar.</p>
             </div>
@@ -404,11 +404,11 @@
                       <div class="flex flex-col gap-1 items-center">
                         <button (click)="abrirEditarActividad(act)"
                                 class="p-1.5 rounded-lg hover:bg-dark-accent text-dark-text hover:text-brand-primary transition-all">
-                          <ion-icon name="pencil-outline" class="text-base"></ion-icon>
+                          <i class="pi pi-pencil text-base"></i>
                         </button>
                         <button (click)="eliminarActividad(act)"
                                 class="p-1.5 rounded-lg hover:bg-red-500/10 text-dark-text hover:text-red-400 transition-all">
-                          <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                          <i class="pi pi-trash text-base"></i>
                         </button>
                       </div>
                     </td>
@@ -631,8 +631,8 @@
                               class="flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600
                                      disabled:opacity-50 text-white text-xs font-semibold rounded-lg
                                      shadow-md shadow-brand-primary/20 transition-all mx-auto">
-                        <ion-spinner *ngIf="guardandoTrimestre === t.periodo" name="crescent" class="w-3 h-3"></ion-spinner>
-                        <ion-icon *ngIf="guardandoTrimestre !== t.periodo" name="save-outline" class="text-sm"></ion-icon>
+                        <span *ngIf="guardandoTrimestre === t.periodo" class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                        <i *ngIf="guardandoTrimestre !== t.periodo" class="pi pi-save text-sm"></i>
                         Guardar
                       </button>
                     </td>
@@ -692,10 +692,8 @@
   </ng-container>
 
   <!-- MODAL ACTIVIDAD -->
-  <ion-modal [isOpen]="mostrarModalActividad"
-             (didDismiss)="mostrarModalActividad = false"
-             cssClass="actividad-modal-dialog">
-    <ng-template>
+  <div *ngIf="mostrarModalActividad" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" (click)="cerrarModalActividad()">
+    <div class="w-full max-w-2xl bg-dark-secondary border border-dark-border rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
       <app-actividad-form-modal
         [plan]="plan"
         [actividad]="actividadEditar"
@@ -707,7 +705,7 @@
         (guardado)="onActividadGuardada()"
         (cancelado)="cerrarModalActividad()">
       </app-actividad-form-modal>
-    </ng-template>
-  </ion-modal>
+    </div>
+  </div>
 
 </div>

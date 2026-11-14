@@ -6,7 +6,7 @@
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-base font-bold text-[rgb(var(--color-heading))]">{{ modoEditar ? 'Editar caso' : 'Reportar caso' }}</h3>
         <button (click)="cerrar.emit()" class="p-1.5 text-dark-text hover:text-[rgb(var(--color-heading))] rounded-lg hover:bg-dark-accent transition">
-          <ion-icon name="close-outline" class="text-lg"></ion-icon>
+          <i class="pi pi-times text-lg"></i>
         </button>
       </div>
       <div class="flex items-center gap-1">
@@ -29,7 +29,7 @@
     <div class="flex-1 overflow-y-auto p-4 space-y-4">
 
       <div *ngIf="error()" class="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-        <ion-icon name="alert-circle-outline" class="text-red-400 text-lg flex-shrink-0 mt-0.5"></ion-icon>
+        <i class="pi pi-exclamation-circle text-red-400 text-lg flex-shrink-0 mt-0.5"></i>
         <p class="text-xs text-red-300">{{ error() }}</p>
       </div>
 
@@ -65,14 +65,14 @@
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-[11px] text-dark-text font-medium flex items-center gap-1.5">
-              <ion-icon name="people-outline" class="text-brand-primary"></ion-icon> Trabajador registrado *
+              <i class="pi pi-users text-brand-primary"></i> Trabajador registrado *
             </span>
             <span class="text-[10px] text-brand-primary/80 font-mono">Solo trabajadores registrados</span>
           </div>
 
           <!-- Trabajador seleccionado -->
           <div *ngIf="trabajadorSeleccionado" class="flex items-center gap-2 p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-            <ion-icon name="person-circle-outline" class="text-emerald-400 text-lg flex-shrink-0"></ion-icon>
+            <i class="pi pi-user text-emerald-400 text-lg flex-shrink-0"></i>
             <div class="flex-1 min-w-0">
               <p class="text-xs font-medium text-[rgb(var(--color-heading))]">{{ trabajadorSeleccionado.nombre }}</p>
               <p class="text-[10px] text-dark-text">
@@ -81,7 +81,7 @@
               </p>
             </div>
             <button type="button" (click)="clearTrabajadorSelection()" class="p-1 text-dark-text hover:text-red-400 transition" title="Cambiar trabajador">
-              <ion-icon name="close-circle-outline" class="text-base"></ion-icon>
+              <i class="pi pi-times-circle text-base"></i>
             </button>
           </div>
 
@@ -96,7 +96,7 @@
                  class="absolute z-10 w-full mt-1 bg-dark-secondary border border-dark-border rounded-lg shadow-xl max-h-48 overflow-y-auto">
               <button *ngFor="let t of trabajadoresFiltrados" type="button" (click)="onTrabajadorSelect(t)"
                       class="w-full text-left px-3 py-2 hover:bg-dark-accent transition flex items-center gap-2 border-b border-dark-border/30 last:border-0">
-                <ion-icon name="person-outline" class="text-dark-text"></ion-icon>
+                <i class="pi pi-user text-dark-text"></i>
                 <div class="flex-1">
                   <p class="text-xs text-[rgb(var(--color-heading))]">{{ t.nombre }}</p>
                   <p class="text-[10px] text-dark-text">C.C. {{ t.documento }} · {{ t.cargo || '—' }}</p>
@@ -104,10 +104,10 @@
               </button>
             </div>
             <p *ngIf="queryTrabajador && trabajadoresFiltrados.length === 0" class="text-[10px] text-amber-400 mt-1 flex items-center gap-1">
-              <ion-icon name="alert-circle-outline"></ion-icon> No se encontró. Si no está registrado en la sede, créelo primero en Empresas > Trabajadores.
+              <i class="pi pi-exclamation-circle"></i> No se encontró. Si no está registrado en la sede, créelo primero en Empresas > Trabajadores.
             </p>
             <p *ngIf="form.sede_id && trabajadoresSede.length === 0" class="text-[10px] text-amber-400/90 mt-1 flex items-center gap-1">
-              <ion-icon name="information-circle-outline"></ion-icon> Esta sede aún no tiene trabajadores activos registrados. Diríjase a Empresas > Trabajadores para crearlos.
+              <i class="pi pi-info-circle"></i> Esta sede aún no tiene trabajadores activos registrados. Diríjase a Empresas > Trabajadores para crearlos.
             </p>
           </div>
         </div>
@@ -142,11 +142,11 @@
           <span class="text-[11px] text-dark-text">Foto del sitio (opcional)</span>
           <button *ngIf="esNativo" type="button" (click)="tomarFoto()"
                   class="mt-1 w-full flex items-center gap-2 px-3 py-2 bg-dark-secondary border border-dashed border-dark-border rounded-lg text-sm text-dark-text hover:border-brand-primary transition">
-            <ion-icon name="camera-outline" class="text-lg"></ion-icon>
+            <i class="pi pi-camera text-lg"></i>
             <span>{{ archivo ? archivo.name : 'Tomar foto con la cámara' }}</span>
           </button>
           <label *ngIf="!esNativo" class="mt-1 flex items-center gap-2 px-3 py-2 bg-dark-secondary border border-dashed border-dark-border rounded-lg text-sm text-dark-text cursor-pointer hover:border-brand-primary transition">
-            <ion-icon name="camera-outline" class="text-lg"></ion-icon>
+            <i class="pi pi-camera text-lg"></i>
             <span>{{ archivo ? archivo.name : 'Tomar o adjuntar foto' }}</span>
             <input type="file" accept="image/*" capture="environment" (change)="onArchivo($event)" class="hidden">
           </label>
@@ -195,11 +195,11 @@
 
         <!-- Aviso ARL -->
         <div *ngIf="reporteInmediatoArl" class="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-          <ion-icon name="warning-outline" class="text-red-400 text-lg flex-shrink-0 mt-0.5"></ion-icon>
+          <i class="pi pi-exclamation-triangle text-red-400 text-lg flex-shrink-0 mt-0.5"></i>
           <p class="text-xs text-red-300">Accidente grave/mortal: <strong>reporte inmediato a la ARL</strong> (Res. 156/2005).</p>
         </div>
         <div *ngIf="!reporteInmediatoArl && limiteArl" class="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-          <ion-icon name="time-outline" class="text-amber-400 text-lg flex-shrink-0 mt-0.5"></ion-icon>
+          <i class="pi pi-clock text-amber-400 text-lg flex-shrink-0 mt-0.5"></i>
           <p class="text-xs text-amber-300">Reporte a la ARL hasta el <strong>{{ limiteArl | date:'dd MMM y' }}</strong> (2 días hábiles).</p>
         </div>
 
@@ -288,7 +288,7 @@
       <!-- PASO 3 · Investigación -->
       <div *ngIf="paso() === 3" class="space-y-3">
         <p *ngIf="limiteInvestigacion" class="text-[11px] text-amber-300 flex items-center gap-1.5">
-          <ion-icon name="information-circle-outline"></ion-icon>
+          <i class="pi pi-info-circle"></i>
           Plazo de investigación: hasta el {{ limiteInvestigacion | date:'dd MMM y' }} (15 días, Res. 1401/2007). Puede completarse después.
         </p>
         <label class="block">
@@ -348,7 +348,7 @@
         <div *ngFor="let a of acciones; let i = index" class="p-3 bg-dark-secondary border border-dark-border rounded-lg space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-[11px] text-dark-text font-semibold">Acción {{ i + 1 }}</span>
-            <button (click)="quitarAccion(i)" class="text-red-400 hover:text-red-300"><ion-icon name="trash-outline"></ion-icon></button>
+            <button (click)="quitarAccion(i)" class="text-red-400 hover:text-red-300"><i class="pi pi-trash"></i></button>
           </div>
           <textarea [(ngModel)]="a.descripcion_accion" rows="2" placeholder="Descripción de la acción correctiva"
                     class="w-full px-3 py-2 bg-dark-primary border border-dark-border rounded-lg text-sm text-[rgb(var(--color-heading))] focus:outline-none focus:border-brand-primary"></textarea>
@@ -370,7 +370,7 @@
           </div>
         </div>
         <button (click)="agregarAccion()" class="w-full flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-dark-border rounded-lg text-sm text-dark-text hover:border-brand-primary hover:text-brand-primary transition">
-          <ion-icon name="add-outline"></ion-icon> Agregar acción
+          <i class="pi pi-plus"></i> Agregar acción
         </button>
         <p class="text-[11px] text-dark-text">La investigación y las acciones pueden completarse después; el reporte inicial no las exige.</p>
       </div>
@@ -384,7 +384,7 @@
               class="px-5 py-2 text-sm rounded-xl bg-brand-primary hover:bg-blue-600 text-white font-medium transition">Siguiente</button>
       <button *ngIf="paso() === 4" (click)="guardar()" [disabled]="guardando()"
               class="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition disabled:opacity-50">
-        <ion-spinner *ngIf="guardando()" name="crescent" class="w-4 h-4"></ion-spinner>
+        <span *ngIf="guardando()" class="w-4 h-4 inline-block border-2 border-current border-t-transparent rounded-full animate-spin"></span>
         <span>{{ modoEditar ? 'Guardar cambios' : 'Guardar caso' }}</span>
       </button>
     </div>

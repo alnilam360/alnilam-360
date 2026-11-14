@@ -3,7 +3,7 @@
   <div class="p-3.5 sm:p-4 border-b border-dark-border/80 flex items-center justify-between gap-3 bg-dark-secondary/80">
     <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-lg bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary shrink-0">
-        <ion-icon name="time-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-clock text-lg"></i>
       </div>
       <div>
         <h3 class="text-xs sm:text-sm font-bold text-[rgb(var(--color-heading))] tracking-tight">
@@ -50,10 +50,7 @@
               [class.is-expanded]="expanded"
               [title]="expanded ? 'Ocultar detalles' : 'Ver trazabilidad completa'"
             >
-              <ion-icon
-                [name]="expanded ? 'chevron-down-outline' : 'chevron-forward-outline'"
-                class="text-xs transition-transform duration-200"
-              ></ion-icon>
+              <i class="pi text-xs transition-transform duration-200" [ngClass]="expanded ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
             </button>
           </td>
 
@@ -102,7 +99,7 @@
           <td>
             <div class="flex items-center gap-2">
               <div class="w-6 h-6 rounded-md bg-dark-primary border border-dark-border flex items-center justify-center text-slate-400 shrink-0">
-                <ion-icon name="shield-checkmark-outline" class="text-xs"></ion-icon>
+                <i class="pi pi-verified text-xs"></i>
               </div>
               <div class="min-w-0">
                 <span class="text-xs font-semibold text-slate-200 block truncate" [title]="ver.aprobado_por_nombre || 'Pendiente'">
@@ -137,7 +134,7 @@
               title="Cargar esta versión en el visor"
               class="w-7 h-7 rounded-md inline-flex items-center justify-center text-slate-400 hover:text-brand-primary hover:bg-brand-primary/10 transition-colors"
             >
-              <ion-icon name="eye-outline" class="text-sm"></ion-icon>
+              <i class="pi pi-eye text-sm"></i>
             </button>
           </td>
         </tr>
@@ -151,7 +148,7 @@
               <!-- Bloque 1: Responsables -->
               <div class="p-3 rounded-lg bg-dark-secondary/70 border border-dark-border/80 space-y-2">
                 <div class="flex items-center gap-1.5 text-slate-300 font-bold border-b border-dark-border/60 pb-1.5">
-                  <ion-icon name="people-outline" class="text-brand-primary"></ion-icon>
+                  <i class="pi pi-users text-brand-primary"></i>
                   <span>Cadena de Responsabilidad</span>
                 </div>
                 <div class="space-y-1.5 text-[11px]">
@@ -189,7 +186,7 @@
               <!-- Bloque 2: Alcance -->
               <div class="p-3 rounded-lg bg-dark-secondary/70 border border-dark-border/80 space-y-2">
                 <div class="flex items-center gap-1.5 text-slate-300 font-bold border-b border-dark-border/60 pb-1.5">
-                  <ion-icon name="document-text-outline" class="text-brand-primary"></ion-icon>
+                  <i class="pi pi-file text-brand-primary"></i>
                   <span>Alcance Registrado</span>
                 </div>
                 <p class="text-slate-300 text-[11px] leading-relaxed whitespace-pre-wrap">
@@ -201,7 +198,7 @@
               <div class="p-3 rounded-lg bg-dark-secondary/70 border border-dark-border/80 flex flex-col justify-between space-y-2">
                 <div>
                   <div class="flex items-center gap-1.5 text-slate-300 font-bold border-b border-dark-border/60 pb-1.5">
-                    <ion-icon name="calendar-outline" class="text-brand-primary"></ion-icon>
+                    <i class="pi pi-calendar text-brand-primary"></i>
                     <span>Cronología de Vigencia</span>
                   </div>
                   <div class="space-y-1 text-[11px] font-mono mt-2">
@@ -229,7 +226,7 @@
                   (click)="onVerVersion(ver)"
                   class="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 bg-brand-primary/20 hover:bg-brand-primary/30 text-brand-primary border border-brand-primary/40 rounded-lg text-xs font-bold transition-all shadow-sm mt-2"
                 >
-                  <ion-icon name="arrow-undo-outline" class="text-sm"></ion-icon>
+                  <i class="pi pi-undo text-sm"></i>
                   <span>Cargar versión v{{ ver.version }} en visor</span>
                 </button>
               </div>
@@ -243,7 +240,7 @@
         <tr>
           <td colspan="7" class="text-center py-8 text-dark-text text-xs">
             <div class="flex flex-col items-center gap-1">
-              <ion-icon name="folder-open-outline" class="text-2xl text-slate-600 mb-1"></ion-icon>
+              <i class="pi pi-folder-open text-2xl text-slate-600 mb-1"></i>
               <span class="font-semibold text-slate-400">No hay versiones registradas aún</span>
               <span class="text-[11px] text-slate-600">Las versiones aparecerán aquí a medida que se gestionen los borradores.</span>
             </div>

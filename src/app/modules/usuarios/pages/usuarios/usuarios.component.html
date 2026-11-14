@@ -7,7 +7,7 @@
         </div>
         <button (click)="openModal()"
             class="flex items-center gap-2 px-3 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
-            <ion-icon name="person-add-outline" class="text-lg"></ion-icon>
+            <i class="pi pi-user-plus text-lg"></i>
             <span>Agregar Usuario</span>
         </button>
     </div>
@@ -24,8 +24,7 @@
             <ng-template pTemplate="caption">
                 <div class="flex items-center justify-between gap-3">
                     <div class="relative flex-1 max-w-md">
-                        <ion-icon name="search-outline"
-                            class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></ion-icon>
+                        <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></i>
                         <input type="text" (input)="onGlobalFilter($event)"
                             placeholder="Buscar por nombre, email, rol..."
                             class="w-full pl-9 pr-3 py-2 text-sm bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200">
@@ -65,19 +64,18 @@
                         <div class="flex items-center justify-center gap-1">
                             <button (click)="editUsuario(usuario)" title="Editar usuario"
                                 class="p-1 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
-                                <ion-icon name="create-outline" class="text-base"></ion-icon>
+                                <i class="pi pi-pencil text-base"></i>
                             </button>
                             <button (click)="toggleEstado(usuario)"
                                 [title]="usuario.estado ? 'Desactivar usuario' : 'Activar usuario'"
                                 class="p-1 rounded text-dark-text hover:bg-dark-accent transition-all duration-200"
                                 [class.hover:text-red-500]="usuario.estado"
                                 [class.hover:text-green-500]="!usuario.estado">
-                                <ion-icon [name]="usuario.estado ? 'toggle-outline' : 'toggle-outline'"
-                                    class="text-base"></ion-icon>
+                                <i class="pi text-base" [ngClass]="usuario.estado ? 'pi-circle-on' : 'pi-circle-on'"></i>
                             </button>
                             <button (click)="deleteUsuario(usuario.id)" title="Eliminar usuario"
                                 class="p-1 rounded text-dark-text hover:text-red-500 hover:bg-dark-accent transition-all duration-200">
-                                <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                                <i class="pi pi-trash text-base"></i>
                             </button>
                         </div>
                     </td>
@@ -120,7 +118,7 @@
                 <tr>
                     <td colspan="8" class="text-center py-8">
                         <div class="flex flex-col items-center gap-2">
-                            <ion-icon name="people-outline" class="text-3xl text-dark-text"></ion-icon>
+                            <i class="pi pi-users text-3xl text-dark-text"></i>
                             <p class="text-xs text-dark-text">No se encontraron usuarios</p>
                         </div>
                     </td>
@@ -144,7 +142,7 @@
             </h3>
             <button (click)="closeModal()"
                 class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
-                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+                <i class="pi pi-times text-lg"></i>
             </button>
         </div>
 
@@ -156,7 +154,7 @@
                 <div class="form-section">
                     <h4
                         class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-                        <ion-icon name="person-outline" class="text-base text-brand-primary"></ion-icon>
+                        <i class="pi pi-user text-base text-brand-primary"></i>
                         Información Personal
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -182,7 +180,7 @@
                 <div class="form-section">
                     <h4
                         class="flex items-center gap-2 text-sm font-semibold text-[rgb(var(--color-heading))] mb-3 pb-1.5 border-b border-dark-border">
-                        <ion-icon name="business-outline" class="text-base text-brand-primary"></ion-icon>
+                        <i class="pi pi-building text-base text-brand-primary"></i>
                         Asignación y Rol
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">

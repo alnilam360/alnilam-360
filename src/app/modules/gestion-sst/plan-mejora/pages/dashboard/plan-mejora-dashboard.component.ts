@@ -34,10 +34,10 @@ export class PlanMejoraDashboardComponent implements OnInit {
     hallazgosFiltrados: SstPlanMejora[] = [];
 
     filtros: FiltroEstado[] = [
-        { label: 'Todos', value: null, icon: 'layers-outline', color: 'text-brand-primary', count: 0 },
-        { label: 'Pendientes', value: 'Pendiente', icon: 'alert-circle-outline', color: 'text-amber-400', count: 0 },
-        { label: 'En Proceso', value: 'En Proceso', icon: 'sync-outline', color: 'text-blue-400', count: 0 },
-        { label: 'Cerrados', value: 'Cerrado', icon: 'checkmark-circle-outline', color: 'text-emerald-400', count: 0 }
+        { label: 'Todos', value: null, icon: 'pi-clone', color: 'text-brand-primary', count: 0 },
+        { label: 'Pendientes', value: 'Pendiente', icon: 'pi-exclamation-circle', color: 'text-amber-400', count: 0 },
+        { label: 'En Proceso', value: 'En Proceso', icon: 'pi-sync', color: 'text-blue-400', count: 0 },
+        { label: 'Cerrados', value: 'Cerrado', icon: 'pi-check-circle', color: 'text-emerald-400', count: 0 }
     ];
     filtroActivo: EstadoPlanMejora | null = null;
 
@@ -296,9 +296,9 @@ export class PlanMejoraDashboardComponent implements OnInit {
 
     iconEstado(estado: EstadoPlanMejora): string {
         return {
-            'Pendiente': 'alert-circle-outline',
-            'En Proceso': 'sync-outline',
-            'Cerrado': 'checkmark-circle-outline'
+            'Pendiente': 'pi-exclamation-circle',
+            'En Proceso': 'pi-sync',
+            'Cerrado': 'pi-check-circle'
         }[estado];
     }
 

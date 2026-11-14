@@ -26,7 +26,7 @@
       <div class="flex flex-col gap-3 w-full max-w-sm">
         <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-accent/30 backdrop-blur-sm border border-dark-border/50 hover:border-blue-500/50 transition-all">
           <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
-            <ion-icon name="analytics-outline" class="text-lg text-blue-400"></ion-icon>
+            <i class="pi pi-chart-line text-lg text-blue-400"></i>
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="text-white font-semibold text-sm truncate">Monitoreo en Tiempo Real</h3>
@@ -36,7 +36,7 @@
         
         <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-accent/30 backdrop-blur-sm border border-dark-border/50 hover:border-green-500/50 transition-all">
           <div class="w-10 h-10 rounded-xl bg-green-500/15 flex items-center justify-center flex-shrink-0">
-            <ion-icon name="checkmark-circle-outline" class="text-lg text-green-400"></ion-icon>
+            <i class="pi pi-check-circle text-lg text-green-400"></i>
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="text-white font-semibold text-sm truncate">Gestión de Cumplimiento</h3>
@@ -46,7 +46,7 @@
         
         <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-accent/30 backdrop-blur-sm border border-dark-border/50 hover:border-purple-500/50 transition-all">
           <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center flex-shrink-0">
-            <ion-icon name="document-text-outline" class="text-lg text-purple-400"></ion-icon>
+            <i class="pi pi-file text-lg text-purple-400"></i>
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="text-white font-semibold text-sm truncate">Documentación Digital</h3>
@@ -80,7 +80,7 @@
       <div 
         *ngIf="errorMessage"
         class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3">
-        <ion-icon name="alert-circle" class="text-xl text-red-400 flex-shrink-0"></ion-icon>
+        <i class="pi pi-exclamation-circle text-xl text-red-400 flex-shrink-0"></i>
         <p class="text-red-400 text-sm">{{ errorMessage }}</p>
       </div>
       
@@ -91,7 +91,7 @@
           <label class="block text-sm font-medium text-dark-text mb-2">Correo Electrónico</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <ion-icon name="mail-outline" class="text-xl text-dark-text"></ion-icon>
+              <i class="pi pi-envelope text-xl text-dark-text"></i>
             </div>
             <input 
               type="email"
@@ -103,7 +103,7 @@
               [class.focus:ring-red-500]="email?.invalid && email?.touched">
           </div>
           <p *ngIf="email?.invalid && email?.touched" class="mt-2 text-sm text-red-400 flex items-center gap-1">
-            <ion-icon name="information-circle-outline" class="text-base"></ion-icon>
+            <i class="pi pi-info-circle text-base"></i>
             <span *ngIf="email?.errors?.['required']">El correo es requerido</span>
             <span *ngIf="email?.errors?.['email']">Ingresa un correo válido</span>
           </p>
@@ -114,7 +114,7 @@
           <label class="block text-sm font-medium text-dark-text mb-2">Contraseña</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <ion-icon name="lock-closed-outline" class="text-xl text-dark-text"></ion-icon>
+              <i class="pi pi-lock text-xl text-dark-text"></i>
             </div>
             <input 
               [type]="showPassword ? 'text' : 'password'"
@@ -128,11 +128,11 @@
               type="button"
               (click)="togglePasswordVisibility()"
               class="absolute inset-y-0 right-0 pr-4 flex items-center text-dark-text hover:text-white transition-colors">
-              <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" class="text-xl"></ion-icon>
+              <i class="pi text-xl" [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
             </button>
           </div>
           <p *ngIf="password?.invalid && password?.touched" class="mt-2 text-sm text-red-400 flex items-center gap-1">
-            <ion-icon name="information-circle-outline" class="text-base"></ion-icon>
+            <i class="pi pi-info-circle text-base"></i>
             <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
             <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
           </p>
@@ -165,7 +165,7 @@
             </svg>
             Ingresando...
           </span>
-          <ion-icon *ngIf="!isLoading" name="arrow-forward" class="text-xl"></ion-icon>
+          <i *ngIf="!isLoading" class="pi pi-arrow-right text-xl"></i>
         </button>
       </form>
       

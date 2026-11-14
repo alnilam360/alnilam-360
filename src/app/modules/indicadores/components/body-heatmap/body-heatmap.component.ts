@@ -15,7 +15,7 @@ type ZonaKey =
   template: `
     <div class="bg-dark-secondary border border-dark-border rounded-xl p-4 h-full flex flex-col">
       <div class="flex items-center gap-2 mb-3">
-        <ion-icon name="body-outline" class="text-brand-primary"></ion-icon>
+        <i class="pi pi-user text-brand-primary"></i>
         <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">Mapa corporal de lesiones</span>
       </div>
 

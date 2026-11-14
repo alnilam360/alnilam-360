@@ -42,14 +42,14 @@
       height: 65%;
     }
 
-    ion-icon {
+    i.pi {
       color: rgb(var(--color-brand-primary));
     }
   }
 }
 
 /* PHVA group — colored left border on active */
-.phva-badge + span + ion-icon,
+.phva-badge + span + i.pi,
 .phva-badge ~ * {
   transition: opacity 0.2s;
 }

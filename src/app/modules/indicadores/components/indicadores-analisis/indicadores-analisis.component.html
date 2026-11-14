@@ -6,12 +6,12 @@
         <button (click)="subTab.set('planes')"
           class="px-3 py-1.5 text-xs font-medium rounded-md transition flex items-center gap-1.5"
           [ngClass]="subTab() === 'planes' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
-          <ion-icon name="checkbox-outline"></ion-icon> Plan de Acción ({{ totalPlanes }})
+          <i class="pi pi-check-square"></i> Plan de Acción ({{ totalPlanes }})
         </button>
         <button (click)="subTab.set('analisis')"
           class="px-3 py-1.5 text-xs font-medium rounded-md transition flex items-center gap-1.5"
           [ngClass]="subTab() === 'analisis' ? 'bg-brand-primary text-white' : 'text-dark-text hover:text-[rgb(var(--color-heading))]'">
-          <ion-icon name="analytics-outline"></ion-icon> Interpretación & Diagnóstico
+          <i class="pi pi-chart-line"></i> Interpretación & Diagnóstico
         </button>
       </div>
     </div>
@@ -19,7 +19,7 @@
     <!-- Botón Nueva Acción (visible en pestaña de planes) -->
     <button *ngIf="subTab() === 'planes'" (click)="openNuevoModal()"
       class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-brand-primary hover:bg-blue-600 text-white transition flex items-center gap-1.5 shadow-md shadow-brand-primary/20">
-      <ion-icon name="add-circle-outline" class="text-sm"></ion-icon>
+      <i class="pi pi-plus-circle text-sm"></i>
       Nuevo Plan de Acción
     </button>
   </div>
@@ -32,7 +32,7 @@
         <p class="text-lg font-bold text-[rgb(var(--color-heading))]">{{ totalPlanes }}</p>
       </div>
       <div class="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-        <ion-icon name="list-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-list text-lg"></i>
       </div>
     </div>
     <div class="p-3 rounded-xl bg-dark-secondary border border-dark-border flex items-center justify-between">
@@ -41,7 +41,7 @@
         <p class="text-lg font-bold text-emerald-400">{{ completados }}</p>
       </div>
       <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-        <ion-icon name="checkmark-done-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-check-circle text-lg"></i>
       </div>
     </div>
     <div class="p-3 rounded-xl bg-dark-secondary border border-dark-border flex items-center justify-between">
@@ -50,7 +50,7 @@
         <p class="text-lg font-bold text-amber-400">{{ enEjecucion }}</p>
       </div>
       <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
-        <ion-icon name="time-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-clock text-lg"></i>
       </div>
     </div>
     <div class="p-3 rounded-xl bg-dark-secondary border border-dark-border flex items-center justify-between">
@@ -59,7 +59,7 @@
         <p class="text-lg font-bold text-rose-400">{{ pendientes }}</p>
       </div>
       <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
-        <ion-icon name="alert-circle-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-exclamation-circle text-lg"></i>
       </div>
     </div>
   </div>
@@ -68,20 +68,20 @@
   <div *ngIf="subTab() === 'planes'" class="space-y-3">
     <!-- Spinner -->
     <div *ngIf="cargando()" class="flex items-center justify-center py-12">
-      <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+      <span class="text-brand-primary w-6 h-6 inline-block border-2 border-current border-t-transparent rounded-full animate-spin"></span>
     </div>
 
     <!-- Empty State -->
     <div *ngIf="!cargando() && totalPlanes === 0"
       class="p-10 bg-dark-secondary border border-dashed border-dark-border rounded-xl text-center">
-      <ion-icon name="clipboard-outline" class="text-4xl text-dark-text mb-2"></ion-icon>
+      <i class="pi pi-clipboard text-4xl text-dark-text mb-2"></i>
       <h4 class="text-sm font-semibold text-[rgb(var(--color-heading))]">Sin planes de acción registrados</h4>
       <p class="text-xs text-dark-text mt-1 max-w-sm mx-auto">
         Registre los planes de acción derivados del análisis de los indicadores para {{ tituloIndicador }} del año {{ anio }}.
       </p>
       <button (click)="openNuevoModal()"
         class="mt-3 px-3 py-1.5 text-xs rounded-lg bg-brand-primary text-white font-medium hover:bg-blue-600 transition inline-flex items-center gap-1.5">
-        <ion-icon name="add-circle-outline"></ion-icon> Crear Primer Plan de Acción
+        <i class="pi pi-plus-circle"></i> Crear Primer Plan de Acción
       </button>
     </div>
 
@@ -113,13 +113,13 @@
             </td>
             <td class="py-2.5 px-3 whitespace-nowrap text-dark-text">
               <span class="inline-flex items-center gap-1">
-                <ion-icon name="person-outline" class="text-xs text-brand-primary"></ion-icon>
+                <i class="pi pi-user text-xs text-brand-primary"></i>
                 {{ p.responsable }}
               </span>
             </td>
             <td class="py-2.5 px-3 whitespace-nowrap text-dark-text">
               <span class="inline-flex items-center gap-1">
-                <ion-icon name="business-outline" class="text-xs text-amber-400"></ion-icon>
+                <i class="pi pi-building text-xs text-amber-400"></i>
                 {{ p.area_responsable }}
               </span>
             </td>
@@ -144,11 +144,11 @@
               <div class="flex items-center justify-end gap-1">
                 <button (click)="openEditarModal(p)" title="Editar"
                   class="p-1 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition">
-                  <ion-icon name="create-outline" class="text-sm"></ion-icon>
+                  <i class="pi pi-pencil text-sm"></i>
                 </button>
                 <button (click)="eliminar(p)" title="Eliminar"
                   class="p-1 rounded text-dark-text hover:text-rose-400 hover:bg-rose-500/10 transition">
-                  <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                  <i class="pi pi-trash text-sm"></i>
                 </button>
               </div>
             </td>
@@ -166,7 +166,7 @@
         <p class="text-xs text-dark-text">Análisis cualitativo del comportamiento de las metas, causas y severidad durante {{ anio }}.</p>
       </div>
       <button (click)="openNuevoModal()" class="px-3 py-1.5 text-xs rounded-lg bg-brand-primary text-white hover:bg-blue-600 transition flex items-center gap-1">
-        <ion-icon name="add-outline"></ion-icon> Agregar Conclusión / Acción
+        <i class="pi pi-plus"></i> Agregar Conclusión / Acción
       </button>
     </div>
 
@@ -200,13 +200,13 @@
     <!-- Header Modal -->
     <div class="flex items-center justify-between px-5 py-3.5 border-b border-dark-border bg-dark-primary/60">
       <div class="flex items-center gap-2">
-        <ion-icon name="clipboard-outline" class="text-base text-brand-primary"></ion-icon>
+        <i class="pi pi-clipboard text-base text-brand-primary"></i>
         <h3 class="text-sm font-bold text-[rgb(var(--color-heading))]">
           {{ editingPlan ? 'Editar Plan de Acción' : 'Nuevo Plan de Acción' }}
         </h3>
       </div>
       <button (click)="closeModal()" class="text-dark-text hover-theme-text p-1 rounded-lg">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
 

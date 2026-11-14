@@ -2,10 +2,10 @@
   <!-- Delete Error Alert -->
   <div *ngIf="showDeleteError"
     class="mb-4 flex items-center gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg animate-fadeIn">
-    <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0"></ion-icon>
+    <i class="pi pi-exclamation-circle text-red-400 text-xl flex-shrink-0"></i>
     <p class="text-sm text-red-300 flex-1">{{ deleteErrorMessage }}</p>
     <button (click)="dismissDeleteError()" class="p-1 text-red-400 hover:text-red-300 transition-colors">
-      <ion-icon name="close-outline" class="text-lg"></ion-icon>
+      <i class="pi pi-times text-lg"></i>
     </button>
   </div>
 
@@ -17,7 +17,7 @@
     </div>
     <button (click)="openModal()"
       class="flex items-center gap-2 px-3 py-2 bg-brand-primary hover:bg-blue-600 text-white text-sm rounded-lg font-medium transition-all duration-200 shadow-lg shadow-brand-primary/25">
-      <ion-icon name="add-outline" class="text-lg"></ion-icon>
+      <i class="pi pi-plus text-lg"></i>
       <span>Agregar Empresa</span>
     </button>
   </div>
@@ -34,8 +34,7 @@
       <ng-template pTemplate="caption">
         <div class="flex items-center justify-between gap-3">
           <div class="relative flex-1 max-w-md">
-            <ion-icon name="search-outline"
-              class="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></ion-icon>
+            <i class="pi pi-search absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-text text-lg z-10"></i>
             <input type="text" (input)="onGlobalFilter($event)" placeholder="Buscar por nombre, NIT, representante..."
               class="w-full pl-9 pr-3 py-2 text-sm bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))] placeholder-dark-text focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all duration-200">
           </div>
@@ -63,15 +62,15 @@
             <div class="flex items-center justify-center gap-1">
               <button (click)="editEmpresa(empresa)" title="Editar empresa"
                 class="p-1 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
-                <ion-icon name="create-outline" class="text-base"></ion-icon>
+                <i class="pi pi-pencil text-base"></i>
               </button>
               <button (click)="openSedesModal(empresa)" title="Gestionar sedes"
                 class="p-1 rounded text-dark-text hover:text-brand-success hover:bg-dark-accent transition-all duration-200">
-                <ion-icon name="business-outline" class="text-base"></ion-icon>
+                <i class="pi pi-building text-base"></i>
               </button>
               <button (click)="deleteEmpresa(empresa)" title="Eliminar empresa"
                 class="p-1 rounded text-dark-text hover:text-red-500 hover:bg-dark-accent transition-all duration-200">
-                <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                <i class="pi pi-trash text-base"></i>
               </button>
             </div>
           </td>
@@ -111,7 +110,7 @@
         <tr>
           <td colspan="9" class="text-center py-8">
             <div class="flex flex-col items-center gap-2">
-              <ion-icon name="business-outline" class="text-3xl text-dark-text"></ion-icon>
+              <i class="pi pi-building text-3xl text-dark-text"></i>
               <p class="text-xs text-dark-text">No se encontraron empresas</p>
             </div>
           </td>
@@ -134,7 +133,7 @@
       </h3>
       <button (click)="closeModal()"
         class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
 
@@ -145,7 +144,7 @@
         <div class="form-section">
           <h4
             class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="information-circle-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-info-circle text-sm text-brand-primary"></i>
             Información General
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -228,7 +227,7 @@
         <div class="form-section">
           <h4
             class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="person-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-user text-sm text-brand-primary"></i>
             Representante Legal
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -254,7 +253,7 @@
         <div class="form-section">
           <h4
             class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="shield-checkmark-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-verified text-sm text-brand-primary"></i>
             Encargado Sistema de Gestión de Seguridad y Salud en el Trabajo
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -280,7 +279,7 @@
         <div class="form-section">
           <h4
             class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="people-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-users text-sm text-brand-primary"></i>
             Información de los Trabajadores
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -332,7 +331,7 @@
         <div class="form-section">
           <h4
             class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="clipboard-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-clipboard text-sm text-brand-primary"></i>
             Clasificación Res. 0312 de 2019 (SGSST)
           </h4>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -356,8 +355,7 @@
             <div class="form-group md:col-span-2 lg:col-span-1 flex items-end">
               <div
                 class="w-full flex items-start gap-2 px-3 py-2 bg-brand-primary/10 border border-brand-primary/30 rounded-lg">
-                <ion-icon name="information-circle-outline"
-                  class="text-brand-primary text-base flex-shrink-0 mt-0.5"></ion-icon>
+                <i class="pi pi-info-circle text-brand-primary text-base flex-shrink-0 mt-0.5"></i>
                 <p class="text-[11px] text-[rgb(var(--color-heading))] leading-snug">
                   {{ getTipoEvaluacionHint() }}
                 </p>
@@ -370,7 +368,7 @@
         <div class="form-section">
           <h4
             class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="document-text-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-file text-sm text-brand-primary"></i>
             Descripción de la Organización
           </h4>
           <div class="form-group">
@@ -385,7 +383,7 @@
         <div class="form-section">
           <h4
             class="flex items-center gap-1.5 text-xs font-semibold text-[rgb(var(--color-heading))] mb-2 pb-1 border-b border-dark-border">
-            <ion-icon name="time-outline" class="text-sm text-brand-primary"></ion-icon>
+            <i class="pi pi-clock text-sm text-brand-primary"></i>
             Organización del Tiempo de Trabajo
           </h4>
           <div class="flex flex-wrap gap-4">
@@ -438,7 +436,7 @@
       </div>
       <button (click)="closeSedesModal()"
         class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
 
@@ -447,7 +445,7 @@
         <p class="text-xs text-dark-text">Sedes asociadas a esta empresa</p>
         <button (click)="openSedeFormModal()"
           class="flex items-center gap-2 px-3 py-1.5 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg transition-all duration-200">
-          <ion-icon name="add-outline" class="text-sm"></ion-icon>
+          <i class="pi pi-plus text-sm"></i>
           <span>Agregar Sede</span>
         </button>
       </div>
@@ -467,22 +465,22 @@
           <div class="flex items-center gap-1 ml-2">
             <button (click)="openTrabajadoresModal(sede)" title="Ver trabajadores"
               class="p-1.5 rounded text-dark-text hover:text-emerald-400 hover:bg-dark-accent transition-all duration-200">
-              <ion-icon name="people-outline" class="text-base"></ion-icon>
+              <i class="pi pi-users text-base"></i>
             </button>
             <button (click)="openSedeFormModal(sede)" title="Editar sede"
               class="p-1.5 rounded text-dark-text hover:text-brand-primary hover:bg-dark-accent transition-all duration-200">
-              <ion-icon name="create-outline" class="text-base"></ion-icon>
+              <i class="pi pi-pencil text-base"></i>
             </button>
             <button (click)="deleteSede(sede.id!)" title="Eliminar sede"
               class="p-1.5 rounded text-dark-text hover:text-red-500 hover:bg-dark-accent transition-all duration-200">
-              <ion-icon name="trash-outline" class="text-base"></ion-icon>
+              <i class="pi pi-trash text-base"></i>
             </button>
           </div>
         </div>
 
         <div *ngIf="sedes.length === 0"
           class="flex flex-col items-center justify-center py-6 text-center border border-dashed border-dark-border rounded-lg">
-          <ion-icon name="business-outline" class="text-2xl text-dark-text mb-2"></ion-icon>
+          <i class="pi pi-building text-2xl text-dark-text mb-2"></i>
           <p class="text-xs text-dark-text">No hay sedes registradas</p>
           <p class="text-[10px] text-dark-text/60 mt-1">Haga clic en "Agregar Sede" para crear una nueva</p>
         </div>
@@ -511,7 +509,7 @@
       </h3>
       <button (click)="closeSedeFormModal()"
         class="p-1.5 rounded-lg text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all duration-200">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
 

@@ -21,7 +21,7 @@ import { MatrizAtCaso, EstadoAccionCalc } from '../../../../core/models/matriz-a
             <p class="text-[11px] text-dark-text">{{ caso.fecha_hora_evento | date:'dd MMM y, HH:mm' }}<span *ngIf="caso.area_proceso"> · {{ caso.area_proceso }}</span></p>
           </div>
           <button (click)="cerrar.emit()" class="p-1.5 text-dark-text hover:text-[rgb(var(--color-heading))] rounded-lg hover:bg-dark-accent transition">
-            <ion-icon name="close-outline" class="text-lg"></ion-icon>
+            <i class="pi pi-times text-lg"></i>
           </button>
         </div>
 
@@ -33,7 +33,7 @@ import { MatrizAtCaso, EstadoAccionCalc } from '../../../../core/models/matriz-a
               <div class="flex flex-col items-center">
                 <div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-semibold"
                      [ngClass]="alcanzado(e.k) ? 'bg-brand-primary text-white' : 'bg-dark-accent text-dark-text'">
-                  <ion-icon [name]="e.icon"></ion-icon>
+                  <i [ngClass]="e.icon" class="pi"></i>
                 </div>
                 <span class="text-[9px] text-dark-text mt-1">{{ e.l }}</span>
               </div>
@@ -51,7 +51,7 @@ import { MatrizAtCaso, EstadoAccionCalc } from '../../../../core/models/matriz-a
           <div class="border border-dark-border rounded-xl overflow-hidden">
             <button (click)="toggle('evento')" class="w-full flex items-center justify-between px-4 py-3 bg-dark-secondary">
               <span class="text-sm font-semibold text-[rgb(var(--color-heading))]">Evento</span>
-              <ion-icon [name]="abierto('evento') ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-dark-text"></ion-icon>
+              <i [ngClass]="abierto('evento') ? 'pi-chevron-up' : 'pi-chevron-down'" class="pi text-dark-text"></i>
             </button>
             <div *ngIf="abierto('evento')" class="p-4 space-y-2 text-sm">
               <p class="text-[rgb(var(--color-heading))]">{{ caso.descripcion_evento || 'Sin descripción.' }}</p>
@@ -72,7 +72,7 @@ import { MatrizAtCaso, EstadoAccionCalc } from '../../../../core/models/matriz-a
           <div class="border border-dark-border rounded-xl overflow-hidden">
             <button (click)="toggle('inv')" class="w-full flex items-center justify-between px-4 py-3 bg-dark-secondary">
               <span class="text-sm font-semibold text-[rgb(var(--color-heading))]">Investigación</span>
-              <ion-icon [name]="abierto('inv') ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-dark-text"></ion-icon>
+              <i [ngClass]="abierto('inv') ? 'pi-chevron-up' : 'pi-chevron-down'" class="pi text-dark-text"></i>
             </button>
             <div *ngIf="abierto('inv')" class="p-4 text-sm">
               <div *ngIf="caso.investigacion; else sinInv" class="space-y-2">
@@ -98,7 +98,7 @@ import { MatrizAtCaso, EstadoAccionCalc } from '../../../../core/models/matriz-a
           <div class="border border-dark-border rounded-xl overflow-hidden">
             <button (click)="toggle('acc')" class="w-full flex items-center justify-between px-4 py-3 bg-dark-secondary">
               <span class="text-sm font-semibold text-[rgb(var(--color-heading))]">Acciones correctivas ({{ caso.acciones?.length || 0 }})</span>
-              <ion-icon [name]="abierto('acc') ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-dark-text"></ion-icon>
+              <i [ngClass]="abierto('acc') ? 'pi-chevron-up' : 'pi-chevron-down'" class="pi text-dark-text"></i>
             </button>
             <div *ngIf="abierto('acc')" class="p-4 space-y-2">
               <p *ngIf="!caso.acciones?.length" class="text-xs text-dark-text">Sin acciones registradas.</p>
@@ -127,9 +127,9 @@ export class CasoDetalleComponent implements OnInit {
   readonly fotoUrl = signal<string | null>(null);
 
   readonly pasos = [
-    { k: 'reportado', l: 'Reportado', icon: 'create-outline' },
-    { k: 'en_investigacion', l: 'Investigación', icon: 'search-outline' },
-    { k: 'cerrado', l: 'Cerrado', icon: 'checkmark-done-outline' },
+    { k: 'reportado', l: 'Reportado', icon: 'pi-pencil' },
+    { k: 'en_investigacion', l: 'Investigación', icon: 'pi-search' },
+    { k: 'cerrado', l: 'Cerrado', icon: 'pi-check-circle' },
   ];
 
   constructor(private svc: MatrizAtCasoService) {}

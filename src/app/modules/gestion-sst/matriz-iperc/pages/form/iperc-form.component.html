@@ -1,16 +1,16 @@
 <div class="iperc-form">
     <div *ngIf="loading" class="flex items-center justify-center py-16">
-        <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+        <span class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin w-6 h-6 text-brand-primary"></span>
     </div>
 
     <ng-container *ngIf="!loading">
         <!-- Error -->
         <div *ngIf="errorMsg"
             class="mb-4 flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
-            <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+            <i class="pi pi-exclamation-circle text-red-400 text-xl flex-shrink-0 mt-0.5"></i>
             <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
             <button (click)="errorMsg = null" class="p-1.5 text-red-400 hover:text-red-300 rounded-lg transition">
-                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+                <i class="pi pi-times text-lg"></i>
             </button>
         </div>
 
@@ -18,7 +18,7 @@
         <div class="flex items-center gap-3 mb-5">
             <button (click)="cancelar()"
                 class="p-2 rounded-xl text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent border border-transparent hover:border-dark-border transition-all">
-                <ion-icon name="arrow-back-outline" class="text-lg"></ion-icon>
+                <i class="pi pi-arrow-left text-lg"></i>
             </button>
             <div>
                 <h2 class="text-lg font-bold text-[rgb(var(--color-heading))]">
@@ -50,7 +50,7 @@
             <!-- ===== PASO 0: CONTEXTO ===== -->
             <div *ngIf="pasoActivo === 0" class="step-panel space-y-4">
                 <div class="campo-auxiliar">
-                    <ion-icon name="layers-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-clone campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Proceso / Subproceso *</span>
                         <input type="text" formControlName="proceso" class="campo-input"
@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="location-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-map-marker campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Zona / Lugar</span>
                         <input type="text" formControlName="zona_lugar" class="campo-input"
@@ -66,7 +66,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="construct-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-wrench campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Actividad *</span>
                         <input type="text" formControlName="actividad" class="campo-input"
@@ -74,7 +74,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="list-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-list campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Tarea(s)</span>
                         <textarea rows="3" formControlName="tareas" class="campo-input"
@@ -82,7 +82,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="briefcase-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-briefcase campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Cargo(s) involucrado(s)</span>
                         <input type="text" formControlName="cargo" class="campo-input"
@@ -90,7 +90,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="repeat-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-sync campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Tipo de actividad</span>
                         <div class="flex gap-4 mt-1">
@@ -113,7 +113,7 @@
             <div *ngIf="pasoActivo === 1" class="step-panel space-y-4">
                 <!-- Clasificación (estado del componente, no FormControl) -->
                 <div class="campo-auxiliar">
-                    <ion-icon name="grid-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-th-large campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Clasificación del peligro *</span>
                         <select class="campo-input"
@@ -126,7 +126,7 @@
                 </div>
                 <!-- Peligro específico en cascada -->
                 <div class="campo-auxiliar" *ngIf="clasificacionSeleccionada">
-                    <ion-icon name="warning-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-exclamation-triangle campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Descripción del peligro *</span>
                         <select formControlName="peligro_id" class="campo-input"
@@ -139,7 +139,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="location-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-map-marker campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Fuente del peligro</span>
                         <input type="text" formControlName="fuente_peligro" class="campo-input"
@@ -147,7 +147,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="medkit-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-heart campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Efectos posibles sobre la salud</span>
                         <textarea rows="3" formControlName="efectos_posibles" class="campo-input"
@@ -160,7 +160,7 @@
             <div *ngIf="pasoActivo === 2" class="step-panel space-y-4">
                 <p class="text-xs text-dark-text mb-2">Describa los controles existentes antes de implementar nuevas medidas:</p>
                 <div class="campo-auxiliar">
-                    <ion-icon name="flame-outline" class="campo-icon text-red-400"></ion-icon>
+                    <i class="pi pi-bolt campo-icon text-red-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Control en la Fuente</span>
                         <textarea rows="2" formControlName="control_fuente" class="campo-input"
@@ -168,7 +168,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="swap-horizontal-outline" class="campo-icon text-yellow-400"></ion-icon>
+                    <i class="pi pi-arrow-right-arrow-left campo-icon text-yellow-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Control en el Medio</span>
                         <textarea rows="2" formControlName="control_medio" class="campo-input"
@@ -176,7 +176,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="person-outline" class="campo-icon text-emerald-400"></ion-icon>
+                    <i class="pi pi-user campo-icon text-emerald-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Control en el Individuo</span>
                         <textarea rows="2" formControlName="control_individuo" class="campo-input"
@@ -190,7 +190,7 @@
                 <p class="text-xs text-dark-text mb-2">Evaluación del riesgo con los controles existentes (antes de nuevas medidas):</p>
                 <!-- ND -->
                 <div class="campo-auxiliar">
-                    <ion-icon name="speedometer-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-gauge campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Nivel de Deficiencia (ND)</span>
                         <select formControlName="nivel_deficiencia" class="campo-input">
@@ -202,7 +202,7 @@
                 </div>
                 <!-- NE -->
                 <div class="campo-auxiliar">
-                    <ion-icon name="time-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-clock campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Nivel de Exposición (NE)</span>
                         <select formControlName="nivel_exposicion" class="campo-input">
@@ -214,7 +214,7 @@
                 </div>
                 <!-- NC -->
                 <div class="campo-auxiliar">
-                    <ion-icon name="flash-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-bolt campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Nivel de Consecuencia (NC)</span>
                         <select formControlName="nivel_consecuencia" class="campo-input">
@@ -227,7 +227,7 @@
                 <!-- Panel de resultados -->
                 <div class="mt-2 p-4 bg-dark-primary border border-dark-border rounded-xl space-y-3">
                     <p class="text-[10px] uppercase tracking-wider text-dark-text font-bold mb-3">
-                        <ion-icon name="calculator-outline" class="mr-1"></ion-icon> Resultado GTC 45
+                        <i class="pi pi-calculator mr-1"></i> Resultado GTC 45
                     </p>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="p-3 bg-dark-secondary rounded-lg border border-dark-border">
@@ -259,7 +259,7 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="campo-auxiliar">
-                        <ion-icon name="person-outline" class="campo-icon"></ion-icon>
+                        <i class="pi pi-user campo-icon"></i>
                         <div class="campo-body">
                             <span class="campo-label">Personal directo</span>
                             <p-inputNumber formControlName="expuestos_directos"
@@ -269,7 +269,7 @@
                         </div>
                     </div>
                     <div class="campo-auxiliar">
-                        <ion-icon name="people-outline" class="campo-icon"></ion-icon>
+                        <i class="pi pi-users campo-icon"></i>
                         <div class="campo-body">
                             <span class="campo-label">Temporales / Cooperativas</span>
                             <p-inputNumber formControlName="expuestos_temporales"
@@ -279,7 +279,7 @@
                         </div>
                     </div>
                     <div class="campo-auxiliar">
-                        <ion-icon name="people-circle-outline" class="campo-icon"></ion-icon>
+                        <i class="pi pi-users campo-icon"></i>
                         <div class="campo-body">
                             <span class="campo-label">Contratistas</span>
                             <p-inputNumber formControlName="expuestos_contratistas"
@@ -289,7 +289,7 @@
                         </div>
                     </div>
                     <div class="campo-auxiliar">
-                        <ion-icon name="eye-outline" class="campo-icon"></ion-icon>
+                        <i class="pi pi-eye campo-icon"></i>
                         <div class="campo-body">
                             <span class="campo-label">Visitantes</span>
                             <p-inputNumber formControlName="expuestos_visitantes"
@@ -307,7 +307,7 @@
                 </div>
 
                 <div class="campo-auxiliar">
-                    <ion-icon name="timer-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-stopwatch campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Horas de exposición al día</span>
                         <p-inputNumber formControlName="horas_exposicion"
@@ -319,7 +319,7 @@
                 </div>
 
                 <div class="campo-auxiliar">
-                    <ion-icon name="alert-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-exclamation-triangle campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Peor consecuencia posible</span>
                         <input type="text" formControlName="peor_consecuencia" class="campo-input"
@@ -328,7 +328,7 @@
                 </div>
 
                 <div class="campo-auxiliar">
-                    <ion-icon name="document-text-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-file campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Existencia de requisito legal específico asociado</span>
                         <div class="flex items-center gap-3 mt-2">
@@ -346,7 +346,7 @@
                 <p class="text-xs text-dark-text mb-2">Jerarquía de controles — medidas concretas a implementar para reducir el riesgo:</p>
 
                 <div class="campo-auxiliar">
-                    <ion-icon name="close-circle-outline" class="campo-icon text-red-400"></ion-icon>
+                    <i class="pi pi-times-circle campo-icon text-red-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Eliminación</span>
                         <textarea rows="2" formControlName="eliminacion" class="campo-input"
@@ -354,7 +354,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="swap-vertical-outline" class="campo-icon text-orange-400"></ion-icon>
+                    <i class="pi pi-arrows-v campo-icon text-orange-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Sustitución</span>
                         <textarea rows="2" formControlName="sustitucion" class="campo-input"
@@ -362,7 +362,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="build-outline" class="campo-icon text-yellow-400"></ion-icon>
+                    <i class="pi pi-wrench campo-icon text-yellow-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Control de Ingeniería</span>
                         <textarea rows="2" formControlName="controles_ingenieria" class="campo-input"
@@ -370,7 +370,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="clipboard-outline" class="campo-icon text-blue-400"></ion-icon>
+                    <i class="pi pi-clipboard campo-icon text-blue-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Control Administrativo</span>
                         <textarea rows="2" formControlName="controles_administrativos" class="campo-input"
@@ -378,7 +378,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="body-outline" class="campo-icon text-emerald-400"></ion-icon>
+                    <i class="pi pi-user campo-icon text-emerald-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Elementos de Protección Personal (EPP)</span>
                         <textarea rows="2" formControlName="epp" class="campo-input"
@@ -412,7 +412,7 @@
 
                 <!-- ND post -->
                 <div class="campo-auxiliar">
-                    <ion-icon name="speedometer-outline" class="campo-icon text-emerald-400"></ion-icon>
+                    <i class="pi pi-gauge campo-icon text-emerald-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Nivel de Deficiencia post-controles (ND')</span>
                         <select formControlName="nd_post" class="campo-input">
@@ -425,7 +425,7 @@
                 </div>
                 <!-- NE post -->
                 <div class="campo-auxiliar">
-                    <ion-icon name="time-outline" class="campo-icon text-emerald-400"></ion-icon>
+                    <i class="pi pi-clock campo-icon text-emerald-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Nivel de Exposición post-controles (NE')</span>
                         <select formControlName="ne_post" class="campo-input">
@@ -449,7 +449,7 @@
 
                 <!-- NC post -->
                 <div class="campo-auxiliar">
-                    <ion-icon name="flash-outline" class="campo-icon text-emerald-400"></ion-icon>
+                    <i class="pi pi-bolt campo-icon text-emerald-400"></i>
                     <div class="campo-body">
                         <span class="campo-label">Nivel de Consecuencia post-controles (NC')</span>
                         <select formControlName="nc_post" class="campo-input">
@@ -464,7 +464,7 @@
                 <!-- Resultados post -->
                 <div *ngIf="mostrarResultadosPost" class="mt-2 p-4 bg-dark-primary border border-dark-border rounded-xl space-y-3">
                     <p class="text-[10px] uppercase tracking-wider text-dark-text font-bold mb-3">
-                        <ion-icon name="checkmark-circle-outline" class="mr-1 text-emerald-400"></ion-icon>
+                        <i class="pi pi-check-circle mr-1 text-emerald-400"></i>
                         Resultado post-controles
                     </p>
                     <div class="grid grid-cols-3 gap-3">
@@ -502,7 +502,7 @@
             <div *ngIf="pasoActivo === 7" class="step-panel space-y-4">
                 <p class="text-xs text-dark-text mb-2">Registre la nota de esta actualización. La fecha se asigna automáticamente.</p>
                 <div class="campo-auxiliar">
-                    <ion-icon name="calendar-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-calendar campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Fecha de actualización</span>
                         <input type="text" [value]="fechaActualizacion | date:'dd/MM/yyyy HH:mm'"
@@ -510,7 +510,7 @@
                     </div>
                 </div>
                 <div class="campo-auxiliar">
-                    <ion-icon name="document-text-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-file campo-icon"></i>
                     <div class="campo-body">
                         <span class="campo-label">Actualización</span>
                         <textarea rows="5" formControlName="actualizacion_nota" class="campo-input"
@@ -523,7 +523,7 @@
             <div class="flex items-center justify-between mt-6 pt-4 border-t border-dark-border">
                 <button *ngIf="pasoActivo > 0" type="button" (click)="anterior()"
                     class="flex items-center gap-2 px-4 py-2 text-sm rounded-xl border border-dark-border text-[rgb(var(--color-heading))] hover:bg-dark-accent transition-all">
-                    <ion-icon name="arrow-back-outline"></ion-icon>
+                    <i class="pi pi-arrow-left" ></i>
                     Anterior
                 </button>
                 <div *ngIf="pasoActivo === 0"></div>
@@ -538,15 +538,15 @@
                         [disabled]="!pasoValido(pasoActivo)"
                         class="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all shadow-lg shadow-brand-primary/25 disabled:opacity-40 disabled:cursor-not-allowed">
                         Siguiente
-                        <ion-icon name="arrow-forward-outline"></ion-icon>
+                        <i class="pi pi-arrow-right" ></i>
                     </button>
 
                     <button *ngIf="pasoActivo === pasos.length - 1" type="submit"
                         [disabled]="saving || !form.get('proceso')?.value || !form.get('peligro_id')?.value"
                         class="flex items-center gap-2 px-5 py-2 text-sm rounded-xl bg-brand-primary hover:bg-blue-600 text-white font-medium transition-all shadow-lg shadow-brand-primary/25 disabled:opacity-40">
-                        <ion-spinner *ngIf="saving" name="crescent"
-                            style="--color:white;width:14px;height:14px;"></ion-spinner>
-                        <ion-icon *ngIf="!saving" name="checkmark-outline"></ion-icon>
+                        <span class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin" *ngIf="saving"
+                            style="width:14px;height:14px;border-color:#fff;border-top-color:transparent;"></span>
+                        <i class="pi pi-check" *ngIf="!saving" ></i>
                         {{ saving ? 'Guardando...' : (modoEdicion ? 'Actualizar' : 'Guardar') }}
                     </button>
                 </div>

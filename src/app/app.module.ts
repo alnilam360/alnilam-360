@@ -4,7 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { IonicRouteStrategy } from '@ionic/angular';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 
@@ -19,7 +19,6 @@ import { LayoutModule } from './layout/layout.module';
     BrowserModule,
     BrowserAnimationsModule,
     FormsModule,
-    IonicModule.forRoot(),
     AppRoutingModule,
     CoreModule,
     LayoutModule

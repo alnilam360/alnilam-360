@@ -8,7 +8,7 @@ import { TrianguloBird } from '../../../../core/models/matriz-at.model';
   template: `
     <div class="bg-dark-secondary border border-dark-border rounded-xl p-4 h-full flex flex-col">
       <div class="flex items-center gap-2 mb-3">
-        <ion-icon name="triangle-outline" class="text-brand-primary"></ion-icon>
+        <i class="pi pi-exclamation-triangle text-brand-primary"></i>
         <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">Triángulo de Bird</span>
       </div>
 

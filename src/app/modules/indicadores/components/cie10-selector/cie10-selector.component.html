@@ -22,7 +22,7 @@
         <p class="text-[10px] text-dark-text">Clasificación Internacional de Enfermedades (CIE-10)</p>
       </div>
       <button type="button" (click)="limpiar()" class="p-1 text-dark-text hover:text-rose-400 transition" title="Cambiar diagnóstico">
-        <ion-icon name="close-circle-outline" class="text-base"></ion-icon>
+        <i class="pi pi-times-circle text-base"></i>
       </button>
     </div>
 
@@ -36,7 +36,7 @@
                placeholder="Buscar por código (ej: M545, G560) o nombre (ej: lumbago, túnel, esguince)..."
                class="form-input pr-8">
         <div class="absolute right-2.5 top-2 text-dark-text pointer-events-none">
-          <ion-icon *ngIf="!buscando" name="search-outline"></ion-icon>
+          <i *ngIf="!buscando" class="pi pi-search"></i>
           <div *ngIf="buscando" class="w-3.5 h-3.5 border-2 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>

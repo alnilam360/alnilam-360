@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import { AlertaVencimientoService } from '../../../core/services/alerta-vencimiento.service';
 
 @Component({
   selector: 'app-badge-vencimiento',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (info(); as item) {
@@ -15,7 +14,7 @@ import { AlertaVencimientoService } from '../../../core/services/alerta-vencimie
         [title]="item.label"
       >
         @if (showIcon()) {
-          <ion-icon [name]="item.icono" class="text-sm shrink-0"></ion-icon>
+          <i class="pi text-sm shrink-0" [ngClass]="item.icono"></i>
         }
         <span>{{ item.label }}</span>
       </span>

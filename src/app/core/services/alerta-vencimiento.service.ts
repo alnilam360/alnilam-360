@@ -17,7 +17,7 @@ export class AlertaVencimientoService {
         diasRestantes: null,
         label: 'Sin fecha de revisión',
         claseColor: 'bg-slate-800 text-slate-400 border-slate-700',
-        icono: 'help-circle-outline'
+        icono: 'pi-question-circle'
       };
     }
 
@@ -31,7 +31,7 @@ export class AlertaVencimientoService {
         diasRestantes: null,
         label: 'Fecha no válida',
         claseColor: 'bg-slate-800 text-slate-400 border-slate-700',
-        icono: 'alert-circle-outline'
+        icono: 'pi-exclamation-circle'
       };
     }
 
@@ -51,7 +51,7 @@ export class AlertaVencimientoService {
         diasRestantes: diffDias,
         label: diasVencidos === 1 ? 'Vencido hace 1 día' : `Vencido hace ${diasVencidos} días`,
         claseColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-        icono: 'alert-circle-outline'
+        icono: 'pi-exclamation-circle'
       };
     }
 
@@ -61,7 +61,7 @@ export class AlertaVencimientoService {
         diasRestantes: diffDias,
         label: diffDias === 0 ? 'Vence hoy' : diffDias === 1 ? 'Vence mañana' : `Por vencer en ${diffDias} días`,
         claseColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-        icono: 'time-outline'
+        icono: 'pi-clock'
       };
     }
 
@@ -70,7 +70,7 @@ export class AlertaVencimientoService {
       diasRestantes: diffDias,
       label: `Vigente (${diffDias} días restantes)`,
       claseColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-      icono: 'checkmark-circle-outline'
+      icono: 'pi-check-circle'
     };
   }
 }

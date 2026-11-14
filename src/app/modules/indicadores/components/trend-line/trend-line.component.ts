@@ -10,7 +10,7 @@ interface Serie { label: string; color: string; valores: (number | null)[]; }
     <div class="bg-dark-secondary border border-dark-border rounded-xl p-4">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
         <div class="flex items-center gap-2">
-          <ion-icon name="trending-up-outline" class="text-brand-primary"></ion-icon>
+          <i class="pi pi-arrow-up text-brand-primary"></i>
           <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">Tendencia 12 meses</span>
         </div>
         <div class="flex items-center gap-4 text-[10px] text-dark-text">

@@ -1,8 +1,7 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../shared/shared.module';
 
 import { AccidentalidadShellComponent } from './pages/accidentalidad-shell/accidentalidad-shell.component';
@@ -67,10 +66,8 @@ const routes: Routes = [
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule,
     SharedModule,
     RouterModule.forChild(routes),
-  ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  ]
 })
 export class IndicadoresModule { }

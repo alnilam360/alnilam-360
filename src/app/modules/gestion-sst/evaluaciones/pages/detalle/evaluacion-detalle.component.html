@@ -2,7 +2,7 @@
 
   <!-- Loading -->
   <div *ngIf="loading" class="flex items-center justify-center py-16">
-    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    <span class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin text-brand-primary w-6 h-6"></span>
   </div>
 
   <ng-container *ngIf="!loading && evaluacion">
@@ -12,7 +12,7 @@
       <div class="flex items-center gap-3">
         <button (click)="volver()" title="Volver"
           class="p-2 rounded-xl text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent border border-transparent hover:border-dark-border transition-all duration-200">
-          <ion-icon name="arrow-back-outline" class="text-lg"></ion-icon>
+          <i class="pi pi-arrow-left text-lg"></i>
         </button>
         <div>
           <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">
@@ -30,14 +30,14 @@
       <div class="flex items-center gap-2">
         <button *ngIf="!isReadOnly()" (click)="guardarTodo()" [disabled]="saving"
           class="flex items-center gap-2 px-4 py-2 bg-dark-secondary hover:bg-dark-accent border border-dark-border text-[rgb(var(--color-heading))] text-sm rounded-xl transition-all duration-200 disabled:opacity-50 shadow-sm">
-          <ion-spinner *ngIf="saving" name="crescent" style="width:14px;height:14px;"></ion-spinner>
-          <ion-icon *ngIf="!saving" name="save-outline" class="text-base"></ion-icon>
+          <span *ngIf="saving" class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin"  style="width:14px;height:14px;"></span>
+          <i *ngIf="!saving" class="pi pi-save text-base"></i>
           <span>Guardar borrador</span>
         </button>
         <button *ngIf="!isReadOnly()" (click)="finalizar()" [disabled]="finalizando"
           class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm rounded-xl font-medium transition-all duration-200 shadow-lg shadow-emerald-600/25 disabled:opacity-50">
-          <ion-spinner *ngIf="finalizando" name="crescent" style="--color: white; width:14px; height:14px;"></ion-spinner>
-          <ion-icon *ngIf="!finalizando" name="checkmark-done-outline" class="text-base"></ion-icon>
+          <span *ngIf="finalizando" class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin"  style="width:14px;height:14px;border-color:#fff;border-top-color:transparent;"></span>
+          <i *ngIf="!finalizando" class="pi pi-check-circle text-base"></i>
           <span>Finalizar evaluación</span>
         </button>
       </div>
@@ -46,15 +46,15 @@
     <!-- Alertas -->
     <div *ngIf="errorMsg"
       class="mb-4 flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
-      <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+      <i class="pi pi-exclamation-circle text-red-400 text-xl flex-shrink-0 mt-0.5"></i>
       <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
       <button (click)="errorMsg = null" class="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
     <div *ngIf="successMsg"
       class="mb-4 flex items-start gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
-      <ion-icon name="checkmark-circle-outline" class="text-emerald-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+      <i class="pi pi-check-circle text-emerald-400 text-xl flex-shrink-0 mt-0.5"></i>
       <p class="text-sm text-emerald-300 flex-1">{{ successMsg }}</p>
     </div>
 
@@ -64,10 +64,9 @@
         ? 'bg-amber-500/8 border-amber-500/30'
         : 'bg-dark-secondary border-dark-border'">
       <div class="flex items-start gap-3">
-        <ion-icon
-          [name]="mismatchTipo ? 'warning-outline' : 'shield-checkmark-outline'"
-          class="text-xl flex-shrink-0 mt-0.5"
-          [ngClass]="mismatchTipo ? 'text-amber-400' : 'text-emerald-400'"></ion-icon>
+        <i
+          class="pi text-xl flex-shrink-0 mt-0.5"
+          [ngClass]="[mismatchTipo ? 'pi-exclamation-triangle' : 'pi-verified', mismatchTipo ? 'text-amber-400' : 'text-emerald-400']"></i>
         <div class="flex-1 min-w-0">
           <p class="text-[11px] font-semibold uppercase tracking-wider mb-2.5"
              [ngClass]="mismatchTipo ? 'text-amber-400' : 'text-emerald-400'">
@@ -104,8 +103,8 @@
           <div *ngIf="mismatchTipo && !isReadOnly()" class="mt-3">
             <button type="button" (click)="corregirTipo()" [disabled]="finalizando"
               class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500/25 font-medium transition-all duration-200 disabled:opacity-50">
-              <ion-spinner *ngIf="finalizando" name="crescent" style="width:12px;height:12px;--color:#fbbf24;"></ion-spinner>
-              <ion-icon *ngIf="!finalizando" name="refresh-outline" class="text-sm"></ion-icon>
+              <span *ngIf="finalizando" class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin"  style="width:12px;height:12px;border-color:#fbbf24;border-top-color:transparent;"></span>
+              <i *ngIf="!finalizando" class="pi pi-refresh text-sm"></i>
               Corregir a {{ resolucionInfo.tipo }} estándares
             </button>
           </div>
@@ -125,7 +124,7 @@
           <button type="button" (click)="toggleGrupo(g)"
             class="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-dark-primary/30 transition-all duration-200 text-left">
             <div class="flex items-center justify-center w-9 h-9 rounded-xl" [ngClass]="g.color" style="background: currentColor; opacity: 0.12;">
-              <ion-icon [name]="g.icon" class="text-xl" [ngClass]="g.color"></ion-icon>
+              <i class="pi text-xl" [ngClass]="[g.icon, g.color]"></i>
             </div>
             <div class="flex-1">
               <p class="text-sm font-semibold text-[rgb(var(--color-heading))]">Ciclo: {{ g.ciclo }}</p>
@@ -138,8 +137,8 @@
                 [style.width.%]="progresoGrupo(g).total ? (progresoGrupo(g).completos / progresoGrupo(g).total) * 100 : 0">
               </div>
             </div>
-            <ion-icon [name]="g.expanded ? 'chevron-up-outline' : 'chevron-down-outline'"
-              class="text-base text-dark-text ml-1"></ion-icon>
+            <i class="pi text-base text-dark-text ml-1"
+              [ngClass]="g.expanded ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
           </button>
 
           <!-- Body del ciclo -->
@@ -162,7 +161,7 @@
                       {{ estandarPorIndice(i)?.item }}
                     </span>
                     <span class="inline-flex items-center gap-1 text-[10px] text-dark-text">
-                      <ion-icon name="analytics-outline" class="text-xs"></ion-icon>
+                      <i class="pi pi-chart-line text-xs"></i>
                       Peso: {{ estandarPorIndice(i)?.peso | number:'1.0-2' }}%
                     </span>
                   </div>
@@ -173,7 +172,7 @@
                   </p>
                   <p *ngIf="estandarPorIndice(i)?.marco_legal"
                     class="text-[10px] text-dark-text mb-4 flex items-center gap-1">
-                    <ion-icon name="book-outline" class="text-xs flex-shrink-0"></ion-icon>
+                    <i class="pi pi-book text-xs flex-shrink-0"></i>
                     {{ estandarPorIndice(i)?.marco_legal }}
                   </p>
 
@@ -186,21 +185,21 @@
                       <label class="cal-option cal-cumple" [class.opacity-50]="isReadOnly()">
                         <input type="radio" value="Cumple Totalmente" formControlName="calificacion">
                         <div class="cal-label">
-                          <ion-icon name="checkmark-circle-outline"></ion-icon>
+                          <i class="pi pi-check-circle"></i>
                           Cumple Totalmente
                         </div>
                       </label>
                       <label class="cal-option cal-no-cumple" [class.opacity-50]="isReadOnly()">
                         <input type="radio" value="No Cumple" formControlName="calificacion">
                         <div class="cal-label">
-                          <ion-icon name="close-circle-outline"></ion-icon>
+                          <i class="pi pi-times-circle"></i>
                           No Cumple
                         </div>
                       </label>
                       <label class="cal-option cal-no-aplica" [class.opacity-50]="isReadOnly()">
                         <input type="radio" value="No Aplica" formControlName="calificacion">
                         <div class="cal-label">
-                          <ion-icon name="remove-circle-outline"></ion-icon>
+                          <i class="pi pi-minus-circle"></i>
                           No Aplica
                         </div>
                       </label>
@@ -210,7 +209,7 @@
                   <!-- ═══ Justificación No Aplica ═══ -->
                   <div *ngIf="items.at(i).get('calificacion')?.value === 'No Aplica'" class="mb-4">
                     <div class="campo-auxiliar" style="border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05);">
-                      <ion-icon name="warning-outline" class="campo-icon" style="color: #fbbf24;"></ion-icon>
+                      <i class="pi pi-exclamation-triangle campo-icon" style="color: #fbbf24;"></i>
                       <div class="campo-body">
                         <span class="campo-label" style="color: #fbbf24;">Justificación "No Aplica" *</span>
                         <textarea rows="2" formControlName="justificacion_no_aplica"
@@ -220,7 +219,7 @@
                     </div>
                     <p *ngIf="items.at(i).get('justificacion_no_aplica')?.invalid && items.at(i).get('justificacion_no_aplica')?.touched"
                       class="text-[10px] text-red-400 mt-1.5 ml-7 flex items-center gap-1">
-                      <ion-icon name="alert-outline" class="text-xs"></ion-icon>
+                      <i class="pi pi-exclamation-triangle text-xs"></i>
                       La justificación es obligatoria (mínimo 5 caracteres).
                     </p>
                   </div>
@@ -229,7 +228,7 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Evidencia URL -->
                     <div class="campo-auxiliar">
-                      <ion-icon name="link-outline" class="campo-icon"></ion-icon>
+                      <i class="pi pi-link campo-icon"></i>
                       <div class="campo-body">
                         <span class="campo-label">Evidencia (URL)</span>
                         <input type="url" formControlName="evidencia_url"
@@ -240,7 +239,7 @@
 
                     <!-- Observaciones -->
                     <div class="campo-auxiliar">
-                      <ion-icon name="chatbox-ellipses-outline" class="campo-icon"></ion-icon>
+                      <i class="pi pi-comment campo-icon"></i>
                       <div class="campo-body">
                         <span class="campo-label">Observaciones</span>
                         <textarea rows="1" formControlName="observaciones"
@@ -255,7 +254,7 @@
                 <!-- Botón Info -->
                 <button type="button" (click)="abrirInfo(i)" title="Ver modo de verificación"
                   class="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl text-dark-text hover:text-brand-primary hover:bg-brand-primary/10 border border-transparent hover:border-brand-primary/25 transition-all duration-200 mt-0.5">
-                  <ion-icon name="information-circle-outline" class="text-xl"></ion-icon>
+                  <i class="pi pi-info-circle text-xl"></i>
                 </button>
               </div>
             </div>
@@ -264,13 +263,13 @@
             <div *ngIf="!isReadOnly()"
               class="flex items-center justify-end gap-3 px-5 py-3 bg-dark-primary/30 border-t border-dark-border">
               <p class="text-[11px] text-dark-text mr-auto flex items-center gap-1.5">
-                <ion-icon name="sync-outline" class="text-sm"></ion-icon>
+                <i class="pi pi-sync text-sm"></i>
                 Autoguardado parcial: guarde los cambios del ciclo "{{ g.ciclo }}" sin afectar los demás.
               </p>
               <button type="button" (click)="guardarGrupo(g)" [disabled]="g.saving"
                 class="flex items-center gap-2 px-4 py-2 text-xs rounded-xl border border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10 font-medium transition-all duration-200 disabled:opacity-50">
-                <ion-spinner *ngIf="g.saving" name="crescent" style="width:12px;height:12px;"></ion-spinner>
-                <ion-icon *ngIf="!g.saving" name="save-outline" class="text-sm"></ion-icon>
+                <span *ngIf="g.saving" class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin"  style="width:12px;height:12px;"></span>
+                <i *ngIf="!g.saving" class="pi pi-save text-sm"></i>
                 <span>Guardar ciclo {{ g.ciclo }}</span>
               </button>
             </div>
@@ -293,13 +292,13 @@
     <div class="flex items-center justify-between px-5 py-4 border-b border-dark-border bg-dark-primary/30">
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-brand-primary/15 flex items-center justify-center">
-          <ion-icon name="information-circle-outline" class="text-brand-primary text-lg"></ion-icon>
+          <i class="pi pi-info-circle text-brand-primary text-lg"></i>
         </div>
         <h3 class="text-sm font-bold text-[rgb(var(--color-heading))]">Criterios de verificación</h3>
       </div>
       <button (click)="cerrarInfo()"
         class="p-2 rounded-xl text-dark-text hover:text-[rgb(var(--color-heading))] hover:bg-dark-accent border border-transparent hover:border-dark-border transition-all duration-200">
-        <ion-icon name="close-outline" class="text-lg"></ion-icon>
+        <i class="pi pi-times text-lg"></i>
       </button>
     </div>
 
@@ -326,7 +325,7 @@
       <!-- Marco legal -->
       <div *ngIf="infoEstandar.marco_legal"
         class="flex items-start gap-2.5 p-3.5 bg-dark-primary/50 border border-dark-border rounded-xl">
-        <ion-icon name="book-outline" class="text-dark-text text-base mt-0.5 flex-shrink-0"></ion-icon>
+        <i class="pi pi-book text-dark-text text-base mt-0.5 flex-shrink-0"></i>
         <div>
           <p class="text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-0.5">Marco legal</p>
           <p class="text-xs text-[rgb(var(--color-heading))] leading-relaxed">{{ infoEstandar.marco_legal }}</p>
@@ -336,7 +335,7 @@
       <!-- Modo de verificación -->
       <div class="p-4 bg-brand-primary/8 border border-brand-primary/25 rounded-xl">
         <div class="flex items-center gap-2 mb-2.5">
-          <ion-icon name="shield-checkmark-outline" class="text-brand-primary text-lg"></ion-icon>
+          <i class="pi pi-verified text-brand-primary text-lg"></i>
           <p class="text-[10px] uppercase tracking-wider text-brand-primary font-bold">Modo de verificación</p>
         </div>
         <p class="text-[13px] text-[rgb(var(--color-heading))] leading-relaxed">
@@ -346,7 +345,7 @@
 
       <!-- Peso -->
       <div class="flex items-center gap-3 p-3.5 bg-dark-primary/50 border border-dark-border rounded-xl">
-        <ion-icon name="analytics-outline" class="text-brand-primary text-lg"></ion-icon>
+        <i class="pi pi-chart-line text-brand-primary text-lg"></i>
         <div>
           <p class="text-[10px] uppercase tracking-wider text-dark-text font-semibold mb-0.5">Peso del estándar</p>
           <p class="text-lg font-bold text-[rgb(var(--color-heading))]">{{ infoEstandar.peso | number:'1.0-2' }}%</p>

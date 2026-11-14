@@ -20,13 +20,13 @@ export class RecentActivityComponent {
 
   getTypeIcon(type: string): string {
     const icons: { [key: string]: string } = {
-      'inspection': 'search-outline',
-      'incident': 'warning-outline',
-      'training': 'school-outline',
-      'document': 'document-text-outline',
-      'audit': 'clipboard-outline'
+      'inspection': 'pi-search',
+      'incident': 'pi-exclamation-triangle',
+      'training': 'pi-book',
+      'document': 'pi-file',
+      'audit': 'pi-clipboard'
     };
-    return icons[type] || 'ellipse-outline';
+    return icons[type] || 'pi-circle';
   }
 
   getTypeBgColor(type: string): string {

@@ -1,8 +1,7 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../shared/shared.module';
 import { EmpresasComponent } from './pages/empresas/empresas.component';
 import { RolesComponent } from './pages/roles/roles.component';
@@ -38,7 +37,6 @@ const routes: Routes = [
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule,
     SharedModule,
     RouterModule.forChild(routes),
     // PrimeNG
@@ -52,8 +50,7 @@ const routes: Routes = [
     AutoCompleteModule,
     ProgressBarModule,
     TooltipModule
-  ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  ]
 })
 export class ConfiguracionModule { }
 

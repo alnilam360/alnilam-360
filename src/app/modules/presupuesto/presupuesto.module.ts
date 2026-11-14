@@ -1,8 +1,7 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../shared/shared.module';
 
 import { ResumenComponent } from './pages/resumen/resumen.component';
@@ -37,7 +36,6 @@ const routes: Routes = [
     GastosComponent, RecaudoComponent, NominaComponent, CuentasPorPagarComponent,
     CapturaCabeceraComponent, CapturaConfirmarComponent,
   ],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, SharedModule, RouterModule.forChild(routes)],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SharedModule, RouterModule.forChild(routes)]
 })
 export class PresupuestoModule {}

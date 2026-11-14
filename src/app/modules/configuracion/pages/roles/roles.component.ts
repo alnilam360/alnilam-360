@@ -128,7 +128,7 @@ export class RolesComponent implements OnInit {
                 flatList.push({
                     id: item.id,
                     label: item.label,
-                    icon: item.icon || (level === 0 ? 'cube-outline' : 'chevron-forward-outline'),
+                    icon: item.icon || (level === 0 ? 'pi-box' : 'pi-chevron-right'),
                     route: item.route,
                     level,
                     parentId: parent?.id,

@@ -10,7 +10,7 @@ import { IndicadorEstado } from '../../../../core/models/matriz-at.model';
                 transition-all duration-200 hover:border-dark-text/30">
       <div class="flex items-center gap-2">
         <span class="w-6 h-6 rounded-lg flex items-center justify-center bg-dark-accent">
-          <ion-icon [name]="icon" class="text-sm text-brand-primary"></ion-icon>
+          <i class="pi text-sm text-brand-primary" [ngClass]="icon"></i>
         </span>
         <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">{{ label }}</span>
       </div>
@@ -31,7 +31,7 @@ import { IndicadorEstado } from '../../../../core/models/matriz-at.model';
 })
 export class KpiCardComponent {
   @Input() label = '';
-  @Input() icon = 'stats-chart-outline';
+  @Input() icon = 'pi-chart-bar';
   @Input() valor: number | null = null;
   @Input() unidad = '';
   @Input() estado: IndicadorEstado = 'sin_datos';

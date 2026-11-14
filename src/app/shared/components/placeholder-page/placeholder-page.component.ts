@@ -7,7 +7,7 @@ import { ActivatedRoute } from '@angular/router';
     <div class="p-6">
       <div class="bg-dark-secondary border border-dark-border rounded-xl p-8 text-center">
         <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-dark-accent flex items-center justify-center">
-          <ion-icon name="construct-outline" class="text-3xl text-brand-primary"></ion-icon>
+          <i class="pi pi-wrench text-3xl text-brand-primary"></i>
         </div>
         <h1 class="text-2xl font-bold text-white mb-2">{{ pageTitle }}</h1>
         <p class="text-dark-text mb-4">Este módulo está en desarrollo</p>

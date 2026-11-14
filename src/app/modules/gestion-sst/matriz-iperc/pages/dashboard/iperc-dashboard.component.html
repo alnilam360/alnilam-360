@@ -1,22 +1,22 @@
 <div class="iperc-dashboard">
     <div *ngIf="inicializando" class="flex items-center justify-center py-16">
-        <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+        <span class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin w-6 h-6 text-brand-primary"></span>
     </div>
 
     <ng-container *ngIf="!inicializando">
         <!-- Alertas -->
         <div *ngIf="errorMsg"
             class="mb-4 flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
-            <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+            <i class="pi pi-exclamation-circle text-red-400 text-xl flex-shrink-0 mt-0.5"></i>
             <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
             <button (click)="errorMsg = null"
                 class="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition">
-                <ion-icon name="close-outline" class="text-lg"></ion-icon>
+                <i class="pi pi-times text-lg"></i>
             </button>
         </div>
         <div *ngIf="successMsg"
             class="mb-4 flex items-start gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
-            <ion-icon name="checkmark-circle-outline" class="text-emerald-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+            <i class="pi pi-check-circle text-emerald-400 text-xl flex-shrink-0 mt-0.5"></i>
             <p class="text-sm text-emerald-300 flex-1">{{ successMsg }}</p>
         </div>
 
@@ -32,12 +32,12 @@
             <div class="flex items-center gap-2">
                 <button *ngIf="registros.length > 0" (click)="exportarExcel()"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-semibold transition active:scale-95 shadow-sm">
-                    <ion-icon name="download-outline" class="text-sm"></ion-icon>
+                    <i class="pi pi-download text-sm"></i>
                     <span>Exportar Excel</span>
                 </button>
                 <button *ngIf="empresa" (click)="nuevoRegistro()"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-semibold transition active:scale-95 shadow-sm">
-                    <ion-icon name="add-outline" class="text-sm"></ion-icon>
+                    <i class="pi pi-plus text-sm"></i>
                     <span>Nuevo Riesgo</span>
                 </button>
             </div>
@@ -47,7 +47,7 @@
         <div *ngIf="esAdmin" class="mb-5 p-3.5 bg-brand-primary/5 border border-brand-primary/30 rounded-xl">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div class="flex items-center gap-2 flex-shrink-0">
-                    <ion-icon name="business-outline" class="text-brand-primary text-lg"></ion-icon>
+                    <i class="pi pi-building text-brand-primary text-lg"></i>
                     <label class="text-xs font-semibold text-[rgb(var(--color-heading))]">Empresa:</label>
                 </div>
                 <select [ngModel]="empresaSeleccionadaId" (ngModelChange)="onSeleccionEmpresa($event)"
@@ -61,12 +61,12 @@
         <!-- Sin empresa -->
         <div *ngIf="esAdmin && !empresaSeleccionadaId && !loading"
             class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
-            <ion-icon name="business-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+            <i class="pi pi-building text-5xl text-dark-text mb-3"></i>
             <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Seleccione una empresa</p>
         </div>
 
         <div *ngIf="loading && !inicializando" class="flex items-center justify-center py-12">
-            <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+            <span class="inline-block border-2 border-current border-t-transparent rounded-full animate-spin w-6 h-6 text-brand-primary"></span>
         </div>
 
         <ng-container *ngIf="!loading && empresa">
@@ -80,7 +80,7 @@
                     [ngClass]="filtroNivel === s.nivel ? s.bg + ' ' + s.border : 'bg-dark-secondary border-dark-border hover:border-dark-text/30'">
                     <div class="flex items-center gap-2 mb-2">
                         <div class="w-7 h-7 rounded-lg flex items-center justify-center" [ngClass]="s.bg">
-                            <ion-icon [name]="s.icon" [ngClass]="s.color" class="text-base"></ion-icon>
+                            <i class="pi text-base" [ngClass]="[s.icon, s.color]"></i>
                         </div>
                         <span class="text-[10px] uppercase tracking-wider text-dark-text font-semibold">Nivel {{ s.nivel
                             }}</span>
@@ -93,7 +93,7 @@
             <!-- Filtro proceso -->
             <div *ngIf="registros.length > 0" class="mb-4">
                 <div class="campo-auxiliar" style="max-width:350px;">
-                    <ion-icon name="search-outline" class="campo-icon"></ion-icon>
+                    <i class="pi pi-search campo-icon"></i>
                     <div class="campo-body">
                         <input type="text" [(ngModel)]="filtroProceso" (ngModelChange)="aplicarFiltros()"
                             name="filtroProceso" class="campo-input" placeholder="Filtrar por proceso...">
@@ -104,7 +104,7 @@
             <!-- Vacío -->
             <div *ngIf="registrosFiltrados.length === 0"
                 class="p-12 bg-dark-secondary border border-dark-border rounded-2xl text-center">
-                <ion-icon name="shield-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+                <i class="pi pi-shield text-5xl text-dark-text mb-3"></i>
                 <p class="text-sm text-[rgb(var(--color-heading))] font-medium">
                     {{ registros.length === 0 ? 'No hay riesgos identificados' : 'Sin resultados para el filtro
                     aplicado' }}
@@ -144,26 +144,26 @@
                                     <!-- Meta -->
                                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-dark-text">
                                         <span class="flex items-center gap-1">
-                                            <ion-icon name="layers-outline" class="text-xs"></ion-icon>
+                                            <i class="pi pi-clone text-xs"></i>
                                             {{ r.proceso }}
                                         </span>
                                         <span *ngIf="r.actividad" class="flex items-center gap-1">
-                                            <ion-icon name="construct-outline" class="text-xs"></ion-icon>
+                                            <i class="pi pi-wrench text-xs"></i>
                                             {{ r.actividad }}
                                         </span>
                                         <span *ngIf="r.peligro?.clasificacion" class="flex items-center gap-1">
-                                            <ion-icon name="warning-outline" class="text-xs"></ion-icon>
+                                            <i class="pi pi-exclamation-triangle text-xs"></i>
                                             {{ r.peligro?.clasificacion }}
                                         </span>
                                         <span class="flex items-center gap-1">
-                                            <ion-icon name="pulse-outline" class="text-xs"></ion-icon>
+                                            <i class="pi pi-chart-line text-xs"></i>
                                             ND:{{ r.nivel_deficiencia }} · NE:{{ r.nivel_exposicion }} · NC:{{
                                             r.nivel_consecuencia }}
                                         </span>
                                         <span *ngIf="r.factor_reduccion != null"
                                             class="flex items-center gap-1 font-semibold"
                                             [ngClass]="r.factor_reduccion >= 0 ? 'text-emerald-400' : 'text-red-400'">
-                                            <ion-icon name="trending-down-outline" class="text-xs"></ion-icon>
+                                            <i class="pi pi-arrow-down text-xs"></i>
                                             F: {{ r.factor_reduccion | number:'1.0-1' }}%
                                         </span>
                                     </div>
@@ -172,10 +172,9 @@
                                 <div class="flex items-center gap-1 flex-shrink-0">
                                     <button (click)="$event.stopPropagation(); eliminarRegistro(r)" title="Eliminar"
                                         class="p-2 rounded-lg text-dark-text hover:text-red-400 hover:bg-red-500/10 transition opacity-0 group-hover:opacity-100">
-                                        <ion-icon name="trash-outline" class="text-base"></ion-icon>
+                                        <i class="pi pi-trash text-base"></i>
                                     </button>
-                                    <ion-icon name="chevron-forward-outline"
-                                        class="text-base text-dark-text group-hover:text-brand-primary transition"></ion-icon>
+                                    <i class="pi pi-chevron-right text-base text-dark-text group-hover:text-brand-primary transition"></i>
                                 </div>
                             </div>
                         </div>

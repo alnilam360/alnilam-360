@@ -461,21 +461,21 @@ export class MatrizIndicadoresComponent implements OnInit {
     switch (norm) {
       case 'Accidente de Trabajo (AT)':
         return {
-          icon: 'bandage-outline',
+          icon: 'pi-heart',
           badgeClass: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
           dotClass: 'bg-rose-400',
           label: 'Accidente de Trabajo (AT)'
         };
       case 'Enfermedad Laboral (EL)':
         return {
-          icon: 'medkit-outline',
+          icon: 'pi-heart',
           badgeClass: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
           dotClass: 'bg-purple-400',
           label: 'Enfermedad Laboral (EL)'
         };
       case 'Ausentismo':
         return {
-          icon: 'calendar-outline',
+          icon: 'pi-calendar',
           badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
           dotClass: 'bg-amber-400',
           label: 'Ausentismo'
@@ -483,7 +483,7 @@ export class MatrizIndicadoresComponent implements OnInit {
       case 'Estructura - proceso - Resultado (E-P-R) del SG-SST':
       default:
         return {
-          icon: 'shield-checkmark-outline',
+          icon: 'pi-verified',
           badgeClass: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
           dotClass: 'bg-sky-400',
           label: 'E-P-R del SG-SST'
@@ -528,7 +528,7 @@ export class MatrizIndicadoresComponent implements OnInit {
       claseBadge: esFavorable
         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
         : 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-      icono: esFavorable ? 'trending-up-outline' : 'trending-down-outline'
+      icono: esFavorable ? 'pi-arrow-up' : 'pi-arrow-down'
     };
   }
 
@@ -563,7 +563,7 @@ export class MatrizIndicadoresComponent implements OnInit {
   } {
     const esMensual = frecuencia === 'Mensual';
     return {
-      icono: esMensual ? 'calendar-outline' : 'calendar-number-outline',
+      icono: esMensual ? 'pi-calendar' : 'pi-calendar',
       clase: esMensual
         ? 'bg-sky-500/10 text-sky-400 border-sky-500/25 ring-1 ring-sky-500/10'
         : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/25 ring-1 ring-indigo-500/10',

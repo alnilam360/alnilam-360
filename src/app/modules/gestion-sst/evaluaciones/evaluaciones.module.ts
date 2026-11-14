@@ -1,8 +1,7 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../../shared/shared.module';
 
 import { EvaluacionesDashboardComponent } from './pages/dashboard/evaluaciones-dashboard.component';
@@ -22,10 +21,8 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    IonicModule,
     SharedModule,
     RouterModule.forChild(routes)
-  ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  ]
 })
 export class EvaluacionesModule { }

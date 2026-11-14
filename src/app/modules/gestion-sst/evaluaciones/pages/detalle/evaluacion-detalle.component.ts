@@ -138,10 +138,10 @@ export class EvaluacionDetalleComponent implements OnInit {
         });
 
         const iconosPorCiclo: Record<CicloPHVA, { icon: string; color: string }> = {
-            Planear:   { icon: 'compass-outline',      color: 'text-sky-400' },
-            Hacer:     { icon: 'construct-outline',    color: 'text-emerald-400' },
-            Verificar: { icon: 'checkmark-done-outline', color: 'text-amber-400' },
-            Actuar:    { icon: 'refresh-outline',      color: 'text-fuchsia-400' }
+            Planear:   { icon: 'pi-compass',      color: 'text-sky-400' },
+            Hacer:     { icon: 'pi-wrench',    color: 'text-emerald-400' },
+            Verificar: { icon: 'pi-check-circle', color: 'text-amber-400' },
+            Actuar:    { icon: 'pi-refresh',      color: 'text-fuchsia-400' }
         };
 
         this.grupos = orden

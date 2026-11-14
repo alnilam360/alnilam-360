@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  CUSTOM_ELEMENTS_SCHEMA,
   OnInit,
   computed,
   inject,
@@ -9,7 +8,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TenantService } from '../../../core/services/tenant.service';
@@ -36,7 +34,6 @@ import { DocumentoHistorialVersionesComponent } from '../../../shared/components
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    IonicModule,
     TableModule,
     ButtonModule,
     BadgeVencimientoComponent,
@@ -44,7 +41,6 @@ import { DocumentoHistorialVersionesComponent } from '../../../shared/components
     DocumentoFlujoAprobacionComponent,
     DocumentoHistorialVersionesComponent
   ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './politica-sst.component.html',
   styleUrls: ['./politica-sst.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

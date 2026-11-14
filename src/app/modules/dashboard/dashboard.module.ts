@@ -1,7 +1,6 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 
 import { DashboardPageComponent } from './pages/dashboard-page/dashboard-page.component';
 import { StatCardComponent } from './components/stat-card/stat-card.component';
@@ -28,9 +27,7 @@ const routes: Routes = [
   ],
   imports: [
     CommonModule,
-    IonicModule,
     RouterModule.forChild(routes)
-  ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  ]
 })
 export class DashboardModule { }

@@ -1,10 +1,10 @@
 <div class="stat-card bg-dark-primary border border-dark-border rounded-xl p-3 sm:p-4 md:p-5 hover:border-brand-primary/50 transition-all duration-300">
   <div class="flex items-start justify-between mb-2 sm:mb-4">
     <div class="icon-wrapper w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl flex items-center justify-center" [ngClass]="iconBg">
-      <ion-icon [name]="icon" class="text-lg sm:text-xl md:text-2xl text-[rgb(var(--color-heading))]"></ion-icon>
+      <i class="pi text-lg sm:text-xl md:text-2xl text-[rgb(var(--color-heading))]" [ngClass]="icon"></i>
     </div>
     <div class="menu-btn p-1 rounded hover:bg-dark-accent cursor-pointer hidden sm:block">
-      <ion-icon name="ellipsis-vertical" class="text-dark-text text-lg"></ion-icon>
+      <i class="pi pi-ellipsis-v text-dark-text text-lg"></i>
     </div>
   </div>
   
@@ -18,10 +18,7 @@
           'text-green-400 bg-green-500/10': changeType === 'increase',
           'text-red-400 bg-red-500/10': changeType === 'decrease'
         }">
-        <ion-icon 
-          [name]="changeType === 'increase' ? 'trending-up-outline' : 'trending-down-outline'"
-          class="text-sm sm:text-base">
-        </ion-icon>
+        <i class="pi text-sm sm:text-base" [ngClass]="changeType === 'increase' ? 'pi-arrow-up' : 'pi-arrow-down'"></i>
         {{ change }}%
       </span>
     </div>

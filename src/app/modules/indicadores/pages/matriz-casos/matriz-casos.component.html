@@ -7,14 +7,13 @@
       <button (click)="exportarExcel()" [disabled]="exportandoExcel() || casos().length === 0"
               title="Descargar matriz filtrada en archivo Excel (.xlsx)"
               class="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs sm:text-sm rounded-xl font-medium transition-all shadow-md shadow-emerald-600/20">
-        <ion-icon [name]="exportandoExcel() ? 'sync-outline' : 'download-outline'"
-                  [class.animate-spin]="exportandoExcel()" class="text-base"></ion-icon>
+        <i [ngClass]="exportandoExcel() ? 'pi-sync' : 'pi-download'" [class.animate-spin]="exportandoExcel()" class="pi text-base"></i>
         <span>{{ exportandoExcel() ? 'Generando...' : 'Exportar Excel' }}</span>
       </button>
 
       <button (click)="abrirWizard()"
               class="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs sm:text-sm rounded-xl font-medium transition-all shadow-lg shadow-brand-primary/25">
-        <ion-icon name="add-outline" class="text-base"></ion-icon>
+        <i class="pi pi-plus text-base"></i>
         <span>Reportar caso</span>
       </button>
     </div>
@@ -61,29 +60,29 @@
 
   <div class="flex items-center justify-between gap-2">
     <span *ngIf="parteFiltro" class="flex items-center gap-1.5 px-2.5 py-1 bg-brand-primary/10 border border-brand-primary/30 rounded-full text-[11px] text-[rgb(var(--color-heading))]">
-      <ion-icon name="body-outline" class="text-brand-primary"></ion-icon>
+      <i class="pi pi-user text-brand-primary"></i>
       Parte del cuerpo: {{ parteFiltro.zona }}
-      <button (click)="quitarParteFiltro()" class="text-dark-text hover:text-red-400"><ion-icon name="close-outline"></ion-icon></button>
+      <button (click)="quitarParteFiltro()" class="text-dark-text hover:text-red-400"><i class="pi pi-times"></i></button>
     </span>
     <span *ngIf="!parteFiltro"></span>
     <button (click)="limpiarFiltros()" class="text-[11px] text-dark-text hover:text-brand-primary transition flex items-center gap-1">
-      <ion-icon name="refresh-outline"></ion-icon> Limpiar filtros
+      <i class="pi pi-refresh"></i> Limpiar filtros
     </button>
   </div>
 
   <!-- Estados -->
   <div *ngIf="loading()" class="flex items-center justify-center py-12">
-    <ion-spinner name="crescent" class="text-brand-primary"></ion-spinner>
+    <span class="text-brand-primary w-6 h-6 inline-block border-2 border-current border-t-transparent rounded-full animate-spin"></span>
   </div>
   <div *ngIf="error()" class="flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
-    <ion-icon name="alert-circle-outline" class="text-red-400 text-xl flex-shrink-0 mt-0.5"></ion-icon>
+    <i class="pi pi-exclamation-circle text-red-400 text-xl flex-shrink-0 mt-0.5"></i>
     <p class="text-sm text-red-300 flex-1">{{ error() }}</p>
   </div>
 
   <!-- Vacío -->
   <div *ngIf="!loading() && casos().length === 0"
        class="p-12 bg-dark-secondary border border-dashed border-dark-border rounded-2xl text-center">
-    <ion-icon name="documents-outline" class="text-5xl text-dark-text mb-3"></ion-icon>
+    <i class="pi pi-copy text-5xl text-dark-text mb-3"></i>
     <p class="text-sm text-[rgb(var(--color-heading))] font-medium">Sin casos en el período/filtro</p>
     <p class="text-[11px] text-dark-text mt-1">Use "Reportar caso" para registrar el primero.</p>
   </div>
@@ -125,10 +124,10 @@
           </td>
           <td class="px-3 py-2.5 text-right whitespace-nowrap">
             <button (click)="verDetalle(c)" class="p-1.5 text-dark-text hover:text-brand-primary rounded-lg hover:bg-dark-accent transition" title="Ver detalle">
-              <ion-icon name="eye-outline"></ion-icon>
+              <i class="pi pi-eye"></i>
             </button>
             <button (click)="editar(c)" class="p-1.5 text-dark-text hover:text-brand-primary rounded-lg hover:bg-dark-accent transition" title="Editar">
-              <ion-icon name="create-outline"></ion-icon>
+              <i class="pi pi-pencil"></i>
             </button>
           </td>
         </tr>

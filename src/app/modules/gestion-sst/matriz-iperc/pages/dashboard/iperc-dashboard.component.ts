@@ -31,10 +31,10 @@ export class IpercDashboardComponent implements OnInit {
     filtroProceso = '';
 
     stats: StatNivel[] = [
-        { nivel: 'I', label: 'No Aceptable', icon: 'skull-outline', color: 'text-red-400', bg: 'bg-red-500/12', border: 'border-red-500/30', count: 0 },
-        { nivel: 'II', label: 'Control esp.', icon: 'warning-outline', color: 'text-orange-400', bg: 'bg-orange-500/12', border: 'border-orange-500/30', count: 0 },
-        { nivel: 'III', label: 'Mejorable', icon: 'alert-outline', color: 'text-yellow-400', bg: 'bg-yellow-500/12', border: 'border-yellow-500/30', count: 0 },
-        { nivel: 'IV', label: 'Aceptable', icon: 'checkmark-circle-outline', color: 'text-emerald-400', bg: 'bg-emerald-500/12', border: 'border-emerald-500/30', count: 0 },
+        { nivel: 'I', label: 'No Aceptable', icon: 'pi-ban', color: 'text-red-400', bg: 'bg-red-500/12', border: 'border-red-500/30', count: 0 },
+        { nivel: 'II', label: 'Control esp.', icon: 'pi-exclamation-triangle', color: 'text-orange-400', bg: 'bg-orange-500/12', border: 'border-orange-500/30', count: 0 },
+        { nivel: 'III', label: 'Mejorable', icon: 'pi-exclamation-triangle', color: 'text-yellow-400', bg: 'bg-yellow-500/12', border: 'border-yellow-500/30', count: 0 },
+        { nivel: 'IV', label: 'Aceptable', icon: 'pi-check-circle', color: 'text-emerald-400', bg: 'bg-emerald-500/12', border: 'border-emerald-500/30', count: 0 },
     ];
 
     constructor(

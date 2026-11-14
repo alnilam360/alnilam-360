@@ -1,8 +1,7 @@
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 
 // PrimeNG
 import { TableModule } from 'primeng/table';
@@ -23,14 +22,12 @@ const routes: Routes = [
     imports: [
         CommonModule,
         FormsModule,
-        IonicModule,
         RouterModule.forChild(routes),
         // PrimeNG
         TableModule,
         InputTextModule,
         ButtonModule,
         TagModule
-    ],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA]
+    ]
 })
 export class UsuariosModule { }
