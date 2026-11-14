@@ -29,9 +29,11 @@
 
 **Pendientes F3 (no bloquean):** IPERC sin pasar `peligro_id` (la lista no tiene param); autollenado solo muestra `tipo_lesion.nombre` (otros `*_id` FURAT sin texto — decidir si cargar catálogos); no se setea `estado_caso='en_investigacion'` al primer guardado (la bandeja deriva estado de la existencia de investigación, no de `estado_caso`); evidencia de acciones a Storage pendiente.
 
-### F4. Informe oficial (cliente-web)
-- [ ] Export informe art. 9–13 (datos Res.156/2005 + causas + medidas + firmas); grave/mortal ⇒ aviso remisión ARL, mortal ⇒ formato ARL
+### F4. Informe oficial (cliente-web) — ✅ (2026-11-14)
+- [x] Export informe art. 9–13 a Excel (`IndicadoresExcelService.exportarInformeInvestigacion`): aportante, trabajador, datos accidente (nombres de catálogos resueltos), descripción, causas, medidas con jerarquía/eficacia, equipo+firmas; avisos ARL grave/mortal (art.14) y formato ARL mortal (Dec.1530). Botón en detalle. (2026-11-14)
+
+**Pendientes F4 (no bloquean):** derivación grave/mortal duplicada inline en el export (core no puede importar `esGrave` del módulo — trivial); layout xlsx (anchos/alturas/wrapText) sin verificación visual; export usa el estado actual del form, no lo persistido (documentado).
 
 ### Cierre
-- [ ] Validación: build dev OK, suite headless (único rojo = base), RPC probadas con execute_sql
-- [ ] Commit  <!-- marcar [x] con fecha -->
+- [x] Validación: build EXIT=0, suite headless 125/1 (único rojo = base `AppComponent`), RPC probadas con execute_sql (vector doble reloj) (2026-11-14)
+- [x] Commit (F1 c31eecd · F2 · F3 · F4) (2026-11-14)

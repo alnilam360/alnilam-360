@@ -132,6 +132,15 @@ export interface MatrizAtAccion {
   estadoCalculado?: EstadoAccionCalc;
 }
 
+/** VM para el export del informe oficial de investigación (Res. 1401/2007). */
+export interface InformeInvestigacion {
+  empresaNombre: string;
+  caso: MatrizAtCaso;
+  nombres: { peligro?: string; agente?: string; mecanismo?: string; parteCuerpo?: string; tipoLesion?: string; sitio?: string };
+  investigacion: MatrizAtInvestigacion | null;
+  acciones: MatrizAtAccion[];
+}
+
 export interface ParametrosMensuales {
   id?: string;
   empresa_id: string;

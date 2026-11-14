@@ -2,8 +2,10 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatrizAtCasoService } from '../../../../core/services/matriz-at-caso.service';
 import { InvestigacionAtelService } from '../../../../core/services/investigacion-atel.service';
+import { IndicadoresExcelService } from '../../../../core/services/indicadores-excel.service';
 import {
-  EquipoInvestigadorMiembro, EstadoAccion, MatrizAtAccion, MatrizAtCaso, Metodologia,
+  EquipoInvestigadorMiembro, EstadoAccion, InformeInvestigacion, MatrizAtAccion, MatrizAtCaso,
+  MatrizAtInvestigacion, Metodologia,
 } from '../../../../core/models/matriz-at.model';
 import { esGrave, fusionarEquipo, puedeCerrar } from '../../funciones/investigacion.funcion';
 
@@ -29,6 +31,7 @@ interface AccionForm {
 export class InvestigacionDetalleComponent implements OnInit {
   private readonly svc = inject(MatrizAtCasoService);
   private readonly atel = inject(InvestigacionAtelService);
+  private readonly excel = inject(IndicadoresExcelService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -36,6 +39,7 @@ export class InvestigacionDetalleComponent implements OnInit {
   readonly cargando = signal(true);
   readonly error = signal<string | null>(null);
   readonly guardando = signal(false);
+  readonly exportando = signal(false);
   readonly equipo = signal<EquipoInvestigadorMiembro[]>([]);
   readonly esGraveCaso = computed(() => {
     const c = this.caso();
@@ -165,6 +169,52 @@ export class InvestigacionDetalleComponent implements OnInit {
       else await this.svc.crearAccion(datos);
     }
     this.idsOriginales = vigentes;
+  }
+
+  // ── Export informe oficial ──
+  private armarInvestigacion(c: MatrizAtCaso): MatrizAtInvestigacion | null {
+    if (!this.hayInvestigacion()) return null;
+    return {
+      caso_id: c.id ?? '', metodologia: this.inv.metodologia,
+      causas_inmediatas: { actos_inseguros: this.lineas(this.inv.actos_inseguros), condiciones_inseguras: this.lineas(this.inv.condiciones_inseguras) },
+      causas_basicas: { factores_personales: this.lineas(this.inv.factores_personales), factores_trabajo: this.lineas(this.inv.factores_trabajo) },
+      responsable_id: null, responsable_texto: this.inv.responsable_texto || null,
+      fecha_investigacion: this.inv.fecha_investigacion, fuera_de_plazo: c.investigacion?.fuera_de_plazo ?? false,
+      conclusiones: this.inv.conclusiones || null, equipo_investigador: this.equipo(),
+    };
+  }
+
+  private async resolverNombres(c: MatrizAtCaso): Promise<InformeInvestigacion['nombres']> {
+    const [pel, age, mec, par, les, sit] = await Promise.all([
+      this.svc.getPeligros(), this.svc.getAgentes(), this.svc.getMecanismos(),
+      this.svc.getPartesCuerpo(), this.svc.getTiposLesion(), this.svc.getSitios(),
+    ]);
+    const nom = (l: { id: string; nombre: string }[], id: string | null) => l.find((x) => x.id === id)?.nombre;
+    return {
+      peligro: nom(pel, c.peligro_id), agente: nom(age, c.agente_id), mecanismo: nom(mec, c.mecanismo_id),
+      parteCuerpo: nom(par, c.parte_cuerpo_id), sitio: nom(sit, c.sitio_ocurrencia_id),
+      tipoLesion: c.tipo_lesion?.nombre ?? nom(les, c.tipo_lesion_id),
+    };
+  }
+
+  /** Usa el estado actual del formulario (causas, equipo y acciones aún sin guardar), no lo persistido. */
+  async exportarInforme(): Promise<void> {
+    const c = this.caso();
+    if (!c || this.exportando()) return;
+    this.error.set(null);
+    this.exportando.set(true);
+    try {
+      const [nombres, emp] = await Promise.all([this.resolverNombres(c), this.svc.getEmpresaPorId(c.empresa_id)]);
+      const acciones = this.acciones.filter((a) => a.descripcion_accion.trim())
+        .map((a) => ({ ...a, caso_id: c.id ?? '', responsable_id: null, responsable_rol_id: null, evidencia_url: null }));
+      await this.excel.exportarInformeInvestigacion({
+        empresaNombre: emp?.nombre ?? '', caso: c, nombres, investigacion: this.armarInvestigacion(c), acciones,
+      });
+    } catch (e) {
+      this.error.set((e as Error)?.message ?? 'No se pudo exportar el informe.');
+    } finally {
+      this.exportando.set(false);
+    }
   }
 
   async guardar(cerrar = false): Promise<void> {

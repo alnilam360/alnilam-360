@@ -11,8 +11,12 @@
         [ngClass]="g === 'mortal' ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' : g === 'grave' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-slate-500/15 text-slate-300 border-slate-500/30'">{{ g }}</span>
       <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border"
         [ngClass]="estadoPlazo() === 'fuera_de_plazo' ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' : estadoPlazo() === 'completa' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'">{{ estadoPlazo().replace('_', ' ') }}</span>
+      <button type="button" (click)="exportarInforme()" [disabled]="exportando()"
+        class="ml-auto px-3 py-1.5 text-xs rounded-lg border border-dark-border text-dark-text hover:bg-dark-accent disabled:opacity-50">
+        <i class="pi mr-1" [ngClass]="exportando() ? 'pi-spin pi-spinner' : 'pi-file-excel'"></i>Exportar informe
+      </button>
       <button *ngIf="c.peligro_id" type="button" (click)="irIperc()"
-        class="ml-auto px-3 py-1.5 text-xs rounded-lg border border-dark-border text-dark-text hover:bg-dark-accent">
+        class="px-3 py-1.5 text-xs rounded-lg border border-dark-border text-dark-text hover:bg-dark-accent">
         <i class="pi pi-table mr-1"></i>Actualizar IPERC
       </button>
     </div>

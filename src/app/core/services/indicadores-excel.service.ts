@@ -5,7 +5,8 @@ import {
   IndicadoresPeriodo,
   AgrupacionesViz,
   DiasSinAccidentes,
-  SedeLite
+  SedeLite,
+  InformeInvestigacion
 } from '../models/matriz-at.model';
 
 @Injectable({
@@ -243,6 +244,148 @@ export class IndicadoresExcelService {
     const a = document.createElement('a');
     a.href = url;
     a.download = `Matriz_Casos_AT_${empresa.replace(/\s+/g, '_')}_${anio}_${NOW.toISOString().slice(0, 10)}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ==========================================================================
+  // EXPORTAR INFORME OFICIAL DE INVESTIGACIÓN AT (RES. 1401/2007, ARTS. 9-13)
+  // ==========================================================================
+  async exportarInformeInvestigacion(informe: InformeInvestigacion): Promise<void> {
+    const { Workbook } = await import('exceljs');
+    const wb = new Workbook();
+    wb.creator = 'Alnilam 360 · SG-SST';
+    wb.created = new Date();
+    const { caso, nombres, investigacion: inv, acciones, empresaNombre } = informe;
+    const NOW = new Date();
+    const NCOL = 6;
+
+    const ws = wb.addWorksheet('Informe Investigación AT', {
+      properties: { tabColor: { argb: 'FF1E40AF' } },
+      pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
+    });
+    ws.columns = [{ width: 28 }, { width: 22 }, { width: 18 }, { width: 18 }, { width: 22 }, { width: 18 }];
+
+    const C = {
+      title: 'FF0F2942', section: 'FF1E3A8A', white: 'FFFFFFFF', label: 'FFF1F5F9',
+      border: 'FFCBD5E1', warnBg: 'FFFEF3C7', warnTx: 'FF92400E', redBg: 'FFFEE2E2', redTx: 'FF991B1B'
+    };
+    const bdr = { style: 'thin' as const, color: { argb: C.border } };
+    const box = { top: bdr, left: bdr, bottom: bdr, right: bdr };
+    const fill = (argb: string) => ({ type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb } });
+
+    const banner = (text: string, bg: string, tx: string, size = 10, h = 22) => {
+      const r = ws.addRow([text]);
+      ws.mergeCells(r.number, 1, r.number, NCOL);
+      r.height = h;
+      r.getCell(1).fill = fill(bg);
+      r.getCell(1).font = { name: 'Calibri', size, bold: true, color: { argb: tx } };
+      r.getCell(1).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true, indent: 1 };
+    };
+    const section = (text: string) => { ws.addRow([]); banner(text, C.section, C.white); };
+    const kv = (label: string, value: string | number | null | undefined, h = 18) => {
+      const r = ws.addRow([label, value ?? '—']);
+      ws.mergeCells(r.number, 2, r.number, NCOL);
+      r.height = h;
+      r.getCell(1).fill = fill(C.label);
+      r.getCell(1).font = { name: 'Calibri', size: 10, bold: true };
+      r.getCell(2).font = { name: 'Calibri', size: 10 };
+      for (let i = 1; i <= NCOL; i++) {
+        r.getCell(i).border = box;
+        r.getCell(i).alignment = { vertical: 'middle', wrapText: true };
+      }
+    };
+    const listado = (label: string, items: string[]) =>
+      kv(label, items.length ? items.map(t => `• ${t}`).join('\n') : '—', Math.max(18, items.length * 15));
+    const sinInv = () => banner('Investigación no registrada', C.warnBg, C.warnTx, 10, 20);
+
+    // 1. Título
+    banner('INFORME DE INVESTIGACIÓN DE ACCIDENTE DE TRABAJO', C.title, C.white, 14, 28);
+    banner(`Resolución 1401 de 2007 · Generado: ${NOW.toLocaleDateString('es-CO')}`, C.title, C.white, 10, 20);
+
+    // 2-4. Aportante, trabajador, datos del accidente
+    section('APORTANTE');
+    kv('Empresa', empresaNombre);
+    section('TRABAJADOR (Res. 156/2005)');
+    kv('Nombre', caso.trabajador_nombre);
+    kv('Documento', caso.trabajador_documento);
+    kv('Cargo', caso.trabajador_cargo);
+    kv('Vinculación', caso.trabajador_vinculacion);
+    kv('Área / proceso', caso.area_proceso);
+    section('DATOS DEL ACCIDENTE (art. 9)');
+    kv('Fecha y hora del evento', new Date(caso.fecha_hora_evento).toLocaleString('es-CO'));
+    kv('Sitio de ocurrencia', nombres.sitio);
+    kv('Agente', nombres.agente);
+    kv('Mecanismo', nombres.mecanismo);
+    kv('Parte del cuerpo', nombres.parteCuerpo);
+    kv('Tipo de lesión', nombres.tipoLesion);
+    kv('Gravedad', caso.clasificacion_gravedad);
+    kv('Días de incapacidad', caso.dias_incapacidad);
+    kv('Peligro (IPERC)', nombres.peligro);
+
+    // 5. Descripción
+    section('DESCRIPCIÓN DEL EVENTO (art. 10)');
+    kv('Descripción', caso.descripcion_evento, 70);
+
+    // 6. Causas
+    section('CAUSAS (art. 11)');
+    if (!inv) {
+      sinInv();
+    } else {
+      kv('Metodología', inv.metodologia);
+      listado('Inmediatas · Actos subestándar', inv.causas_inmediatas?.actos_inseguros ?? []);
+      listado('Inmediatas · Condiciones subestándar', inv.causas_inmediatas?.condiciones_inseguras ?? []);
+      listado('Básicas · Factores personales', inv.causas_basicas?.factores_personales ?? []);
+      listado('Básicas · Factores del trabajo', inv.causas_basicas?.factores_trabajo ?? []);
+    }
+
+    // 7. Medidas de intervención
+    section('MEDIDAS DE INTERVENCIÓN (art. 12)');
+    if (!inv) {
+      sinInv();
+    } else {
+      const head = ws.addRow(['Descripción', 'Responsable', 'F. compromiso', 'Jerarquía', 'Eficacia verificada', 'Estado']);
+      head.eachCell(c => {
+        c.fill = fill(C.label);
+        c.font = { name: 'Calibri', size: 10, bold: true };
+        c.border = box;
+      });
+      for (const a of acciones) {
+        const eficacia = a.eficacia_verificada ? `Sí${a.fecha_verificacion ? ' (' + a.fecha_verificacion.slice(0, 10) + ')' : ''}` : 'No';
+        const r = ws.addRow([a.descripcion_accion, a.responsable_texto ?? '—', a.fecha_compromiso?.slice(0, 10) ?? '—', a.jerarquia ?? '—', eficacia, a.estado]);
+        r.height = 30;
+        r.eachCell(c => { c.border = box; c.font = { name: 'Calibri', size: 10 }; c.alignment = { vertical: 'middle', wrapText: true }; });
+      }
+    }
+
+    // 8. Equipo y firmas
+    section('EQUIPO INVESTIGADOR Y FIRMAS (art. 13)');
+    if (!inv) {
+      sinInv();
+    } else {
+      listado('Equipo', (inv.equipo_investigador ?? []).map(m => `${m.nombre} — ${m.rol} — ${m.fuente}`));
+    }
+    kv('Firma investigador 1', '', 40);
+    kv('Firma investigador 2', '', 40);
+    kv('Firma representante legal', '', 40);
+
+    // 9. Avisos legales
+    const mortal = caso.causo_muerte || caso.clasificacion_gravedad === 'mortal';
+    const graveOMortal = mortal || caso.clasificacion_gravedad === 'grave';
+    if (graveOMortal || mortal) section('AVISOS LEGALES');
+    if (graveOMortal) banner('Art. 14: remitir este informe a la ARL dentro de los 15 días siguientes a la ocurrencia.', C.warnBg, C.warnTx);
+    if (mortal) banner('Accidente mortal: diligenciar además el formato de investigación de la ARL (Decreto 1530/1996).', C.redBg, C.redTx);
+
+    // Guardar y descargar
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const quien = (caso.trabajador_nombre || caso.id || 'caso').replace(/\s+/g, '_');
+    a.download = `Informe_Investigacion_AT_${(empresaNombre || 'Empresa').replace(/\s+/g, '_')}_${quien}_${NOW.toISOString().slice(0, 10)}.xlsx`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
