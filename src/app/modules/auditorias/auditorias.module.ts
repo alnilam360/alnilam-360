@@ -2,7 +2,6 @@ import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../shared/shared.module';
 import { CockpitComponent } from './pages/cockpit/cockpit.component';
 import { EjecucionComponent } from './pages/ejecucion/ejecucion.component';
@@ -16,7 +15,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [CockpitComponent, EjecucionComponent, PlantillasComponent],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, SharedModule, RouterModule.forChild(routes)],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SharedModule, RouterModule.forChild(routes)],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AuditoriasModule {}

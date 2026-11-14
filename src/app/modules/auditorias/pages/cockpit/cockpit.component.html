@@ -111,30 +111,56 @@
   </div>
 </div>
 
-<ion-modal [isOpen]="modalAbierto()" (didDismiss)="modalAbierto.set(false)">
-  <ng-template>
-    <ion-header><ion-toolbar>
-      <ion-title>Programar verificación</ion-title>
-      <ion-buttons slot="end"><ion-button (click)="modalAbierto.set(false)">Cerrar</ion-button></ion-buttons>
-    </ion-toolbar></ion-header>
-    <ion-content class="ion-padding">
-      <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
-        <ion-select label="Tipo" labelPlacement="stacked" formControlName="tipo" (ionChange)="alCambiarTipo()">
-          <ion-select-option *ngFor="let t of tipos" [value]="t.valor">{{ t.etiqueta }}</ion-select-option>
-        </ion-select>
-        <ion-input label="Subtipo" labelPlacement="stacked" formControlName="subtipo"></ion-input>
-        <ion-input label="Título *" labelPlacement="stacked" formControlName="titulo" maxlength="200"></ion-input>
-        <ion-select label="Plantilla (opcional)" labelPlacement="stacked" formControlName="plantilla_id">
-          <ion-select-option value="">Sin plantilla</ion-select-option>
-          <ion-select-option *ngFor="let p of plantillasTipo()" [value]="p.id">{{ p.nombre }}</ion-select-option>
-        </ion-select>
-        <ion-input label="Responsable" labelPlacement="stacked" formControlName="responsable_texto"></ion-input>
-        <ion-input label="Fecha programada *" labelPlacement="stacked" type="date" formControlName="fecha_programada"></ion-input>
-        <div *ngIf="errorGuardar() as msg" class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">{{ msg }}</div>
-        <ion-button type="submit" expand="block" [disabled]="form.invalid || guardando()">
-          {{ guardando() ? 'Guardando…' : 'Guardar' }}
-        </ion-button>
-      </form>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+<div *ngIf="modalAbierto()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  (click)="modalAbierto.set(false)">
+  <div class="w-full max-w-md bg-dark-secondary border border-dark-border rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border">
+      <h2 class="text-sm font-semibold text-[rgb(var(--color-heading))]">Programar verificación</h2>
+      <button type="button" (click)="modalAbierto.set(false)"
+        class="min-h-[40px] px-3 text-xs text-dark-text">Cerrar</button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="p-4 space-y-3 text-xs">
+      <label class="block space-y-1">
+        <span class="text-dark-text">Tipo</span>
+        <select formControlName="tipo" (change)="alCambiarTipo()"
+          class="w-full min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg">
+          <option *ngFor="let t of tipos" [value]="t.valor">{{ t.etiqueta }}</option>
+        </select>
+      </label>
+      <label class="block space-y-1">
+        <span class="text-dark-text">Subtipo</span>
+        <input formControlName="subtipo"
+          class="w-full min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg" />
+      </label>
+      <label class="block space-y-1">
+        <span class="text-dark-text">Título *</span>
+        <input formControlName="titulo" maxlength="200"
+          class="w-full min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg" />
+      </label>
+      <label class="block space-y-1">
+        <span class="text-dark-text">Plantilla (opcional)</span>
+        <select formControlName="plantilla_id"
+          class="w-full min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg">
+          <option value="">Sin plantilla</option>
+          <option *ngFor="let p of plantillasTipo()" [value]="p.id">{{ p.nombre }}</option>
+        </select>
+      </label>
+      <label class="block space-y-1">
+        <span class="text-dark-text">Responsable</span>
+        <input formControlName="responsable_texto"
+          class="w-full min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg" />
+      </label>
+      <label class="block space-y-1">
+        <span class="text-dark-text">Fecha programada *</span>
+        <input type="date" formControlName="fecha_programada"
+          class="w-full min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg" />
+      </label>
+      <div *ngIf="errorGuardar() as msg" class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400">{{ msg }}</div>
+      <button type="submit" [disabled]="form.invalid || guardando()"
+        class="w-full min-h-[40px] rounded-lg bg-brand-primary text-white font-semibold disabled:opacity-50">
+        {{ guardando() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </form>
+  </div>
+</div>
