@@ -5,7 +5,7 @@
     (empresaChange)="cargarEmpresa($event)" (periodoChange)="cargarPeriodo($event)"></app-presupuesto-cabecera>
 
   @if (error(); as msg) {
-    <div class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">Error al cargar: {{ msg }}</div>
+    <div class="px-3 py-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs"><i class="pi pi-exclamation-triangle mr-1.5"></i>Error al cargar: {{ msg }}</div>
   } @else if (cargando()) {
     <div class="flex items-center justify-center py-12"><i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i></div>
   } @else if (!resumen()) {
@@ -17,41 +17,45 @@
     @let r = resumen()!;
     <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
       @for (t of [
-        { l: 'Saldo inicial', v: cop(r.periodo.saldo_inicial), i: 'pi-wallet' },
-        { l: 'Recaudo', v: cop(r.recaudo), i: 'pi-arrow-down-left' },
-        { l: 'Recaudo real', v: cop(r.recaudo_real), i: 'pi-check-circle' },
-        { l: 'Presupuestado', v: cop(r.total_presupuestado), i: 'pi-sliders-h' },
-        { l: 'Ejecutado', v: cop(r.total_ejecutado), i: 'pi-credit-card' },
-        { l: 'Saldo final', v: cop(r.saldo_final), i: 'pi-flag' },
-        { l: 'Meta', v: meta(r.meta_porcentual), i: 'pi-bullseye' }
+        { l: 'Saldo inicial', v: cop(r.periodo.saldo_inicial), i: 'pi-wallet', c: 'bg-blue-500/10 border-blue-500/20 text-blue-400' },
+        { l: 'Recaudo', v: cop(r.recaudo), i: 'pi-arrow-down-left', c: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' },
+        { l: 'Recaudo real', v: cop(r.recaudo_real), i: 'pi-check-circle', c: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' },
+        { l: 'Presupuestado', v: cop(r.total_presupuestado), i: 'pi-sliders-h', c: 'bg-sky-500/10 border-sky-500/20 text-sky-400' },
+        { l: 'Ejecutado', v: cop(r.total_ejecutado), i: 'pi-credit-card', c: 'bg-rose-500/10 border-rose-500/20 text-rose-400' },
+        { l: 'Saldo final', v: cop(r.saldo_final), i: 'pi-flag', c: 'bg-brand-primary/15 border-brand-primary/30 text-brand-primary' },
+        { l: 'Meta', v: meta(r.meta_porcentual), i: 'pi-bullseye', c: 'bg-amber-500/10 border-amber-500/20 text-amber-400' }
       ]; track t.l) {
-        <div class="bg-dark-secondary border rounded-2xl shadow-xl px-4 py-3 flex items-start gap-3"
+        <div class="bg-dark-secondary border rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3"
           [ngClass]="t.l === 'Saldo final' ? 'col-span-2 border-brand-primary/40 bg-brand-primary/5' : 'border-dark-border'">
-          <span class="shrink-0 w-8 h-8 rounded-full bg-brand-primary/15 text-brand-primary flex items-center justify-center">
-            <i class="pi text-sm" [ngClass]="t.i"></i>
+          <span class="shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center" [ngClass]="t.c">
+            <i class="pi text-base" [ngClass]="t.i"></i>
           </span>
           <div class="min-w-0 flex-1">
-            <div class="text-xs text-dark-text">{{ t.l }}</div>
+            <div class="text-[11px] uppercase tracking-wider text-dark-text">{{ t.l }}</div>
             <div class="font-bold text-[rgb(var(--color-heading))]" [ngClass]="t.l === 'Saldo final' ? 'text-2xl' : 'text-lg'">{{ t.v }}</div>
           </div>
           @if (t.l === 'Meta' && r.meta_porcentual !== null) {
-            <span class="anillo-progreso shrink-0 text-brand-primary" aria-hidden="true" [style.--pct]="r.meta_porcentual * 100"></span>
+            <span class="anillo-progreso shrink-0 text-amber-400" aria-hidden="true" [style.--pct]="r.meta_porcentual * 100"></span>
           }
         </div>
       }
     </section>
 
     <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-dark-border bg-gradient-to-r from-dark-primary/60 via-dark-primary/40 to-dark-primary/60 flex items-center gap-3">
+        <span class="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400"><i class="pi pi-chart-bar"></i></span>
+        <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Presupuestado vs ejecutado</h3>
+      </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
             <tr>
-              <th class="px-3 py-2.5 font-semibold">Rubro / Subrubro</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Presupuestado</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Por pagar</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Ejecutado</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Variación</th>
-              <th class="px-3 py-2.5 font-semibold w-32">Avance</th>
+              <th class="px-3 py-2.5 font-semibold"><i class="pi pi-list text-violet-400 mr-1.5"></i>Rubro / Subrubro</th>
+              <th class="px-3 py-2.5 font-semibold text-right"><i class="pi pi-sliders-h text-sky-400 mr-1.5"></i>Presupuestado</th>
+              <th class="px-3 py-2.5 font-semibold text-right"><i class="pi pi-clock text-amber-400 mr-1.5"></i>Por pagar</th>
+              <th class="px-3 py-2.5 font-semibold text-right"><i class="pi pi-credit-card text-rose-400 mr-1.5"></i>Ejecutado</th>
+              <th class="px-3 py-2.5 font-semibold text-right"><i class="pi pi-arrows-v text-emerald-400 mr-1.5"></i>Variación</th>
+              <th class="px-3 py-2.5 font-semibold w-32"><i class="pi pi-percentage text-brand-primary mr-1.5"></i>Avance</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-dark-border">
@@ -60,7 +64,7 @@
                 <td class="px-3 py-2">
                   {{ rb.nombre }}
                   @if (sobregasto(rb.ejecutado, rb.presupuestado)) {
-                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-500/20 text-red-400">Sobregasto</span>
+                    <span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-500/15 text-rose-400 border border-rose-500/30"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Sobregasto</span>
                   }
                 </td>
                 <td class="px-3 py-2 text-right tabular-nums">{{ cop(rb.presupuestado) }}</td>
@@ -96,7 +100,8 @@
     </div>
 
     <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
-      <div class="px-4 py-3 border-b border-dark-border bg-dark-primary/30">
+      <div class="px-4 py-3 border-b border-dark-border bg-gradient-to-r from-dark-primary/60 via-dark-primary/40 to-dark-primary/60 flex items-center gap-3">
+        <span class="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400"><i class="pi pi-sitemap"></i></span>
         <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Por centro de costo</h3>
       </div>
       @if (centros().length === 0) {
@@ -106,10 +111,10 @@
           <table class="w-full text-left text-xs">
             <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
               <tr>
-                <th class="px-3 py-2.5 font-semibold">Centro</th>
-                <th class="px-3 py-2.5 font-semibold text-right">Presupuestado</th>
-                <th class="px-3 py-2.5 font-semibold text-right">Ejecutado</th>
-                <th class="px-3 py-2.5 font-semibold text-right">Variación</th>
+                <th class="px-3 py-2.5 font-semibold"><i class="pi pi-sitemap text-violet-400 mr-1.5"></i>Centro</th>
+                <th class="px-3 py-2.5 font-semibold text-right"><i class="pi pi-sliders-h text-sky-400 mr-1.5"></i>Presupuestado</th>
+                <th class="px-3 py-2.5 font-semibold text-right"><i class="pi pi-credit-card text-rose-400 mr-1.5"></i>Ejecutado</th>
+                <th class="px-3 py-2.5 font-semibold text-right"><i class="pi pi-arrows-v text-emerald-400 mr-1.5"></i>Variación</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-dark-border">
@@ -130,7 +135,8 @@
       }
     </div>
     <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
-      <div class="px-4 py-3 border-b border-dark-border bg-dark-primary/30">
+      <div class="px-4 py-3 border-b border-dark-border bg-gradient-to-r from-dark-primary/60 via-dark-primary/40 to-dark-primary/60 flex items-center gap-3">
+        <span class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400"><i class="pi pi-chart-line"></i></span>
         <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Tendencia (6 meses)</h3>
       </div>
       @if (tendencia().length === 0) {

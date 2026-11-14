@@ -5,8 +5,12 @@
     (empresaChange)="elegirEmpresa($event)" (periodoChange)="elegirPeriodo($event)"></app-presupuesto-cabecera>
 
   <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border bg-dark-primary/30">
-      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Movimientos de gasto</h3>
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border bg-gradient-to-r from-dark-primary/60 via-dark-primary/40 to-dark-primary/60">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center"><i class="pi pi-credit-card"></i></div>
+        <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Movimientos de gasto</h3>
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-500/10 border border-rose-500/20 text-rose-400">{{ filas().length }} registros</span>
+      </div>
       <button (click)="abrir()" [disabled]="!periodoId()"
         class="flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
         <i class="pi pi-plus text-sm"></i>
@@ -35,17 +39,17 @@
 
       <div *ngIf="!cargando() && filas().length > 0" class="overflow-x-auto mt-2">
         <table class="w-full text-left text-xs">
-          <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+          <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase tracking-wider text-[10px]">
             <tr>
-              <th class="px-3 py-2.5 font-semibold">Subrubro</th>
-              <th class="px-3 py-2.5 font-semibold">Detalle</th>
-              <th class="px-3 py-2.5 font-semibold">Centro</th>
-              <th class="px-3 py-2.5 font-semibold">Fecha</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Presupuestado</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Ejecutado</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Por pagar</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Variación %</th>
-              <th class="px-3 py-2.5 font-semibold text-center">Acciones</th>
+              <th class="px-3 py-2.5 font-semibold"><span class="inline-flex items-center gap-1.5"><i class="pi pi-sitemap text-violet-400"></i>Subrubro</span></th>
+              <th class="px-3 py-2.5 font-semibold"><span class="inline-flex items-center gap-1.5"><i class="pi pi-align-left text-slate-400"></i>Detalle</span></th>
+              <th class="px-3 py-2.5 font-semibold"><span class="inline-flex items-center gap-1.5"><i class="pi pi-building text-purple-400"></i>Centro</span></th>
+              <th class="px-3 py-2.5 font-semibold"><span class="inline-flex items-center gap-1.5"><i class="pi pi-calendar text-sky-400"></i>Fecha</span></th>
+              <th class="px-3 py-2.5 font-semibold text-right"><span class="inline-flex items-center gap-1.5 justify-end"><i class="pi pi-chart-bar text-cyan-400"></i>Presupuestado</span></th>
+              <th class="px-3 py-2.5 font-semibold text-right"><span class="inline-flex items-center gap-1.5 justify-end"><i class="pi pi-check-circle text-rose-400"></i>Ejecutado</span></th>
+              <th class="px-3 py-2.5 font-semibold text-right"><span class="inline-flex items-center gap-1.5 justify-end"><i class="pi pi-clock text-amber-400"></i>Por pagar</span></th>
+              <th class="px-3 py-2.5 font-semibold text-right"><span class="inline-flex items-center gap-1.5 justify-end"><i class="pi pi-percentage text-blue-400"></i>Variación %</span></th>
+              <th class="px-3 py-2.5 font-semibold text-center"><span class="inline-flex items-center gap-1.5 justify-center"><i class="pi pi-cog text-slate-400"></i>Acciones</span></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-dark-border">
@@ -54,9 +58,9 @@
               <td class="px-3 py-2 font-medium text-[rgb(var(--color-heading))]">{{ f.detalle }}</td>
               <td class="px-3 py-2 text-dark-text">{{ (f.centro_costo_id && nombresCentro().get(f.centro_costo_id)) || '—' }}</td>
               <td class="px-3 py-2 text-dark-text">{{ f.fecha ? (f.fecha | date:'dd/MM/yyyy') : '—' }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.presupuestado) }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.ejecutado) }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.presupuestado - f.ejecutado) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums text-cyan-400">{{ cop(f.presupuestado) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums text-rose-400">{{ cop(f.ejecutado) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums text-amber-400">{{ cop(f.presupuestado - f.ejecutado) }}</td>
               <td class="px-3 py-2 text-right tabular-nums" [ngClass]="claseVar(variacionPct(f.ejecutado, f.presupuestado))">{{ pct(variacionPct(f.ejecutado, f.presupuestado)) }}</td>
               <td class="px-3 py-2 text-center">
                 <div class="flex items-center justify-center gap-1">

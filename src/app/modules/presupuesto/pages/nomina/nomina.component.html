@@ -5,8 +5,12 @@
     (empresaChange)="elegirEmpresa($event)" (periodoChange)="elegirPeriodo($event)"></app-presupuesto-cabecera>
 
   <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border bg-dark-primary/30">
-      <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Nómina del periodo</h3>
+    <div class="flex items-center justify-between px-4 py-3 border-b border-dark-border bg-gradient-to-r from-dark-primary/60 via-dark-primary/40 to-dark-primary/60">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center"><i class="pi pi-users"></i></div>
+        <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Nómina del periodo</h3>
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-500/10 border border-violet-500/20 text-violet-400">{{ filas().length }} registros</span>
+      </div>
       <button (click)="abrir()" [disabled]="!periodoId()"
         class="flex items-center justify-center gap-2 px-3.5 py-2 bg-brand-primary hover:bg-blue-600 text-white text-xs rounded-lg font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
         <i class="pi pi-user-plus text-sm"></i>
@@ -35,15 +39,15 @@
 
       <div *ngIf="!cargando() && filas().length > 0" class="overflow-x-auto mt-2">
         <table class="w-full text-left text-xs">
-          <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+          <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase tracking-wider text-[10px]">
             <tr>
-              <th class="px-3 py-2.5 font-semibold">Trabajador</th>
-              <th class="px-3 py-2.5 font-semibold">Cargo</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Devengado</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Deducciones</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Neto</th>
-              <th class="px-3 py-2.5 font-semibold text-right">Pago nómina</th>
-              <th class="px-3 py-2.5 font-semibold text-center">Acciones</th>
+              <th class="px-3 py-2.5 font-semibold"><span class="inline-flex items-center gap-1.5"><i class="pi pi-user text-violet-400"></i>Trabajador</span></th>
+              <th class="px-3 py-2.5 font-semibold"><span class="inline-flex items-center gap-1.5"><i class="pi pi-briefcase text-slate-400"></i>Cargo</span></th>
+              <th class="px-3 py-2.5 font-semibold text-right"><span class="inline-flex items-center gap-1.5 justify-end"><i class="pi pi-plus-circle text-emerald-400"></i>Devengado</span></th>
+              <th class="px-3 py-2.5 font-semibold text-right"><span class="inline-flex items-center gap-1.5 justify-end"><i class="pi pi-minus-circle text-rose-400"></i>Deducciones</span></th>
+              <th class="px-3 py-2.5 font-semibold text-right"><span class="inline-flex items-center gap-1.5 justify-end"><i class="pi pi-dollar text-blue-400"></i>Neto</span></th>
+              <th class="px-3 py-2.5 font-semibold text-right"><span class="inline-flex items-center gap-1.5 justify-end"><i class="pi pi-money-bill text-sky-400"></i>Pago nómina</span></th>
+              <th class="px-3 py-2.5 font-semibold text-center"><span class="inline-flex items-center gap-1.5 justify-center"><i class="pi pi-cog text-slate-400"></i>Acciones</span></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-dark-border">
@@ -53,10 +57,10 @@
                 <span *ngIf="f.cedula" class="block text-[10px] text-dark-text">{{ f.cedula }}</span>
               </td>
               <td class="px-3 py-2 text-dark-text">{{ f.cargo || '—' }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ cop(devengado(f)) }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ cop(deducciones(f)) }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ cop(neto(f)) }}</td>
-              <td class="px-3 py-2 text-right tabular-nums">{{ cop(f.pago_nomina) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums text-emerald-400">{{ cop(devengado(f)) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums text-rose-400">{{ cop(deducciones(f)) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums text-blue-400">{{ cop(neto(f)) }}</td>
+              <td class="px-3 py-2 text-right tabular-nums text-sky-400">{{ cop(f.pago_nomina) }}</td>
               <td class="px-3 py-2 text-center">
                 <div class="flex items-center justify-center gap-1">
                   <button (click)="abrir(f)" title="Editar nómina" aria-label="Editar nómina"

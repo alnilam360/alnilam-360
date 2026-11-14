@@ -10,8 +10,16 @@ import { PresupuestoPeriodo } from '../../../core/models/presupuesto.model';
   template: `
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
-          <i class="pi text-brand-primary text-2xl" [ngClass]="icono"></i>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>Finanzas · COP
+          </span>
+          <span class="font-mono text-[10px] text-dark-text">Presupuesto mensual</span>
+        </div>
+        <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary">
+            <i class="pi text-lg" [ngClass]="icono"></i>
+          </span>
           {{ titulo }}
         </h1>
         <p class="text-xs text-dark-text mt-0.5">{{ subtitulo }}</p>

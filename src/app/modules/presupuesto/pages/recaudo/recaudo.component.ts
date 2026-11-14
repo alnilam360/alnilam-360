@@ -5,10 +5,11 @@ import { fechaAInput, fechaAISO, sumar } from '../../funciones/capturas.funcion'
 import { CapturaBase } from '../captura-base';
 
 const PILLS: Record<EstadoRecaudo, string> = {
-  pendiente: 'bg-amber-500/20 text-amber-400',
-  cobrado: 'bg-blue-500/20 text-blue-400',
-  pago: 'bg-emerald-500/20 text-emerald-400',
+  pendiente: 'bg-amber-500/10 border border-amber-500/20 text-amber-400',
+  cobrado: 'bg-sky-500/10 border border-sky-500/20 text-sky-400',
+  pago: 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400',
 };
+const ICONOS: Record<EstadoRecaudo, string> = { pendiente: 'pi-clock', cobrado: 'pi-send', pago: 'pi-check-circle' };
 
 @Component({
   selector: 'app-presupuesto-recaudo',
@@ -20,6 +21,7 @@ const PILLS: Record<EstadoRecaudo, string> = {
 export class RecaudoComponent extends CapturaBase<PresupuestoRecaudo> {
   readonly estados: EstadoRecaudo[] = ['pendiente', 'cobrado', 'pago'];
   readonly pill = (e: EstadoRecaudo) => PILLS[e];
+  readonly icono = (e: EstadoRecaudo) => ICONOS[e];
   totalRecaudo = computed(() => sumar(this.filas(), f => f.valor));
   totalPago = computed(() => sumar(this.filas().filter(f => f.estado === 'pago'), f => f.valor));
 
