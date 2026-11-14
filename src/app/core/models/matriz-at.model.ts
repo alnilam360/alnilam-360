@@ -81,6 +81,37 @@ export interface MatrizAtInvestigacion {
   fecha_investigacion: string | null;
   fuera_de_plazo: boolean;
   conclusiones: string | null;
+  equipo_investigador: EquipoInvestigadorMiembro[];
+}
+
+export interface EquipoInvestigadorMiembro {
+  trabajador_id?: string;
+  nombre: string;
+  rol: string;
+  fuente: 'copasst' | 'sst' | 'manual';
+}
+
+/** Fila de get_investigaciones_pendientes (Res. 1401/2007). */
+export interface InvestigacionPendiente {
+  caso_id: string;
+  trabajador_nombre: string;
+  fecha_hora_evento: string;
+  tipo_evento: string;
+  clasificacion_gravedad: string | null;
+  causo_muerte: boolean;
+  es_grave_o_mortal: boolean;
+  dias_transcurridos: number;
+  estado_investigar: 'en_plazo' | 'fuera_de_plazo' | 'completa';
+  estado_remitir_arl: 'en_plazo' | 'fuera_de_plazo' | 'completa' | null;
+  tiene_accion_valida: boolean;
+}
+
+/** Fila de sugerir_equipo_investigador. */
+export interface EquipoSugerido {
+  trabajador_id: string | null;
+  nombre: string;
+  rol: string;
+  fuente: 'copasst' | 'sst';
 }
 
 export interface MatrizAtAccion {
@@ -94,6 +125,9 @@ export interface MatrizAtAccion {
   fecha_cierre: string | null;
   estado: EstadoAccion;
   evidencia_url: string | null;
+  jerarquia?: 'fuente' | 'medio' | 'individuo' | null;   // art. 12
+  eficacia_verificada: boolean;
+  fecha_verificacion?: string | null;
   /** Derivado en la app: 'vencida' si fecha_compromiso < hoy y no está cerrada. */
   estadoCalculado?: EstadoAccionCalc;
 }

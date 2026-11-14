@@ -380,6 +380,7 @@ export class CasoWizardComponent implements OnInit {
         fecha_investigacion: this.investigacion.fecha_investigacion,
         fuera_de_plazo: false,
         conclusiones: this.investigacion.conclusiones || null,
+        equipo_investigador: [],
       });
     }
 
@@ -400,6 +401,7 @@ export class CasoWizardComponent implements OnInit {
         fecha_cierre: a.fecha_cierre ?? null,
         estado: a.estado ?? 'pendiente',
         evidencia_url: null,
+        eficacia_verificada: false,
       };
       if (a.id) await this.svc.actualizarAccion(a.id, datos);
       else await this.svc.crearAccion(datos);
