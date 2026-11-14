@@ -107,7 +107,8 @@
        5 KPI CARDS
   ════════════════════════════════════════════ -->
   <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-    <div *ngFor="let kpi of kpiCards"
+    @for (kpi of kpiCards(); track kpi.label) {
+    <div
       class="kpi-card relative bg-dark-primary border border-dark-border rounded-2xl p-5 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-default">
 
       <!-- Top accent bar -->
@@ -140,6 +141,7 @@
         </div>
       </div>
     </div>
+    }
   </div>
 
   <!-- ═══════════════════════════════════════════
@@ -160,7 +162,8 @@
       </div>
 
       <div class="space-y-4">
-        <div *ngFor="let ind of keyIndicators"
+        @for (ind of keyIndicators(); track ind.label) {
+        <div
           class="indicator-row flex items-center gap-3 p-3 rounded-xl bg-dark-secondary hover:bg-dark-accent/60 transition-colors duration-200 cursor-pointer">
 
           <!-- Status dot -->
@@ -181,6 +184,7 @@
           <!-- Value -->
           <span class="text-sm font-extrabold text-[rgb(var(--color-heading))] flex-shrink-0">{{ ind.value }}</span>
 
+          @if (!ind.sinTendencia) {
           <!-- Trend -->
           <div class="flex items-center gap-0.5 flex-shrink-0"
             [class.text-green-400]="isGoodTrend(ind)"
@@ -202,12 +206,14 @@
               stroke-linecap="round"
               stroke-linejoin="round"/>
           </svg>
+          }
         </div>
+        }
       </div>
 
       <div class="mt-4 pt-3 border-t border-dark-border flex items-center gap-2">
         <ion-icon name="calendar-outline" class="text-dark-text text-xs"></ion-icon>
-        <p class="text-xs text-dark-text">Período: Mayo 2026</p>
+        <p class="text-xs text-dark-text">Período: {{ anio }}</p>
       </div>
     </div>
 
@@ -224,7 +230,8 @@
       </div>
 
       <div class="space-y-3">
-        <div *ngFor="let act of upcomingActivities; let last = last"
+        @for (act of upcomingActivities(); track $index) {
+        <div
           class="activity-item flex items-center gap-4 p-4 rounded-xl bg-dark-secondary hover:bg-dark-accent/60 transition-colors duration-200 cursor-pointer border border-dark-border hover:border-brand-primary/30">
 
           <!-- Date badge -->
@@ -244,6 +251,9 @@
 
           <ion-icon name="calendar-number-outline" class="text-dark-text text-lg flex-shrink-0"></ion-icon>
         </div>
+        } @empty {
+        <p class="text-xs text-dark-text text-center py-6">Sin actividades programadas próximas</p>
+        }
       </div>
 
       <div class="mt-5 text-center">
@@ -273,41 +283,28 @@
             <svg viewBox="0 0 90 90" style="width:90px;height:90px;transform:rotate(-90deg)">
               <!-- Background track -->
               <circle cx="45" cy="45" r="36" fill="none" stroke="rgb(var(--color-dark-accent))" stroke-width="10"/>
-              <!-- Segment 1: Recursos 100% → 0→53.9° of 360° -->
-              <circle cx="45" cy="45" r="36" fill="none" stroke="#10b981" stroke-width="10"
-                stroke-dasharray="226.2" stroke-dashoffset="194.1" stroke-linecap="butt"/>
-              <!-- Segment 2: Gestión 92% (offset = 194.1 - 49.5 = cumulative) -->
-              <circle cx="45" cy="45" r="36" fill="none" stroke="#3b82f6" stroke-width="10"
-                stroke-dasharray="226.2" stroke-dashoffset="145.5" stroke-linecap="butt"
-                transform="rotate(85.4, 45, 45)"/>
-              <!-- Segment 3: Salud 93% -->
-              <circle cx="45" cy="45" r="36" fill="none" stroke="#06b6d4" stroke-width="10"
-                stroke-dasharray="226.2" stroke-dashoffset="142.1" stroke-linecap="butt"
-                transform="rotate(167, 45, 45)"/>
-              <!-- Segment 4: Peligros 90% -->
-              <circle cx="45" cy="45" r="36" fill="none" stroke="#ef4444" stroke-width="10"
-                stroke-dasharray="226.2" stroke-dashoffset="148.8" stroke-linecap="butt"
-                transform="rotate(247.7, 45, 45)"/>
-              <!-- Segment 5: Amenazas 96% (remaining arc) -->
-              <circle cx="45" cy="45" r="36" fill="none" stroke="#8b5cf6" stroke-width="10"
-                stroke-dasharray="226.2" stroke-dashoffset="135.7" stroke-linecap="butt"
-                transform="rotate(314.9, 45, 45)"/>
+              @for (seg of donutSegmentos(); track seg.ciclo) {
+              <circle cx="45" cy="45" r="36" fill="none" [attr.stroke]="seg.color" stroke-width="10"
+                [attr.stroke-dasharray]="seg.dasharray" [attr.stroke-dashoffset]="seg.dashoffset" stroke-linecap="butt"/>
+              }
             </svg>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
               <span class="text-[9px] font-semibold text-dark-text">Total</span>
-              <span class="text-lg font-extrabold text-brand-primary leading-none">95%</span>
+              <span class="text-lg font-extrabold text-brand-primary leading-none">{{ puntaje0312() !== null ? puntaje0312() + '%' : '—' }}</span>
             </div>
           </div>
 
           <!-- Legend -->
           <div class="flex-1 space-y-1.5 min-w-0">
-            <div *ngFor="let std of complianceStandards" class="flex items-center justify-between gap-2">
+            @for (std of donutSegmentos(); track std.ciclo) {
+            <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="w-2 h-2 rounded-full flex-shrink-0" [style.background-color]="std.color"></span>
-                <span class="text-[11px] text-dark-text truncate">{{ std.label }}</span>
+                <span class="text-[11px] text-dark-text truncate">{{ std.ciclo }}</span>
               </div>
-              <span class="text-[11px] font-bold text-[rgb(var(--color-heading))] flex-shrink-0">{{ std.value }}%</span>
+              <span class="text-[11px] font-bold text-[rgb(var(--color-heading))] flex-shrink-0">{{ std.porcentaje }}%</span>
             </div>
+            }
           </div>
         </div>
       </div>
@@ -320,7 +317,8 @@
         </div>
 
         <div class="space-y-2.5">
-          <div *ngFor="let alert of dashAlerts"
+          @for (alert of dashAlerts; track alert.title) {
+          <div
             class="flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer hover:border-opacity-60"
             [class.border-red-500\/20]="alert.severity === 'danger'"
             [class.border-amber-500\/20]="alert.severity === 'warning'"
@@ -350,6 +348,7 @@
               {{ alert.when }}
             </span>
           </div>
+          }
         </div>
 
         <!-- Help CTA -->

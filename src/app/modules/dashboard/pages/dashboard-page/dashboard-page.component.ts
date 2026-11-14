@@ -1,212 +1,78 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AuthService, AuthState } from '../../../../core/services/auth.service';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { AuthService, AuthState } from '../../../../core/services/auth.service';
+import { TenantService } from '../../../../core/services/tenant.service';
+import { ResEvaluacionesService } from '../../../../core/services/res-evaluaciones.service';
+import { PlanAnualService } from '../../../../core/services/plan-anual.service';
+import { MatrizIndicadoresService } from '../../../../core/services/matriz-indicadores.service';
+import {
+  ProximaActividad,
+  CicloCumplimiento,
+  arcosDonut,
+  cumplimientoPorCiclo,
+  estadoActividades,
+  estadoCumplimiento0312,
+  proximasDesdeActividades
+} from '../../funciones/dashboard.funcion';
+import {
+  COLOR_CICLO,
+  DASH_ALERTS_MOCK,
+  INDICADOR_PLAN_BASE,
+  KEY_INDICATORS_MOCK,
+  KPI_0312_BASE,
+  KPI_INDICADORES_BASE,
+  KPI_MOCK,
+  KPI_PLAN_BASE,
+  KeyIndicator,
+  KpiCard,
+  PHVA_PHASES,
+  QUICK_ACCESS_ACTIONS
+} from './dashboard.mock';
 
-interface KpiCard {
-  label: string;
-  value: string;
-  status: string;
-  statusColor: string;
-  icon: string;
-  iconColor: string;
-  iconBg: string;
-  progress: number;
-  progressColor: string;
-}
-
-interface KeyIndicator {
-  label: string;
-  value: string;
-  trendDir: 'up' | 'down';
-  trendPct: string;
-  trendGood: boolean;
-  sparkPoints: string;
-  isBad: boolean;
-}
-
-interface UpcomingActivity {
-  day: string;
-  month: string;
-  title: string;
-  type: string;
-}
-
-interface ComplianceStandard {
-  label: string;
-  value: number;
-  color: string;
-}
-
-interface DashAlert {
-  icon: string;
-  title: string;
-  detail: string;
-  when: string;
-  severity: 'danger' | 'warning' | 'info';
-}
-
-interface QuickAccessAction {
-  label: string;
-  icon: string;
-  color: string;
-  bgColor: string;
-}
-
-interface PhvaPhase {
-  letter: string;
-  label: string;
-  color: string;
-}
+const CIRCUNFERENCIA_DONUT = 2 * Math.PI * 36;
 
 @Component({
   selector: 'app-dashboard-page',
   templateUrl: './dashboard-page.component.html',
   styleUrls: ['./dashboard-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false
 })
 export class DashboardPageComponent implements OnInit, OnDestroy {
-  userName = '';
+  private authService = inject(AuthService);
+  private tenant = inject(TenantService);
+  private evaluaciones = inject(ResEvaluacionesService);
+  private planes = inject(PlanAnualService);
+  private matriz = inject(MatrizIndicadoresService);
   private subscription = new Subscription();
 
-  phvaPhases: PhvaPhase[] = [
-    { letter: 'P', label: 'Planear', color: '#3b82f6' },
-    { letter: 'H', label: 'Hacer', color: '#10b981' },
-    { letter: 'V', label: 'Verificar', color: '#8b5cf6' },
-    { letter: 'A', label: 'Actuar', color: '#f59e0b' }
-  ];
+  userName = '';
+  readonly anio = new Date().getFullYear();
+  readonly phvaPhases = PHVA_PHASES;
+  readonly quickAccessActions = QUICK_ACCESS_ACTIONS;
+  readonly dashAlerts = DASH_ALERTS_MOCK;
 
-  kpiCards: KpiCard[] = [
-    {
-      label: 'Cumplimiento Est. Mínimos 0312',
-      value: '92%',
-      status: 'Aceptable',
-      statusColor: '#10b981',
-      icon: 'shield-checkmark-outline',
-      iconColor: '#10b981',
-      iconBg: 'rgba(16,185,129,0.15)',
-      progress: 92,
-      progressColor: '#10b981'
-    },
-    {
-      label: 'Actividades del Plan',
-      value: '78%',
-      status: 'Completadas',
-      statusColor: '#3b82f6',
-      icon: 'clipboard-outline',
-      iconColor: '#3b82f6',
-      iconBg: 'rgba(59,130,246,0.15)',
-      progress: 78,
-      progressColor: '#3b82f6'
-    },
-    {
-      label: 'Indicadores Clave',
-      value: '10 / 12',
-      status: 'En meta',
-      statusColor: '#8b5cf6',
-      icon: 'pulse-outline',
-      iconColor: '#8b5cf6',
-      iconBg: 'rgba(139,92,246,0.15)',
-      progress: 83,
-      progressColor: '#8b5cf6'
-    },
-    {
-      label: 'Documentos Vigentes',
-      value: '156',
-      status: 'Actualizados',
-      statusColor: '#f59e0b',
-      icon: 'document-text-outline',
-      iconColor: '#f59e0b',
-      iconBg: 'rgba(245,158,11,0.15)',
-      progress: 78,
-      progressColor: '#f59e0b'
-    },
-    {
-      label: 'Participación Colaboradores',
-      value: '85%',
-      status: 'Activa',
-      statusColor: '#06b6d4',
-      icon: 'people-outline',
-      iconColor: '#06b6d4',
-      iconBg: 'rgba(6,182,212,0.15)',
-      progress: 85,
-      progressColor: '#06b6d4'
-    }
-  ];
+  private kpi0312 = signal<KpiCard>(KPI_0312_BASE);
+  private kpiPlan = signal<KpiCard>(KPI_PLAN_BASE);
+  private kpiIndicadores = signal<KpiCard>(KPI_INDICADORES_BASE);
+  private indicadorPlan = signal<KeyIndicator>(INDICADOR_PLAN_BASE);
 
-  keyIndicators: KeyIndicator[] = [
-    {
-      label: 'Frecuencia de AT',
-      value: '2,1',
-      trendDir: 'down',
-      trendPct: '15%',
-      trendGood: true,
-      sparkPoints: '0,24 8,20 16,18 24,22 32,14 44,10 56,8',
-      isBad: false
-    },
-    {
-      label: 'Severidad de AT',
-      value: '45',
-      trendDir: 'up',
-      trendPct: '8%',
-      trendGood: false,
-      sparkPoints: '0,16 8,18 16,14 24,18 32,22 44,24 56,26',
-      isBad: true
-    },
-    {
-      label: 'Ausentismo',
-      value: '3,2%',
-      trendDir: 'down',
-      trendPct: '5%',
-      trendGood: true,
-      sparkPoints: '0,20 8,22 16,18 24,16 32,18 44,14 56,12',
-      isBad: false
-    },
-    {
-      label: 'Cumplimiento Plan',
-      value: '92%',
-      trendDir: 'up',
-      trendPct: '6%',
-      trendGood: true,
-      sparkPoints: '0,28 8,24 16,22 24,18 32,14 44,10 56,8',
-      isBad: false
-    }
-  ];
+  readonly upcomingActivities = signal<ProximaActividad[]>([]);
+  readonly puntaje0312 = signal<number | null>(null);
+  readonly ciclos = signal<CicloCumplimiento[]>([]);
 
-  upcomingActivities: UpcomingActivity[] = [
-    { day: '12', month: 'MAY', title: 'Capacitación trabajo seguro en alturas', type: 'Programada' },
-    { day: '15', month: 'MAY', title: 'Inspección de condiciones locativas', type: 'Programada' },
-    { day: '20', month: 'MAY', title: 'Revisión por la Alta Dirección', type: 'Programada' }
-  ];
-
-  complianceStandards: ComplianceStandard[] = [
-    { label: 'Recursos', value: 100, color: '#10b981' },
-    { label: 'Gestión Integral', value: 92, color: '#3b82f6' },
-    { label: 'Salud en el Trabajo', value: 93, color: '#06b6d4' },
-    { label: 'Peligros y Riesgos', value: 90, color: '#ef4444' },
-    { label: 'Amenazas', value: 96, color: '#8b5cf6' },
-    { label: 'Verificación', value: 94, color: '#f59e0b' },
-    { label: 'Mejoramiento', value: 95, color: '#64748b' }
-  ];
-
-  dashAlerts: DashAlert[] = [
-    { icon: 'warning-outline', title: 'Matriz Legal', detail: '2 documentos próximos a vencer', when: 'Hoy', severity: 'danger' },
-    { icon: 'school-outline', title: 'Capacitación', detail: '5 capacitaciones pendientes', when: 'Ayer', severity: 'warning' },
-    { icon: 'search-outline', title: 'Inspecciones', detail: '3 inspecciones vencidas', when: '2 días', severity: 'info' }
-  ];
-
-  quickAccessActions: QuickAccessAction[] = [
-    { label: 'Reportar Condición', icon: 'warning-outline', color: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)' },
-    { label: 'Reportar Acto Inseguro', icon: 'alert-circle-outline', color: '#ef4444', bgColor: 'rgba(239,68,68,0.15)' },
-    { label: 'Investigación de AT', icon: 'search-outline', color: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)' },
-    { label: 'Inspecciones', icon: 'clipboard-outline', color: '#8b5cf6', bgColor: 'rgba(139,92,246,0.15)' },
-    { label: 'Capacitaciones', icon: 'school-outline', color: '#10b981', bgColor: 'rgba(16,185,129,0.15)' },
-    { label: 'Documentos', icon: 'folder-open-outline', color: '#06b6d4', bgColor: 'rgba(6,182,212,0.15)' },
-    { label: 'Emergencias', icon: 'medical-outline', color: '#ef4444', bgColor: 'rgba(239,68,68,0.12)' },
-    { label: 'Buzón Sugerencias', icon: 'mail-outline', color: '#f59e0b', bgColor: 'rgba(245,158,11,0.12)' },
-    { label: 'Normatividad', icon: 'scale-outline', color: '#64748b', bgColor: 'rgba(100,116,139,0.15)' }
-  ];
-
-  constructor(private authService: AuthService) {}
+  readonly kpiCards = computed<KpiCard[]>(() => [this.kpi0312(), this.kpiPlan(), this.kpiIndicadores(), ...KPI_MOCK]);
+  readonly keyIndicators = computed<KeyIndicator[]>(() => [...KEY_INDICATORS_MOCK, this.indicadorPlan()]);
+  readonly donutSegmentos = computed(() => {
+    const ciclos = this.ciclos();
+    const arcos = arcosDonut(ciclos.map(c => c.total), CIRCUNFERENCIA_DONUT);
+    return ciclos.map((c, i) => ({
+      ...c,
+      color: COLOR_CICLO[c.ciclo] ?? '#64748b',
+      dasharray: `${arcos[i].dash} ${CIRCUNFERENCIA_DONUT - arcos[i].dash}`,
+      dashoffset: -arcos[i].offset
+    }));
+  });
 
   ngOnInit(): void {
     this.subscription.add(
@@ -218,6 +84,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
         }
       })
     );
+    void this.cargarDatosReales();
   }
 
   ngOnDestroy(): void {
@@ -230,5 +97,65 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
 
   getSparkColor(ind: KeyIndicator): string {
     return this.isGoodTrend(ind) ? '#10b981' : '#ef4444';
+  }
+
+  private async cargarDatosReales(): Promise<void> {
+    let empresaId: string | null = null;
+    try {
+      empresaId = await this.tenant.getEmpresaTenantId();
+    } catch {
+      return;
+    }
+    if (!empresaId) return;
+    await Promise.all([this.cargar0312(empresaId), this.cargarPlan(empresaId), this.cargarIndicadores(empresaId)]);
+  }
+
+  private async cargar0312(empresaId: string): Promise<void> {
+    try {
+      const lista = await this.evaluaciones.listarEvaluaciones(empresaId);
+      const ultima = lista.find(e => e.estado === 'Finalizado');
+      if (!ultima?.id) return;
+      const puntaje = Number(ultima.puntaje_total);
+      const estado = estadoCumplimiento0312(puntaje);
+      this.puntaje0312.set(puntaje);
+      this.kpi0312.update(k => ({ ...k, value: `${puntaje}%`, status: estado.label, statusColor: estado.color, progress: puntaje, progressColor: estado.color }));
+      const { detalle } = await this.evaluaciones.obtenerEvaluacionConDetalle(ultima.id);
+      this.ciclos.set(cumplimientoPorCiclo(detalle));
+    } catch {
+      // widget queda en placeholder
+    }
+  }
+
+  private async cargarPlan(empresaId: string): Promise<void> {
+    try {
+      const plan = await this.planes.getPlanPorEmpresaAnio(empresaId, this.anio);
+      if (!plan?.id) return;
+      const actividades = await this.planes.listarActividades(plan.id);
+      const kpi = this.planes.calcularKpi(actividades, plan.meta_porcentaje ?? 90);
+      this.upcomingActivities.set(proximasDesdeActividades(actividades, new Date().getMonth() + 1, 3));
+      if (kpi.cumplimientoAnual === null) return;
+      const pct = kpi.cumplimientoAnual;
+      const estado = estadoActividades(pct);
+      this.kpiPlan.update(k => ({ ...k, value: `${pct}%`, status: estado.label, statusColor: estado.color, progress: pct, progressColor: estado.color }));
+      this.indicadorPlan.update(i => ({ ...i, value: `${pct}%`, isBad: pct < kpi.metaPorcentaje }));
+    } catch {
+      // widget queda en placeholder
+    }
+  }
+
+  private async cargarIndicadores(empresaId: string): Promise<void> {
+    try {
+      const { resumen } = await this.matriz.obtenerRegistrosMatriz(empresaId, this.anio);
+      if (resumen.total === 0) return;
+      this.kpiIndicadores.update(k => ({
+        ...k,
+        value: `${resumen.cumplen} / ${resumen.total}`,
+        status: 'En meta',
+        statusColor: '#8b5cf6',
+        progress: resumen.porcentajeCumplimiento
+      }));
+    } catch {
+      // widget queda en placeholder
+    }
   }
 }
