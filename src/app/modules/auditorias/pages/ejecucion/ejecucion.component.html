@@ -1,0 +1,115 @@
+<div class="space-y-6" *ngIf="verificacion() as v">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="space-y-1">
+      <a routerLink="/auditorias" class="text-xs text-brand-primary">&larr; Volver al programa</a>
+      <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] m-0">{{ v.titulo }}</h1>
+      <p class="text-xs text-dark-text m-0">
+        {{ v.tipo === 'inspeccion' ? 'Inspección' : 'Auditoría interna' }}<span *ngIf="v.subtipo"> · {{ v.subtipo }}</span>
+        · {{ v.estado }} · {{ v.fecha_programada ? (v.fecha_programada | date:'dd/MM/yy':'UTC') : '—' }}
+      </p>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="text-right">
+        <p class="text-[10px] uppercase text-dark-text m-0">{{ v.estado === 'cerrada' ? 'Puntaje' : 'Cumplimiento (vista previa)' }}</p>
+        <p class="text-2xl font-bold text-[rgb(var(--color-heading))] m-0">
+          {{ (v.estado === 'cerrada' ? v.puntaje : porcentaje()) !== null ? ((v.estado === 'cerrada' ? v.puntaje : porcentaje()) + '%') : '—' }}
+        </p>
+        <p class="text-[10px] text-dark-text m-0">{{ respondidos() }} / {{ respuestas().length }} respondidos</p>
+      </div>
+      <button type="button" (click)="exportar()" [disabled]="enVuelo()"
+        class="min-h-[40px] px-4 rounded-lg border border-dark-border text-xs font-semibold disabled:opacity-50">
+        <i class="pi pi-file-excel mr-1"></i>Exportar informe
+      </button>
+      <button *ngIf="editable()" type="button" (click)="cerrar()" [disabled]="enVuelo() || !cerrable()"
+        class="min-h-[40px] px-4 rounded-lg bg-brand-primary text-white text-xs font-semibold disabled:opacity-50">
+        Cerrar verificación
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="errorAccion() as msg" class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">{{ msg }}</div>
+
+  <section class="space-y-3">
+    <h2 class="text-sm font-semibold text-[rgb(var(--color-heading))] m-0">Lista de verificación</h2>
+    <p *ngIf="respuestas().length === 0" class="text-xs text-dark-text">Sin ítems. Agrega ítems manualmente para esta verificación.</p>
+    <div *ngFor="let r of respuestas(); trackBy: trackById" class="bg-dark-secondary border border-dark-border rounded-xl p-3 space-y-2">
+      <p class="text-xs font-medium text-[rgb(var(--color-heading))] m-0">{{ r.orden }}. {{ r.item_texto }}</p>
+      <div class="flex flex-wrap gap-2">
+        <button *ngFor="let o of resultados" type="button" (click)="setResultado(r, o.valor)" [disabled]="enVuelo() || !editable()"
+          class="min-h-[40px] px-3 rounded-lg border text-xs font-medium disabled:opacity-60"
+          [ngClass]="r.resultado === o.valor ? o.clase : 'bg-dark-primary/40 text-dark-text border-dark-border'">{{ o.etiqueta }}</button>
+      </div>
+      <textarea rows="2" placeholder="Observación" [disabled]="enVuelo() || !editable()" [value]="r.observacion ?? ''"
+        (blur)="guardarObservacion(r, $any($event.target).value)"
+        class="w-full px-3 py-2 text-xs bg-dark-primary/40 border border-dark-border rounded-lg text-[rgb(var(--color-heading))]"></textarea>
+      <div class="flex flex-wrap items-center gap-3">
+        <label *ngIf="editable()" class="min-h-[40px] px-3 inline-flex items-center rounded-lg border border-dark-border text-xs cursor-pointer text-dark-text">
+          <i class="pi pi-camera mr-1"></i>{{ r.evidencia_url ? 'Reemplazar foto' : 'Adjuntar foto' }}
+          <input type="file" accept="image/*" capture="environment" class="hidden" [disabled]="enVuelo()" (change)="subirFoto(r, $event)" />
+        </label>
+        <button *ngIf="r.evidencia_url as p" type="button" (click)="verEvidencia(p)" [disabled]="enVuelo()"
+          class="min-h-[40px] text-xs text-brand-primary hover:underline">Ver evidencia</button>
+      </div>
+    </div>
+    <form *ngIf="editable()" (ngSubmit)="agregarItem()" class="flex gap-2">
+      <input name="nuevo" [(ngModel)]="textoNuevo" placeholder="Nuevo ítem" maxlength="300"
+        class="flex-1 min-h-[40px] px-3 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]" />
+      <button type="submit" [disabled]="enVuelo() || !textoNuevo.trim()"
+        class="min-h-[40px] px-4 rounded-lg border border-dark-border text-xs font-semibold disabled:opacity-50">Agregar ítem</button>
+    </form>
+  </section>
+
+  <section class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-[rgb(var(--color-heading))] m-0">Hallazgos y acciones</h2>
+      <button *ngIf="editable()" type="button" (click)="sugerirHallazgos()" [disabled]="enVuelo()"
+        class="min-h-[40px] px-3 rounded-lg border border-dark-border text-xs font-semibold">Sugerir hallazgos</button>
+    </div>
+    <p *ngIf="hallazgos().length === 0" class="text-xs text-dark-text">Sin hallazgos registrados.</p>
+    <div *ngFor="let h of hallazgos(); trackBy: trackHallazgo" class="bg-dark-secondary border border-dark-border rounded-xl p-3 space-y-2">
+      <textarea rows="2" [(ngModel)]="h.descripcion" [disabled]="!editable()"
+        class="w-full px-3 py-2 text-xs bg-dark-primary/40 border border-dark-border rounded-lg text-[rgb(var(--color-heading))]"></textarea>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
+        <select [(ngModel)]="h.clasificacion" [disabled]="!editable()" class="min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg">
+          <option [ngValue]="null">Clasificación</option>
+          <option *ngFor="let c of clasificaciones" [ngValue]="c">{{ c }}</option>
+        </select>
+        <select [(ngModel)]="h.severidad" [disabled]="!editable()" class="min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg">
+          <option [ngValue]="null">Severidad</option>
+          <option *ngFor="let s of severidades" [ngValue]="s">{{ s }}</option>
+        </select>
+        <select [(ngModel)]="h.jerarquia" [disabled]="!editable()" class="min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg">
+          <option [ngValue]="null">Jerarquía de control</option>
+          <option *ngFor="let j of jerarquias" [ngValue]="j">{{ j }}</option>
+        </select>
+        <select [(ngModel)]="h.estado" [disabled]="!editable()" class="min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg">
+          <option *ngFor="let e of estadosH" [ngValue]="e">{{ e }}</option>
+        </select>
+        <input [(ngModel)]="h.responsable_texto" placeholder="Responsable" [disabled]="!editable()"
+          class="min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg" />
+        <label class="flex flex-col text-[10px] text-dark-text">Compromiso
+          <input type="date" [ngModel]="h.fecha_compromiso?.slice(0, 10)" (ngModelChange)="fechaHallazgo(h, 'fecha_compromiso', $event)" [disabled]="!editable()"
+            class="min-h-[40px] px-2 text-xs bg-dark-primary/40 border border-dark-border rounded-lg" /></label>
+        <label class="flex flex-col text-[10px] text-dark-text">Cierre
+          <input type="date" [ngModel]="h.fecha_cierre?.slice(0, 10)" (ngModelChange)="fechaHallazgo(h, 'fecha_cierre', $event)" [disabled]="!editable()"
+            class="min-h-[40px] px-2 text-xs bg-dark-primary/40 border border-dark-border rounded-lg" /></label>
+        <label class="flex flex-col text-[10px] text-dark-text">Verificación de eficacia
+          <input type="date" [ngModel]="h.fecha_verificacion?.slice(0, 10)" (ngModelChange)="fechaHallazgo(h, 'fecha_verificacion', $event)" [disabled]="!editable()"
+            class="min-h-[40px] px-2 text-xs bg-dark-primary/40 border border-dark-border rounded-lg" /></label>
+      </div>
+      <label class="inline-flex items-center gap-2 text-xs text-dark-text min-h-[40px]">
+        <input type="checkbox" [(ngModel)]="h.eficacia_verificada" [disabled]="!editable()" /> Eficacia verificada
+      </label>
+      <p *ngIf="errorHallazgo()[h.id ?? h.respuesta_id ?? 'nuevo']" class="text-xs text-red-400 m-0">{{ errorHallazgo()[h.id ?? h.respuesta_id ?? 'nuevo'] }}</p>
+      <div *ngIf="editable()" class="flex gap-2">
+        <button type="button" (click)="guardarHallazgo(h)" [disabled]="enVuelo() || !h.descripcion.trim()"
+          class="min-h-[40px] px-4 rounded-lg bg-brand-primary text-white text-xs font-semibold disabled:opacity-50">Guardar</button>
+        <button type="button" (click)="quitarHallazgo(h)" [disabled]="enVuelo()"
+          class="min-h-[40px] px-3 text-rose-400 text-xs font-semibold">Eliminar</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div *ngIf="error() as msg" class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">Error: {{ msg }}</div>
+<div *ngIf="cargando()" class="flex justify-center py-12"><i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i></div>

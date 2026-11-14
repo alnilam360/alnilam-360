@@ -1,0 +1,98 @@
+<div class="space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="space-y-1">
+      <a routerLink="/auditorias" class="text-xs text-brand-primary">&larr; Volver al programa</a>
+      <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] m-0">Plantillas de checklist</h1>
+      <p class="text-xs text-dark-text m-0">Las globales no se editan: clónalas para personalizarlas en tu empresa.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <select *ngIf="esAdmin() && empresas().length > 1" [ngModel]="empresaId()" (ngModelChange)="cambiarEmpresa($event)"
+        class="min-h-[40px] px-3 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]">
+        <option *ngFor="let e of empresas()" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+      <button type="button" (click)="nuevaPlantilla()" [disabled]="!empresaId() || enVuelo()"
+        class="min-h-[40px] px-4 rounded-lg bg-brand-primary text-white text-xs font-semibold disabled:opacity-50">
+        <i class="pi pi-plus mr-1"></i>Nueva plantilla
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error() as msg" class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">{{ msg }}</div>
+  <div *ngIf="cargando()" class="flex justify-center py-12"><i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i></div>
+
+  <form *ngIf="editandoPlantilla()" [formGroup]="formPlantilla" (ngSubmit)="guardarPlantilla()"
+    class="bg-dark-secondary border border-dark-border rounded-xl p-3 grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+    <input formControlName="nombre" placeholder="Nombre *" maxlength="150"
+      class="min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg sm:col-span-2" />
+    <select formControlName="tipo" [attr.disabled]="editandoPlantilla() !== 'nueva' ? true : null"
+      class="min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg">
+      <option *ngFor="let t of tipos" [value]="t.valor">{{ t.etiqueta }}</option>
+    </select>
+    <input formControlName="subtipo" placeholder="Subtipo"
+      class="min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg" />
+    <label class="inline-flex items-center gap-2 min-h-[40px] text-dark-text"><input type="checkbox" formControlName="activo" /> Activa</label>
+    <div class="flex gap-2 sm:col-span-3 sm:justify-end">
+      <button type="submit" [disabled]="formPlantilla.invalid || enVuelo()"
+        class="min-h-[40px] px-4 rounded-lg bg-brand-primary text-white font-semibold disabled:opacity-50">{{ enVuelo() ? 'Guardando…' : 'Guardar' }}</button>
+      <button type="button" (click)="editandoPlantilla.set(null)" class="min-h-[40px] px-3 text-dark-text">Cancelar</button>
+    </div>
+  </form>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <section class="space-y-2">
+      <p *ngIf="!cargando() && plantillas().length === 0" class="text-xs text-dark-text">Sin plantillas.</p>
+      <div *ngFor="let p of plantillas(); trackBy: trackById" class="bg-dark-secondary border rounded-xl p-3 space-y-2"
+        [ngClass]="seleccionada()?.id === p.id ? 'border-brand-primary' : 'border-dark-border'">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-xs font-semibold text-[rgb(var(--color-heading))] m-0">{{ p.nombre }}</p>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-medium"
+            [ngClass]="p.empresa_id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-sky-500/20 text-sky-400'">{{ p.empresa_id ? 'Empresa' : 'Global' }}</span>
+        </div>
+        <p class="text-[10px] text-dark-text m-0">{{ p.tipo === 'inspeccion' ? 'Inspección' : 'Auditoría interna' }}<span *ngIf="p.subtipo"> · {{ p.subtipo }}</span></p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" (click)="abrir(p)" [disabled]="enVuelo()" class="min-h-[40px] px-3 text-xs text-brand-primary font-semibold">Ver ítems</button>
+          <button *ngIf="!p.empresa_id" type="button" (click)="clonar(p)" [disabled]="enVuelo() || !empresaId()"
+            class="min-h-[40px] px-3 rounded-lg border border-dark-border text-xs font-semibold disabled:opacity-50">Clonar para mi empresa</button>
+          <button *ngIf="p.empresa_id" type="button" (click)="editarPlantilla(p)" [disabled]="enVuelo()"
+            class="min-h-[40px] px-3 text-xs text-dark-text font-semibold">Editar</button>
+        </div>
+      </div>
+    </section>
+
+    <section *ngIf="seleccionada() as sel" class="lg:col-span-2 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-[rgb(var(--color-heading))] m-0">Ítems de "{{ sel.nombre }}"</h2>
+        <button *ngIf="esPropia()" type="button" (click)="nuevoItem()" [disabled]="enVuelo()"
+          class="min-h-[40px] px-3 rounded-lg border border-dark-border text-xs font-semibold">Agregar ítem</button>
+      </div>
+      <p *ngIf="items().length === 0" class="text-xs text-dark-text">Sin ítems.</p>
+
+      <form *ngIf="editandoItem()" [formGroup]="formItem" (ngSubmit)="guardarItem()"
+        class="bg-dark-secondary border border-dark-border rounded-xl p-3 grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+        <input type="number" formControlName="orden" min="1" placeholder="Orden" class="min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg" />
+        <input formControlName="texto" placeholder="Texto *" maxlength="300" class="min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg sm:col-span-3" />
+        <input formControlName="categoria" placeholder="Categoría" class="min-h-[40px] px-3 bg-dark-primary/40 border border-dark-border rounded-lg sm:col-span-2" />
+        <select *ngIf="esAuditoria()" formControlName="estandar_id" class="min-h-[40px] px-2 bg-dark-primary/40 border border-dark-border rounded-lg sm:col-span-2">
+          <option value="">Sin estándar 0312</option>
+          <option *ngFor="let e of estandares(); trackBy: trackById" [value]="e.id">{{ e.item }} — {{ e.descripcion_estandar | slice:0:60 }}</option>
+        </select>
+        <div class="flex gap-2 sm:col-span-4 sm:justify-end">
+          <button type="submit" [disabled]="formItem.invalid || enVuelo()"
+            class="min-h-[40px] px-4 rounded-lg bg-brand-primary text-white font-semibold disabled:opacity-50">{{ enVuelo() ? 'Guardando…' : 'Guardar ítem' }}</button>
+          <button type="button" (click)="editandoItem.set(null)" class="min-h-[40px] px-3 text-dark-text">Cancelar</button>
+        </div>
+      </form>
+
+      <div *ngFor="let i of items(); trackBy: trackById" class="bg-dark-secondary border border-dark-border rounded-xl p-3 flex items-start justify-between gap-2">
+        <div>
+          <p class="text-xs font-medium text-[rgb(var(--color-heading))] m-0">{{ i.orden }}. {{ i.texto }}</p>
+          <p *ngIf="i.categoria" class="text-[10px] text-dark-text m-0">{{ i.categoria }}</p>
+        </div>
+        <div *ngIf="esPropia()" class="flex shrink-0">
+          <button type="button" (click)="editarItem(i)" [disabled]="enVuelo()" class="min-h-[40px] px-3 text-xs text-dark-text font-semibold">Editar</button>
+          <button type="button" (click)="quitarItem(i)" [disabled]="enVuelo()" class="min-h-[40px] px-3 text-xs text-rose-400 font-semibold">Eliminar</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -67,7 +67,7 @@ export const MENU_ITEMS: MenuItem[] = [
           { id: 'ind-sg-sst', label: '4. Estructura, Proceso y Resultado', icon: 'pie-chart-outline', route: '/indicadores/sg-sst' }
         ]
       },
-      { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'checkbox-outline', route: '/auditorias/programacion' },
+      { id: 'auditorias-inspecciones', label: 'Auditorías e Inspecciones', icon: 'checkbox-outline', route: '/auditorias' },
       { id: 'investigacion-atel', label: 'Investigación de AT/EL', icon: 'search-outline', route: '/investigacion-atel' },
       { id: 'revision-alta-direccion', label: 'Revisión por la Alta Dirección', icon: 'eye-outline' }
     ]

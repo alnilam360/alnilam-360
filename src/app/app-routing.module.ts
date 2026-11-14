@@ -178,13 +178,7 @@ const routes: Routes = [
       // Auditorías
       {
         path: 'auditorias',
-        children: [
-          { path: 'programacion', loadChildren: () => import('./modules/auditorias/auditorias.module').then(m => m.AuditoriasModule), data: { tipo: 'programacion' } },
-          { path: 'resultados', loadChildren: () => import('./modules/auditorias/auditorias.module').then(m => m.AuditoriasModule), data: { tipo: 'resultados' } },
-          { path: 'hallazgos', loadChildren: () => import('./modules/auditorias/auditorias.module').then(m => m.AuditoriasModule), data: { tipo: 'hallazgos' } },
-          { path: 'informes', loadChildren: () => import('./modules/auditorias/auditorias.module').then(m => m.AuditoriasModule), data: { tipo: 'informes' } },
-          { path: '', redirectTo: 'programacion', pathMatch: 'full' }
-        ]
+        loadChildren: () => import('./modules/auditorias/auditorias.module').then(m => m.AuditoriasModule)
       },
 
       // Personal / RRHH

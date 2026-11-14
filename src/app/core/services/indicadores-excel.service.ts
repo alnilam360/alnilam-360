@@ -8,6 +8,8 @@ import {
   SedeLite,
   InformeInvestigacion
 } from '../models/matriz-at.model';
+import { InformeVerificacion } from '../models/verificacion.model';
+import { filaHallazgo, filaItem, nombreArchivoInforme } from './informe-verificacion.funcion';
 
 @Injectable({
   providedIn: 'root'
@@ -386,6 +388,81 @@ export class IndicadoresExcelService {
     a.href = url;
     const quien = (caso.trabajador_nombre || caso.id || 'caso').replace(/\s+/g, '_');
     a.download = `Informe_Investigacion_AT_${(empresaNombre || 'Empresa').replace(/\s+/g, '_')}_${quien}_${NOW.toISOString().slice(0, 10)}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ==========================================================================
+  // EXPORTAR INFORME DE VERIFICACIÓN (AUDITORÍA / INSPECCIÓN)
+  // ==========================================================================
+  async exportarInformeVerificacion(informe: InformeVerificacion): Promise<void> {
+    const { Workbook } = await import('exceljs');
+    const wb = new Workbook();
+    wb.creator = 'Alnilam 360 · SG-SST';
+    wb.created = new Date();
+    const v = informe.verificacion;
+    const NCOL = 8;
+    const ws = wb.addWorksheet('Informe Verificación', {
+      properties: { tabColor: { argb: 'FF047857' } },
+      pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+    });
+    ws.columns = [{ width: 26 }, { width: 44 }, { width: 16 }, { width: 24 }, { width: 28 }, { width: 14 }, { width: 14 }, { width: 18 }];
+    const bdr = { style: 'thin' as const, color: { argb: 'FFCBD5E1' } };
+    const box = { top: bdr, left: bdr, bottom: bdr, right: bdr };
+    const fill = (argb: string) => ({ type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb } });
+    const banner = (text: string, bg: string, size = 10) => {
+      const r = ws.addRow([text]);
+      ws.mergeCells(r.number, 1, r.number, NCOL);
+      r.getCell(1).fill = fill(bg);
+      r.getCell(1).font = { name: 'Calibri', size, bold: true, color: { argb: 'FFFFFFFF' } };
+      r.getCell(1).alignment = { vertical: 'middle', indent: 1 };
+      r.height = 22;
+    };
+    const kv = (label: string, value: string | number | null | undefined) => {
+      const r = ws.addRow([label, value ?? '—']);
+      ws.mergeCells(r.number, 2, r.number, NCOL);
+      r.getCell(1).fill = fill('FFF1F5F9');
+      r.getCell(1).font = { name: 'Calibri', size: 10, bold: true };
+      for (let i = 1; i <= NCOL; i++) { r.getCell(i).border = box; r.getCell(i).alignment = { vertical: 'middle', wrapText: true }; }
+    };
+    const tabla = (cabecera: string[], filas: (string | number)[][]) => {
+      ws.addRow(cabecera).eachCell(c => { c.fill = fill('FFF1F5F9'); c.font = { name: 'Calibri', size: 10, bold: true }; c.border = box; });
+      for (const f of filas) {
+        ws.addRow(f).eachCell({ includeEmpty: true }, c => {
+          c.border = box; c.font = { name: 'Calibri', size: 10 }; c.alignment = { vertical: 'top', wrapText: true };
+        });
+      }
+    };
+    const tipo = v.tipo === 'inspeccion' ? 'Inspección' : 'Auditoría interna';
+    banner('INFORME DE VERIFICACIÓN SG-SST', 'FF0F2942', 14);
+    banner(`${v.titulo} · Generado: ${new Date().toLocaleDateString('es-CO')}`, 'FF0F2942');
+    banner('RESUMEN', 'FF1E3A8A');
+    kv('Empresa', informe.empresaNombre);
+    kv('Tipo / subtipo', v.subtipo ? `${tipo} · ${v.subtipo}` : tipo);
+    kv('Fecha programada', v.fecha_programada?.slice(0, 10));
+    kv('Fecha de ejecución', v.fecha_ejecucion?.slice(0, 10));
+    kv('Estado', v.estado);
+    kv('% cumplimiento', v.puntaje !== null ? `${v.puntaje}%` : '—');
+    kv('Responsable', v.responsable_texto);
+    kv('Sede', v.sede_id);
+    if (v.tipo === 'auditoria_interna') { kv('Alcance', v.alcance); kv('Criterios', v.criterios); }
+    ws.addRow([]);
+    banner('LISTA DE VERIFICACIÓN', 'FF1E3A8A');
+    tabla(['Orden', 'Ítem', 'Resultado', 'Observación', 'Evidencia'], informe.respuestas.map(filaItem));
+    ws.addRow([]);
+    banner('HALLAZGOS Y ACCIONES', 'FF1E3A8A');
+    tabla(
+      ['Descripción', 'Clasificación', 'Severidad', 'Estándar 0312', 'Acción (resp. · compromiso · jerarquía)', 'Estado', 'Cierre', 'Eficacia'],
+      informe.hallazgos.map(h => filaHallazgo(h, informe.estandaresPorId)),
+    );
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivoInforme(informe, new Date().toISOString().slice(0, 10));
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

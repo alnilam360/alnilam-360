@@ -1,0 +1,140 @@
+<div class="space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="space-y-1">
+      <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2 m-0">
+        <span class="w-9 h-9 rounded-xl bg-brand-primary/10 border border-brand-primary/30 text-brand-primary flex items-center justify-center">
+          <i class="pi pi-check-square text-lg"></i>
+        </span>
+        Auditorías e Inspecciones
+      </h1>
+      <p class="text-xs text-dark-text m-0">Programa anual de verificaciones del SG-SST</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <select *ngIf="esAdmin() && empresas().length > 1" [ngModel]="empresaId()" (ngModelChange)="cambiarEmpresa($event)"
+        class="min-h-[40px] px-3 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]">
+        <option *ngFor="let e of empresas()" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+      <select [ngModel]="anio()" (ngModelChange)="cambiarAnio($event)"
+        class="min-h-[40px] px-3 text-xs bg-dark-secondary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]">
+        <option *ngFor="let a of anios" [ngValue]="a">{{ a }}</option>
+      </select>
+      <a routerLink="/auditorias/plantillas"
+        class="inline-flex items-center min-h-[40px] px-4 rounded-lg border border-dark-border text-xs font-semibold text-[rgb(var(--color-heading))]">
+        <i class="pi pi-list mr-1"></i>Plantillas
+      </a>
+      <button type="button" (click)="abrirModal()" [disabled]="!empresaId()"
+        class="min-h-[40px] px-4 rounded-lg bg-brand-primary text-white text-xs font-semibold disabled:opacity-50">
+        <i class="pi pi-plus mr-1"></i>Programar verificación
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="bg-dark-secondary border border-dark-border rounded-xl p-3">
+      <p class="text-[10px] uppercase text-dark-text m-0">Programadas</p>
+      <p class="text-2xl font-bold text-[rgb(var(--color-heading))] m-0">{{ resumen().total }}</p>
+    </div>
+    <div class="bg-dark-secondary border border-dark-border rounded-xl p-3">
+      <p class="text-[10px] uppercase text-dark-text m-0">Ejecutadas</p>
+      <p class="text-2xl font-bold text-emerald-400 m-0">{{ resumen().ejecutadas }}</p>
+    </div>
+    <div class="bg-dark-secondary border border-dark-border rounded-xl p-3">
+      <p class="text-[10px] uppercase text-dark-text m-0">Vencidas del programa</p>
+      <p class="text-2xl font-bold text-rose-400 m-0">{{ resumen().vencidas }}</p>
+    </div>
+    <div class="bg-dark-secondary border border-dark-border rounded-xl p-3">
+      <p class="text-[10px] uppercase text-dark-text m-0">Hallazgos vencidos</p>
+      <p class="text-2xl font-bold text-rose-400 m-0">{{ resumen().hallazgosVencidos }}</p>
+    </div>
+  </div>
+
+  <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+    <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-dark-border">
+      <button type="button" (click)="filtroTipo.set(null)"
+        class="px-2.5 py-1.5 rounded-full text-[10px] font-medium border"
+        [ngClass]="!filtroTipo() ? 'bg-brand-primary/20 text-brand-primary border-brand-primary/40' : 'bg-dark-primary/40 text-dark-text border-dark-border'">Todos los tipos</button>
+      <button *ngFor="let t of tipos" type="button" (click)="filtroTipo.set(t.valor)"
+        class="px-2.5 py-1.5 rounded-full text-[10px] font-medium border"
+        [ngClass]="filtroTipo() === t.valor ? 'bg-brand-primary/20 text-brand-primary border-brand-primary/40' : 'bg-dark-primary/40 text-dark-text border-dark-border'">{{ t.etiqueta }}</button>
+      <span class="w-px h-4 bg-dark-border mx-1"></span>
+      <button type="button" (click)="filtroEstado.set(null)"
+        class="px-2.5 py-1.5 rounded-full text-[10px] font-medium border"
+        [ngClass]="!filtroEstado() ? 'bg-brand-primary/20 text-brand-primary border-brand-primary/40' : 'bg-dark-primary/40 text-dark-text border-dark-border'">Todos los estados</button>
+      <button *ngFor="let e of estados" type="button" (click)="filtroEstado.set(e.valor)"
+        class="px-2.5 py-1.5 rounded-full text-[10px] font-medium border"
+        [ngClass]="filtroEstado() === e.valor ? 'bg-brand-primary/20 text-brand-primary border-brand-primary/40' : 'bg-dark-primary/40 text-dark-text border-dark-border'">{{ e.etiqueta }}</button>
+    </div>
+
+    <div class="px-4 pb-4">
+      <div *ngIf="error() as msg" class="mt-4 px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">Error: {{ msg }}</div>
+      <div *ngIf="cargando()" class="flex items-center justify-center py-12">
+        <i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i>
+      </div>
+      <div *ngIf="!cargando() && !error() && visibles().length === 0"
+        class="py-12 text-center text-xs text-dark-text border border-dashed border-dark-border rounded-xl my-4">Sin verificaciones para los filtros elegidos</div>
+
+      <div *ngIf="!cargando() && visibles().length > 0" class="overflow-x-auto mt-2">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-dark-primary/60 border-b border-dark-border text-dark-text uppercase text-[10px]">
+            <tr>
+              <th class="px-3 py-2.5">Título</th>
+              <th class="px-3 py-2.5">Tipo</th>
+              <th class="px-3 py-2.5">Estado</th>
+              <th class="px-3 py-2.5">Fecha programada</th>
+              <th class="px-3 py-2.5 text-right">%</th>
+              <th class="px-3 py-2.5">Hallazgos</th>
+              <th class="px-3 py-2.5"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-dark-border">
+            <tr *ngFor="let f of visibles(); trackBy: trackById" class="hover:bg-dark-primary/40">
+              <td class="px-3 py-2 font-medium text-[rgb(var(--color-heading))]">{{ f.titulo }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ etiquetaTipo(f.tipo) }}<span *ngIf="f.subtipo"> · {{ f.subtipo }}</span></td>
+              <td class="px-3 py-2"><span [class]="claseEstado(f)">{{ etiquetaEstado(f.estado) }}</span></td>
+              <td class="px-3 py-2 tabular-nums">{{ f.fecha_programada ? (f.fecha_programada | date:'dd/MM/yy':'UTC') : '—' }}</td>
+              <td class="px-3 py-2 text-right tabular-nums">{{ f.puntaje !== null ? (f.puntaje + '%') : '—' }}</td>
+              <td class="px-3 py-2">
+                <span class="text-dark-text">{{ f.hallazgos_abiertos }} abiertos</span>
+                <span *ngIf="f.hallazgos_vencidos > 0" class="ml-1 inline-flex px-2 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-400">{{ f.hallazgos_vencidos }} vencidos</span>
+              </td>
+              <td class="px-3 py-2 text-right whitespace-nowrap">
+                <a *ngIf="f.estado !== 'cancelada'" [routerLink]="['ejecucion', f.verificacion_id]"
+                  class="inline-flex items-center min-h-[40px] px-3 text-brand-primary hover:underline text-[11px] font-semibold">Ejecutar</a>
+                <button *ngIf="puedeCancelar(f)" type="button" (click)="cancelar(f)"
+                  class="min-h-[40px] px-3 text-rose-400 hover:underline text-[11px] font-semibold">Cancelar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ion-modal [isOpen]="modalAbierto()" (didDismiss)="modalAbierto.set(false)">
+  <ng-template>
+    <ion-header><ion-toolbar>
+      <ion-title>Programar verificación</ion-title>
+      <ion-buttons slot="end"><ion-button (click)="modalAbierto.set(false)">Cerrar</ion-button></ion-buttons>
+    </ion-toolbar></ion-header>
+    <ion-content class="ion-padding">
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-3">
+        <ion-select label="Tipo" labelPlacement="stacked" formControlName="tipo" (ionChange)="alCambiarTipo()">
+          <ion-select-option *ngFor="let t of tipos" [value]="t.valor">{{ t.etiqueta }}</ion-select-option>
+        </ion-select>
+        <ion-input label="Subtipo" labelPlacement="stacked" formControlName="subtipo"></ion-input>
+        <ion-input label="Título *" labelPlacement="stacked" formControlName="titulo" maxlength="200"></ion-input>
+        <ion-select label="Plantilla (opcional)" labelPlacement="stacked" formControlName="plantilla_id">
+          <ion-select-option value="">Sin plantilla</ion-select-option>
+          <ion-select-option *ngFor="let p of plantillasTipo()" [value]="p.id">{{ p.nombre }}</ion-select-option>
+        </ion-select>
+        <ion-input label="Responsable" labelPlacement="stacked" formControlName="responsable_texto"></ion-input>
+        <ion-input label="Fecha programada *" labelPlacement="stacked" type="date" formControlName="fecha_programada"></ion-input>
+        <div *ngIf="errorGuardar() as msg" class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">{{ msg }}</div>
+        <ion-button type="submit" expand="block" [disabled]="form.invalid || guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar' }}
+        </ion-button>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
