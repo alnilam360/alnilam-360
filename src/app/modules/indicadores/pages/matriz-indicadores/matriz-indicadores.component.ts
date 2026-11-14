@@ -461,7 +461,7 @@ export class MatrizIndicadoresComponent implements OnInit {
     switch (norm) {
       case 'Accidente de Trabajo (AT)':
         return {
-          icon: 'pi-heart',
+          icon: 'pi-bolt',
           badgeClass: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
           dotClass: 'bg-rose-400',
           label: 'Accidente de Trabajo (AT)'

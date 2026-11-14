@@ -24,6 +24,6 @@
 
 ## Pendientes (no bloquean; revisión visual Opus / fase aparte)
 - Desinstalar npm `@ionic/angular`+`ionicons`+`@ionic/angular-toolkit` y reemplazar `IonicRouteStrategy` por estrategia Angular por defecto → **requiere OK del usuario** (cambio de dependencias/comportamiento de router).
-- Iconos genéricos a validar a ojo: AT/EL ambos `pi-heart`; `skull→pi-ban`; niveles IPERC II/III distinguidos solo por color; `flask→pi-circle`; `person-circle→pi-user`; `cube→pi-box`.
+- [x] Iconos genéricos revisados por código (2026-11-14): AT→`pi-bolt` aplicado (antes AT/EL ambos `pi-heart`, indistinguibles); EL se queda `pi-heart`. `skull→pi-ban`, `person-circle→pi-user`, `cube→pi-box`, `flask→pi-circle` (sin uso real) = correctos, sin cambio. IPERC II/III misma forma `pi-exclamation-triangle` distinguidos por color = gradiente estándar de riesgo, se deja.
 - Modal actividad (plan-anual): `:host height:100%/overflow:hidden` dentro de overlay sin alto fijo → revisar scroll interno en navegador.
 - `app.component.scss`: selectores muertos `ion-menu/ion-item/ion-note` (tags inexistentes) → limpiar si molesta.

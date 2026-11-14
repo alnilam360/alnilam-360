@@ -61,7 +61,7 @@ export const MENU_ITEMS: MenuItem[] = [
         icon: 'pi-chart-bar',
         children: [
           { id: 'ind-matriz-consolidada', label: '0. Matriz de Indicadores', icon: 'pi-th-large', route: '/indicadores/matriz-indicadores' },
-          { id: 'ind-accidentalidad', label: '1. Accidentalidad (AT)', icon: 'pi-heart', route: '/indicadores/accidentalidad' },
+          { id: 'ind-accidentalidad', label: '1. Accidentalidad (AT)', icon: 'pi-bolt', route: '/indicadores/accidentalidad' },
           { id: 'ind-enfermedad-laboral', label: '2. Enfermedad Laboral (EL)', icon: 'pi-heart', route: '/indicadores/enfermedad-laboral' },
           { id: 'ind-ausentismo', label: '3. Ausentismo Laboral', icon: 'pi-clock', route: '/indicadores/ausentismo' },
           { id: 'ind-sg-sst', label: '4. Estructura, Proceso y Resultado', icon: 'pi-chart-pie', route: '/indicadores/sg-sst' }
