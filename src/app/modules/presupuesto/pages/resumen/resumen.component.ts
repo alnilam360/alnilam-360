@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { PresupuestoService } from '../../../../core/services/presupuesto.service';
 import { Empresa } from '../../../../core/models/models';
 import { PresupuestoCentroService } from '../../../../core/services/presupuesto-centro.service';
-import { PresupuestoPeriodo, PresupuestoResumen, ResumenCentro } from '../../../../core/models/presupuesto.model';
+import { PresupuestoPeriodo, PresupuestoResumen, ResumenCentro, TendenciaMes } from '../../../../core/models/presupuesto.model';
 import {
-  claseVariacion, estadoAvance, formatearCOP, formatearMeta, formatearVariacionPct, porcentajeAvance, variacion, variacionPct,
+  claseVariacion, estadoAvance, formatearCOP, formatearMeta, formatearVariacionPct, porcentajeAvance, proyeccionSaldo, variacion, variacionPct,
 } from '../../funciones/resumen.funcion';
 
 @Component({
@@ -45,6 +45,18 @@ export class ResumenComponent implements OnInit {
   periodoId = signal('');
   resumen = signal<PresupuestoResumen | null>(null);
   centros = signal<ResumenCentro[]>([]);
+  tendencia = signal<TendenciaMes[]>([]);
+  proyeccion = computed(() => proyeccionSaldo(this.tendencia().map(t => t.saldo_final)));
+  // Altura relativa al máximo (valor absoluto) de la serie, incluida la proyección.
+  barras = computed(() => {
+    const p = this.proyeccion();
+    const max = Math.max(1, ...this.tendencia().map(t => Math.abs(t.saldo_final)), Math.abs(p ?? 0));
+    const h = (v: number) => Math.max(2, (Math.abs(v) / max) * 100);
+    return {
+      meses: this.tendencia().map(t => ({ mes: t.mes, valor: t.saldo_final, alto: h(t.saldo_final) })),
+      proy: p === null ? null : { valor: p, alto: h(p) },
+    };
+  });
   readonly trackCentro = (i: number, c: ResumenCentro) => c.centro_id ?? `sin-centro-${i}`;
 
   async ngOnInit(): Promise<void> {
@@ -62,6 +74,7 @@ export class ResumenComponent implements OnInit {
     this.empresaId.set(id);
     this.cargando.set(true);
     this.error.set(null);
+    void this.cargarTendencia(id);
     try {
       const lista = id ? await this.service.listarPeriodos(id) : [];
       this.periodos.set(lista);
@@ -90,6 +103,15 @@ export class ResumenComponent implements OnInit {
       this.centros.set(periodoId ? await this.centroService.getResumenCentros(periodoId) : []);
     } catch {
       this.centros.set([]);
+    }
+  }
+
+  // Secundaria: si falla queda vacía sin romper el resumen.
+  private async cargarTendencia(empresaId: string): Promise<void> {
+    try {
+      this.tendencia.set(empresaId ? await this.service.getTendencia(empresaId, 6) : []);
+    } catch {
+      this.tendencia.set([]);
     }
   }
 

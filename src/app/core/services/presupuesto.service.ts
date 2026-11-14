@@ -12,6 +12,7 @@ import {
   PresupuestoRubro,
   PresupuestoSocio,
   PresupuestoSubrubro,
+  TendenciaMes,
 } from '../models/presupuesto.model';
 
 const COLS_PERIODO = 'id, empresa_id, mes, saldo_inicial, facturado, cerrado';
@@ -93,6 +94,12 @@ export class PresupuestoService {
     const { data, error } = await this.sb.client.rpc('get_presupuesto_resumen', { p_periodo_id: periodoId });
     if (error) throw error;
     return (data as unknown as PresupuestoResumen | null) ?? null;
+  }
+
+  async getTendencia(empresaId: string, nMeses = 6): Promise<TendenciaMes[]> {
+    const { data, error } = await this.sb.client.rpc('get_presupuesto_tendencia', { p_empresa_id: empresaId, p_n_meses: nMeses });
+    if (error) throw error;
+    return (data as unknown as TendenciaMes[] | null) ?? [];
   }
 
   // ── Catálogo global ──────────────────────────────────────────────────────

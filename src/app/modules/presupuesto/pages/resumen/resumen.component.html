@@ -129,5 +129,31 @@
         </div>
       }
     </div>
+    <div class="bg-dark-secondary border border-dark-border rounded-2xl shadow-xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-dark-border bg-dark-primary/30">
+        <h3 class="text-base font-semibold text-[rgb(var(--color-heading))]">Tendencia (6 meses)</h3>
+      </div>
+      @if (tendencia().length === 0) {
+        <p class="px-4 py-6 text-center text-xs text-dark-text">Sin histórico suficiente</p>
+      } @else {
+        @let b = barras();
+        <div class="flex items-end gap-2 px-4 pt-4 pb-3 h-48 overflow-x-auto">
+          @for (m of b.meses; track m.mes) {
+            <div class="flex-1 min-w-[48px] h-full flex flex-col justify-end items-center gap-1">
+              <span class="text-[10px] text-dark-text tabular-nums">{{ cop(m.valor) }}</span>
+              <div class="w-full rounded-t bg-brand-primary" [style.height.%]="m.alto"></div>
+              <span class="text-[10px] text-dark-text">{{ m.mes | date:'MM/yy':'UTC' }}</span>
+            </div>
+          }
+          @if (b.proy; as p) {
+            <div class="flex-1 min-w-[48px] h-full flex flex-col justify-end items-center gap-1">
+              <span class="text-[10px] text-dark-text tabular-nums">{{ cop(p.valor) }}</span>
+              <div class="w-full rounded-t border-2 border-dashed border-brand-primary bg-brand-primary/20" [style.height.%]="p.alto"></div>
+              <span class="text-[10px] text-dark-text italic">Proyección</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
   }
 </div>

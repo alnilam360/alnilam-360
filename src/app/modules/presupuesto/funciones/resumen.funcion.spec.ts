@@ -1,5 +1,5 @@
 import {
-  claseVariacion, estadoAvance, formatearCOP, formatearMeta, formatearVariacionPct, porcentajeAvance, variacion, variacionPct,
+  claseVariacion, estadoAvance, formatearCOP, formatearMeta, formatearVariacionPct, porcentajeAvance, proyeccionSaldo, variacion, variacionPct,
 } from './resumen.funcion';
 import { repartoPresupuestadoSocio, sumaPorcentajes } from '../../../core/models/presupuesto.model';
 
@@ -50,4 +50,13 @@ describe('resumen.funcion', () => {
     ];
     expect(sumaPorcentajes(socios)).toBeCloseTo(1, 10);
   });
+});
+
+describe('proyeccionSaldo', () => {
+  const casos: [number[], number | null][] = [
+    [[100, 200, 300], 400], [[300, 200, 100], 0], [[100, 100, 100], 100],
+    [[], null], [[500], null], [[100, 150, 210], 263],
+  ];
+  casos.forEach(([entrada, esperado]) =>
+    it(`${JSON.stringify(entrada)} => ${esperado}`, () => expect(proyeccionSaldo(entrada)).toBe(esperado)));
 });

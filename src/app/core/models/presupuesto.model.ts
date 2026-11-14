@@ -158,6 +158,15 @@ export interface ResumenCentro {
   ejecutado: number;
 }
 
+// ── RPC get_presupuesto_tendencia (2026_11_14_01) ────────────────────────────
+export interface TendenciaMes {
+  mes: string;
+  saldo_inicial: number;
+  recaudo: number;
+  total_ejecutado: number;
+  saldo_final: number;
+}
+
 export function repartoPresupuestadoSocio(saldoFinal: number, porcentaje: number): number {
   return Math.round(saldoFinal * porcentaje);
 }

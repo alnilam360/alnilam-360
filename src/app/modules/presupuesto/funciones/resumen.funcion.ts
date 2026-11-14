@@ -46,3 +46,18 @@ export function formatearMeta(meta: number | null): string {
   if (meta === null) return '—';
   return `${(meta * 100).toFixed(2)}%`;
 }
+
+/** Proyección lineal simple (mínimos cuadrados) del próximo saldo. No es modelo estadístico. <2 puntos => null. COP entero. */
+export function proyeccionSaldo(saldos: number[]): number | null {
+  const n = saldos.length;
+  if (n < 2) return null;
+  const sumX = (n * (n - 1)) / 2;
+  const sumX2 = ((n - 1) * n * (2 * n - 1)) / 6;
+  const sumY = saldos.reduce((a, b) => a + b, 0);
+  const sumXY = saldos.reduce((acc, y, x) => acc + x * y, 0);
+  const denom = n * sumX2 - sumX * sumX;
+  if (denom === 0) return null;
+  const slope = (n * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / n;
+  return Math.round(slope * n + intercept);
+}
