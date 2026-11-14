@@ -86,3 +86,38 @@ describe('ResEvaluacionesService.determinarTipoEvaluacion', () => {
         it('motivo menciona riesgo IV',     () => expect(svc.determinarTipoEvaluacion(5, 'IV').motivo).toContain('IV'));
     });
 });
+
+/**
+ * Golden vectors calcularPuntajeTotal:
+ * puntaje = round(pesoCumple / (pesoTotal - pesoNoAplica) * 10000) / 100
+ * Solo 'Cumple Totalmente' suma; 'No Aplica' sale de la base; otra calificación cuenta 0.
+ */
+describe('ResEvaluacionesService.calcularPuntajeTotal (golden vectors)', () => {
+    const svc = new (ResEvaluacionesService as any)(null, null) as ResEvaluacionesService;
+    const d = (peso: number, calificacion: string) =>
+        ({ calificacion, estandar: { peso } }) as unknown as Parameters<typeof svc.calcularPuntajeTotal>[0][number];
+    const calc = (items: [number, string][]) => svc.calcularPuntajeTotal(items.map(([p, c]) => d(p, c)));
+
+    it('todos Cumple Totalmente => 100', () =>
+        expect(calc([[10, 'Cumple Totalmente'], [20, 'Cumple Totalmente'], [30, 'Cumple Totalmente'], [40, 'Cumple Totalmente']])).toBe(100));
+
+    it('mezcla con No Cumple: (10+30)/100 => 40', () =>
+        expect(calc([[10, 'Cumple Totalmente'], [20, 'No Cumple'], [30, 'Cumple Totalmente'], [40, 'No Cumple']])).toBe(40));
+
+    it('No Aplica no cuenta: igual que si no existiera', () => {
+        const sin = calc([[10, 'Cumple Totalmente'], [20, 'No Cumple']]);
+        const con = calc([[10, 'Cumple Totalmente'], [20, 'No Cumple'], [50, 'No Aplica']]);
+        expect(sin).toBe(33.33);
+        expect(con).toBe(sin);
+    });
+
+    it('redondea a 2 decimales: 1 de 3 => 33.33, 2 de 3 => 66.67', () => {
+        expect(calc([[1, 'Cumple Totalmente'], [1, 'No Cumple'], [1, 'No Cumple']])).toBe(33.33);
+        expect(calc([[1, 'Cumple Totalmente'], [1, 'Cumple Totalmente'], [1, 'No Cumple']])).toBe(66.67);
+    });
+
+    it('todo No Aplica o vacío => 0', () => {
+        expect(calc([[10, 'No Aplica']])).toBe(0);
+        expect(calc([])).toBe(0);
+    });
+});

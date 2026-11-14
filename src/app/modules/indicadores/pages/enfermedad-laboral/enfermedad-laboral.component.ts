@@ -5,6 +5,7 @@ import { Empresa, Sede, Trabajador } from '../../../../core/models/models';
 import { SedesService } from '../../../../core/services/sedes.service';
 import { TrabajadoresService } from '../../../../core/services/trabajadores.service';
 import { IndicadoresExcelService } from '../../../../core/services/indicadores-excel.service';
+import { tasaIncidencia, tasaPrevalencia } from '../../funciones/indicadores.funcion';
 
 export interface CasoEL {
   id?: string;
@@ -208,13 +209,11 @@ export class EnfermedadLaboralComponent implements OnInit {
   get casosAntiguos(): number { return this.casos.filter(c => c.tipo_caso === 'Antiguo').length; }
 
   get tasaPrevalencia(): number {
-    if (!this.promedioTrabajadores) return 0;
-    return Number(((this.totalCasos / this.promedioTrabajadores) * 100000).toFixed(1));
+    return tasaPrevalencia(this.totalCasos, this.promedioTrabajadores);
   }
 
   get tasaIncidencia(): number {
-    if (!this.promedioTrabajadores) return 0;
-    return Number(((this.casosNuevos / this.promedioTrabajadores) * 100000).toFixed(1));
+    return tasaIncidencia(this.casosNuevos, this.promedioTrabajadores);
   }
 
   async exportarExcel(): Promise<void> {

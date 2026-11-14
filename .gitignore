@@ -94,3 +94,9 @@ agent/
 # Data sheets & Excel
 *.xlsx
 *.xls
+
+# Playwright
+test-results/
+playwright-report/
+/blob-report/
+.playwright/

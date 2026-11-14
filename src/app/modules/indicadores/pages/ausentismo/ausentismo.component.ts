@@ -5,6 +5,7 @@ import { Empresa, Sede, Trabajador } from '../../../../core/models/models';
 import { SedesService } from '../../../../core/services/sedes.service';
 import { TrabajadoresService } from '../../../../core/services/trabajadores.service';
 import { IndicadoresExcelService } from '../../../../core/services/indicadores-excel.service';
+import { tasaAusentismo } from '../../funciones/indicadores.funcion';
 
 export interface IncapacidadRegistro {
   id?: string;
@@ -214,8 +215,7 @@ export class AusentismoComponent implements OnInit {
   }
 
   get tasaAusentismo(): number {
-    if (!this.diasProgramadosAnuales) return 0;
-    return Number(((this.totalDiasIncapacidad / this.diasProgramadosAnuales) * 100).toFixed(2));
+    return tasaAusentismo(this.totalDiasIncapacidad, this.diasProgramadosAnuales);
   }
 
   get totalCostosEmpresa(): number {
