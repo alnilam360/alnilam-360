@@ -69,7 +69,10 @@
               <td class="px-3 py-2 tabular-nums text-blue-300">{{ c.fecha_hora_evento | date:'dd/MM/yy' }}</td>
               <td class="px-3 py-2 text-right tabular-nums"
                 [ngClass]="c.dias_transcurridos > 15 && c.estado_investigar !== 'completa' ? 'text-rose-400 font-semibold' : 'text-dark-text'">{{ c.dias_transcurridos }}</td>
-              <td class="px-3 py-2"><span [class]="claseInvestigar(c.estado_investigar)">{{ etiqueta(c.estado_investigar) }}</span></td>
+              <td class="px-3 py-2">
+                <span [class]="claseInvestigar(c.estado_investigar)">{{ etiqueta(c.estado_investigar) }}</span>
+                <a [routerLink]="[c.caso_id]" class="ml-2 text-brand-primary hover:underline text-[11px] font-semibold">Investigar</a>
+              </td>
               <td class="px-3 py-2">
                 <span *ngIf="c.es_grave_o_mortal; else sinRemision" [class]="claseRemitir(c.estado_remitir_arl)">{{ etiqueta(c.estado_remitir_arl) }}</span>
                 <ng-template #sinRemision><span class="text-dark-text">—</span></ng-template>

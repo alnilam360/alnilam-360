@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { SupabaseClientService } from './supabase-client.service';
 import { TenantService } from './tenant.service';
 import { Empresa } from '../models/models';
-import { InvestigacionPendiente } from '../models/matriz-at.model';
+import { EquipoSugerido, InvestigacionPendiente } from '../models/matriz-at.model';
 
 /** Investigación de AT/EL (Res. 1401/2007): bandeja de casos y plazos (RPC). */
 @Injectable({ providedIn: 'root' })
@@ -24,5 +24,11 @@ export class InvestigacionAtelService {
     const { data, error } = await this.sb.client.rpc('get_investigaciones_pendientes', { p_empresa_id: empresaId });
     if (error) throw error;
     return (data as unknown as InvestigacionPendiente[]) ?? [];
+  }
+
+  async sugerirEquipo(empresaId: string): Promise<EquipoSugerido[]> {
+    const { data, error } = await this.sb.client.rpc('sugerir_equipo_investigador', { p_empresa_id: empresaId });
+    if (error) throw error;
+    return (data as unknown as EquipoSugerido[]) ?? [];
   }
 }

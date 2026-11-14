@@ -6,10 +6,15 @@ import { IonicModule } from '@ionic/angular';
 import { SharedModule } from '../../shared/shared.module';
 import { BandejaComponent } from './pages/bandeja/bandeja.component';
 
-const routes: Routes = [{ path: '', component: BandejaComponent }];
+import { InvestigacionDetalleComponent } from './pages/detalle/investigacion-detalle.component';
+
+const routes: Routes = [
+  { path: '', component: BandejaComponent },
+  { path: ':casoId', component: InvestigacionDetalleComponent },
+];
 
 @NgModule({
-  declarations: [BandejaComponent],
+  declarations: [BandejaComponent, InvestigacionDetalleComponent],
   imports: [CommonModule, FormsModule, IonicModule, SharedModule, RouterModule.forChild(routes)],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

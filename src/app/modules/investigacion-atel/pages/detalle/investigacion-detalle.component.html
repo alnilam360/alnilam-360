@@ -1,0 +1,108 @@
+<div class="space-y-6">
+  <a routerLink="/investigacion-atel" class="text-xs text-brand-primary hover:underline"><i class="pi pi-arrow-left mr-1"></i>Volver a la bandeja</a>
+
+  <div *ngIf="error() as msg" class="px-3 py-2 rounded-lg bg-red-500/20 text-red-400 text-xs">{{ msg }}</div>
+  <div *ngIf="cargando()" class="flex justify-center py-12"><i class="pi pi-spin pi-spinner text-brand-primary text-2xl"></i></div>
+
+  <ng-container *ngIf="caso() as c">
+    <div class="flex flex-wrap items-center gap-2">
+      <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] m-0">Investigación — {{ c.trabajador_nombre }}</h1>
+      <span *ngIf="c.clasificacion_gravedad as g" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border"
+        [ngClass]="g === 'mortal' ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' : g === 'grave' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-slate-500/15 text-slate-300 border-slate-500/30'">{{ g }}</span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border"
+        [ngClass]="estadoPlazo() === 'fuera_de_plazo' ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' : estadoPlazo() === 'completa' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'">{{ estadoPlazo().replace('_', ' ') }}</span>
+      <button *ngIf="c.peligro_id" type="button" (click)="irIperc()"
+        class="ml-auto px-3 py-1.5 text-xs rounded-lg border border-dark-border text-dark-text hover:bg-dark-accent">
+        <i class="pi pi-table mr-1"></i>Actualizar IPERC
+      </button>
+    </div>
+
+    <section class="bg-dark-secondary border border-dark-border rounded-2xl p-4 space-y-2 text-xs">
+      <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))] m-0">Datos del evento (solo lectura)</h3>
+      <div class="grid sm:grid-cols-2 gap-2 text-dark-text">
+        <div>Trabajador: <b>{{ c.trabajador_nombre }}</b> {{ c.trabajador_documento }}</div>
+        <div>Cargo: <b>{{ c.trabajador_cargo || '—' }}</b></div>
+        <div>Fecha y hora: <b>{{ c.fecha_hora_evento | date:'dd/MM/yyyy HH:mm' }}</b></div>
+        <div>Área/proceso: <b>{{ c.area_proceso || '—' }}</b></div>
+        <div>Actividad: <b>{{ c.actividad_al_momento || '—' }}</b></div>
+        <div>Tipo de lesión: <b>{{ c.tipo_lesion?.nombre || '—' }}</b></div>
+      </div>
+      <p class="m-0 text-dark-text">{{ c.descripcion_evento || 'Sin descripción del evento.' }}</p>
+    </section>
+
+    <div *ngIf="esGraveCaso()" class="px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs">
+      Accidente grave/mortal: el equipo debe incluir profesional con licencia en SO y encargado de diseño (art. 7). Verifíquelo manualmente.
+    </div>
+
+    <section class="bg-dark-secondary border border-dark-border rounded-2xl p-4 space-y-3 text-xs">
+      <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))] m-0">Análisis de causas (art. 11)</h3>
+      <select [(ngModel)]="inv.metodologia" class="w-full px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]">
+        <option [ngValue]="null">Metodología…</option>
+        <option *ngFor="let m of metodologias" [ngValue]="m.k">{{ m.l }}</option>
+      </select>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <textarea [(ngModel)]="inv.actos_inseguros" rows="3" placeholder="Actos subestándar (uno por línea)" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]"></textarea>
+        <textarea [(ngModel)]="inv.condiciones_inseguras" rows="3" placeholder="Condiciones subestándar (una por línea)" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]"></textarea>
+        <textarea [(ngModel)]="inv.factores_personales" rows="3" placeholder="Factores personales (uno por línea)" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]"></textarea>
+        <textarea [(ngModel)]="inv.factores_trabajo" rows="3" placeholder="Factores del trabajo (uno por línea)" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]"></textarea>
+      </div>
+      <textarea [(ngModel)]="inv.conclusiones" rows="3" placeholder="Conclusiones" class="w-full px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]"></textarea>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <input [(ngModel)]="inv.responsable_texto" placeholder="Responsable de la investigación" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]" />
+        <input type="date" [(ngModel)]="inv.fecha_investigacion" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]" />
+      </div>
+    </section>
+
+    <section class="bg-dark-secondary border border-dark-border rounded-2xl p-4 space-y-3 text-xs">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))] m-0">Equipo investigador</h3>
+        <button type="button" (click)="sugerir()" class="px-3 py-1.5 rounded-lg border border-dark-border text-dark-text hover:bg-dark-accent">Sugerir desde COPASST</button>
+      </div>
+      <div *ngFor="let m of equipo(); let i = index" class="flex items-center gap-2 text-dark-text">
+        <span class="px-2 py-0.5 rounded-full text-[10px] border"
+          [ngClass]="m.fuente === 'copasst' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : m.fuente === 'sst' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-slate-500/15 text-slate-300 border-slate-500/30'">{{ m.fuente }}</span>
+        <b class="flex-1">{{ m.nombre }}</b><span>{{ m.rol }}</span>
+        <button type="button" (click)="quitarMiembro(i)" aria-label="Quitar miembro" class="text-rose-400 w-10 h-10"><i class="pi pi-trash"></i></button>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <input [(ngModel)]="nuevoMiembro.nombre" placeholder="Nombre" class="flex-1 px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]" />
+        <input [(ngModel)]="nuevoMiembro.rol" placeholder="Rol" class="flex-1 px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]" />
+        <button type="button" (click)="agregarMiembro()" class="px-3 py-1.5 rounded-lg border border-dark-border text-dark-text hover:bg-dark-accent">Agregar</button>
+      </div>
+    </section>
+
+    <section class="bg-dark-secondary border border-dark-border rounded-2xl p-4 space-y-3 text-xs">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))] m-0">Acciones (art. 12)</h3>
+        <button type="button" (click)="agregarAccion()" class="px-3 py-1.5 rounded-lg border border-dark-border text-dark-text hover:bg-dark-accent">Agregar acción</button>
+      </div>
+      <div *ngFor="let a of acciones; let i = index" class="border border-dark-border rounded-xl p-3 space-y-2">
+        <textarea [(ngModel)]="a.descripcion_accion" rows="2" placeholder="Descripción de la acción" class="w-full px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]"></textarea>
+        <div class="grid sm:grid-cols-4 gap-2">
+          <input [(ngModel)]="a.responsable_texto" placeholder="Responsable" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]" />
+          <input type="date" [(ngModel)]="a.fecha_compromiso" title="Fecha de compromiso" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]" />
+          <select [(ngModel)]="a.jerarquia" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]">
+            <option [ngValue]="null">Jerarquía…</option>
+            <option value="fuente">Fuente</option><option value="medio">Medio</option><option value="individuo">Individuo</option>
+          </select>
+          <select [(ngModel)]="a.estado" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]">
+            <option value="pendiente">Pendiente</option><option value="en_progreso">En progreso</option><option value="cerrada">Cerrada</option>
+          </select>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 text-dark-text">
+          <label class="flex items-center gap-1"><input type="checkbox" [(ngModel)]="a.eficacia_verificada" />Eficacia verificada</label>
+          <input *ngIf="a.eficacia_verificada" type="date" [(ngModel)]="a.fecha_verificacion" title="Fecha de verificación" class="px-3 py-1.5 bg-dark-primary border border-dark-border rounded-lg text-[rgb(var(--color-heading))]" />
+          <button type="button" (click)="quitarAccion(i)" class="ml-auto text-rose-400 h-10 px-2"><i class="pi pi-trash mr-1"></i>Quitar</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="flex flex-wrap justify-end gap-2">
+      <button type="button" [disabled]="guardando()" (click)="guardar()"
+        class="px-4 py-2 text-xs rounded-lg bg-brand-primary text-white disabled:opacity-50">{{ guardando() ? 'Guardando…' : 'Guardar' }}</button>
+      <button type="button" [disabled]="guardando() || !puedeCerrarYa()" (click)="guardar(true)"
+        [title]="puedeCerrarYa() ? '' : 'Requiere ≥1 acción con responsable y fecha'"
+        class="px-4 py-2 text-xs rounded-lg border border-emerald-500/40 text-emerald-400 disabled:opacity-40">Marcar cerrada</button>
+    </div>
+  </ng-container>
+</div>

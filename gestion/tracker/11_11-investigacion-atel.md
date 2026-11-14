@@ -19,11 +19,15 @@
 - [x] `InvestigacionAtelModule` (lazy) + `investigacion-atel.service.ts`; ruta `/investigacion-atel` reapuntada (ya no placeholder) (2026-11-14)
 - [x] Página bandeja: casos AT con badges de plazo doble (investigar + remitir ARL), días transcurridos, filtro/chips por estado; build EXIT=0, suite 122/1 (baseline) (2026-11-14)
 
-### F3. Front — wizard + acciones (cliente-web)
-- [ ] Wizard: autollenado RO (art. 9) → metodología → causas inmediatas/básicas (art. 11) → equipo (grave/mortal exige licencia SO+diseño, art. 7) → descripción (art. 10) → conclusiones
-- [ ] Panel de acciones (art. 12): CRUD + jerarquía fuente/medio/individuo + eficacia + evidencia Storage; bloqueo de cierre sin acción válida
-- [ ] Botón "Actualizar IPERC" (vía `caso.peligro_id`)
-- [ ] Funciones puras + spec: contador de plazo (investigar+remitir), `esGrave`, validador de cierre, armado de equipo
+### F3. Front — página investigación + acciones (cliente-web) — ✅ (2026-11-14)
+> Decisión: página propia ruteable `/investigacion-atel/:casoId` que REUSA `MatrizAtCasoService` (getCaso/upsertInvestigacion/acciones/plazo); el wizard de matriz-casos es modal embebido no ruteable → no se deep-linkea.
+- [x] Página detalle: autollenado RO (art. 9), metodología, causas inmediatas/básicas (art. 11), equipo (sugerido COPASST; aviso grave/mortal art. 7), conclusiones (2026-11-14)
+- [x] Panel de acciones (art. 12): CRUD + jerarquía fuente/medio/individuo + eficacia + fecha_verificación; bloqueo de cierre sin acción válida (`puedeCerrar`) (2026-11-14)
+- [x] Botón "Actualizar IPERC" (visible con `peligro_id`; navega a lista IPERC, sin param — ver pendiente) (2026-11-14)
+- [x] Funciones puras + spec: `esGrave`, `puedeCerrar`, `fusionarEquipo` (3 specs verdes; build EXIT=0, suite 125/1 base) (2026-11-14)
+- [x] Bandeja: botón "Investigar" → `routerLink [c.caso_id]` (2026-11-14)
+
+**Pendientes F3 (no bloquean):** IPERC sin pasar `peligro_id` (la lista no tiene param); autollenado solo muestra `tipo_lesion.nombre` (otros `*_id` FURAT sin texto — decidir si cargar catálogos); no se setea `estado_caso='en_investigacion'` al primer guardado (la bandeja deriva estado de la existencia de investigación, no de `estado_caso`); evidencia de acciones a Storage pendiente.
 
 ### F4. Informe oficial (cliente-web)
 - [ ] Export informe art. 9–13 (datos Res.156/2005 + causas + medidas + firmas); grave/mortal ⇒ aviso remisión ARL, mortal ⇒ formato ARL
