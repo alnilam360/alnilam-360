@@ -15,9 +15,9 @@
 - [x] RPC `sugerir_equipo_investigador` (COPASST vigente activo). Pendiente: encargado SST y licencia SO no modelables con esquema actual → F3 front (2026-11-14)
 - [x] `matriz-at.model.ts` + 2 literales del wizard (`equipo_investigador:[]`, `eficacia_verificada:false`); tsc EXIT=0 (2026-11-14)
 
-### F2. Front — bandeja/cockpit (cliente-web)
-- [ ] `InvestigacionAtelModule` (lazy) + `investigacion-atel.service.ts`; reapuntar ruta `/investigacion-atel`
-- [ ] Página bandeja: casos AT con badge de plazo, contador de días, filtros
+### F2. Front — bandeja/cockpit (cliente-web) — ✅ (2026-11-14)
+- [x] `InvestigacionAtelModule` (lazy) + `investigacion-atel.service.ts`; ruta `/investigacion-atel` reapuntada (ya no placeholder) (2026-11-14)
+- [x] Página bandeja: casos AT con badges de plazo doble (investigar + remitir ARL), días transcurridos, filtro/chips por estado; build EXIT=0, suite 122/1 (baseline) (2026-11-14)
 
 ### F3. Front — wizard + acciones (cliente-web)
 - [ ] Wizard: autollenado RO (art. 9) → metodología → causas inmediatas/básicas (art. 11) → equipo (grave/mortal exige licencia SO+diseño, art. 7) → descripción (art. 10) → conclusiones

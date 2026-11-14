@@ -167,8 +167,7 @@ const routes: Routes = [
       // Módulos independientes en desarrollo (PHVA)
       {
         path: 'investigacion-atel',
-        loadChildren: () => import('./modules/gestion-sst/incidentes/incidentes.module').then(m => m.IncidentesModule),
-        data: { tipo: 'investigacion-de-at-el' }
+        loadChildren: () => import('./modules/investigacion-atel/investigacion-atel.module').then(m => m.InvestigacionAtelModule)
       },
       {
         path: 'acciones-correctivas',
