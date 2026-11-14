@@ -1,11 +1,20 @@
 <div class="space-y-6">
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-      <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2">
-        <i class="pi pi-calendar text-brand-primary text-2xl"></i>
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Finanzas · COP
+        </span>
+        <span class="text-[10px] text-dark-text font-mono">Periodos mensuales</span>
+      </div>
+      <h1 class="text-xl font-bold text-[rgb(var(--color-heading))] flex items-center gap-2 m-0">
+        <span class="w-9 h-9 rounded-xl bg-brand-primary/10 border border-brand-primary/30 text-brand-primary flex items-center justify-center">
+          <i class="pi pi-calendar text-lg"></i>
+        </span>
         Periodos
       </h1>
-      <p class="text-xs text-dark-text mt-0.5">Meses del presupuesto con saldo inicial y facturado</p>
+      <p class="text-xs text-dark-text m-0">Meses del presupuesto con saldo inicial y facturado</p>
     </div>
     <div *ngIf="esAdmin() && empresas().length > 1" class="min-w-[180px]">
       <select [ngModel]="empresaId()" (ngModelChange)="cargar($event)"
@@ -62,6 +71,7 @@
               <td class="px-3 py-2 text-right tabular-nums text-emerald-400">{{ cop(p.facturado) }}</td>
               <td class="px-3 py-2">
                 <span *ngIf="p.cerrado" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-500/20 text-slate-400"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span><i class="pi pi-lock text-[10px]"></i>Cerrado</span>
+                <span *ngIf="!p.cerrado" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><i class="pi pi-lock-open text-[10px]"></i>Abierto</span>
               </td>
               <td class="px-3 py-2 text-center">
                 <button (click)="abrir(p)" title="Editar periodo" aria-label="Editar periodo"
