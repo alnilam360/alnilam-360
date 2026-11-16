@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CapacitacionService } from '../../services/capacitacion.service';
 import { calcularCumplimiento, Cumplimiento } from '../../funciones/cumplimiento.funcion';
 import { CapEstadoSesion, CapSesion, CapTema, NecesidadIperc } from '../../../../../core/models/capacitacion.model';
@@ -26,6 +26,7 @@ export class CapacitacionDashboardComponent implements OnInit {
   nombreTema: Record<string, string> = {};
 
   private svc = inject(CapacitacionService);
+  private cdr = inject(ChangeDetectorRef);
 
   temaModal: CapTema | null = null;
   sesionModal: CapSesion | null = null;
@@ -55,6 +56,7 @@ export class CapacitacionDashboardComponent implements OnInit {
       this.errorMsg = e instanceof Error ? e.message : 'Error cargando el programa de capacitación.';
     } finally {
       this.loading = false;
+      this.cdr.detectChanges(); // la promesa resuelve fuera de la zona (sesión Supabase)
     }
   }
 
