@@ -251,8 +251,7 @@ export function getTipoCorto(tipo: string): string {
     case 'Accidente de Trabajo (AT)': return 'AT';
     case 'Enfermedad Laboral (EL)': return 'EL';
     case 'Ausentismo': return 'Ausentismo';
-    case 'Estructura - proceso - Resultado (E-P-R) del SG-SST': return 'E-P-R';
-    default: return 'SST';
+    default: return 'E-P-R';
   }
 }
 
