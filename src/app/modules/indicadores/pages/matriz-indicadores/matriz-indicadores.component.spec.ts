@@ -45,6 +45,13 @@ describe('MatrizIndicadoresComponent (métodos puros)', () => {
       expect(c.icon).toBe('pi-verified');
       expect(c.label).toBe('E-P-R del SG-SST');
     });
+    it('vacío o desconocido cae en E-P-R', () => {
+      ['', 'otro'].forEach(t => {
+        const c = comp.getTipoBadgeConfig(t);
+        expect(c.icon).toBe('pi-verified');
+        expect(c.label).toBe('E-P-R del SG-SST');
+      });
+    });
     it('normaliza variantes de texto', () => {
       expect(comp.getTipoBadgeConfig('accidente').icon).toBe('pi-bolt');
       expect(comp.getTipoBadgeConfig('enfermadad laboral').icon).toBe('pi-heart');
@@ -60,9 +67,9 @@ describe('MatrizIndicadoresComponent (métodos puros)', () => {
       expect(comp.getTipoColorClass('Ausentismo')).toBe('tipo-aus');
       expect(comp.getTipoColorClass('Estructura - proceso - Resultado (E-P-R) del SG-SST')).toBe('tipo-epr');
     });
-    it('valor vacío o desconocido cae en AT (default de normalizarTipoIndicador)', () => {
-      expect(comp.getTipoColorClass('')).toBe('tipo-at');
-      expect(comp.getTipoColorClass('otro')).toBe('tipo-at');
+    it('valor vacío o desconocido cae en E-P-R (default de normalizarTipoIndicador)', () => {
+      expect(comp.getTipoColorClass('')).toBe('tipo-epr');
+      expect(comp.getTipoColorClass('otro')).toBe('tipo-epr');
     });
   });
 

@@ -236,13 +236,13 @@ export const CATALOGO_MATRIZ_INDICADORES: IndicadorDefinicion[] = [
  * Normaliza cualquier variante de tipo (antiguas erratas o espaciados) a TipoIndicadorMatriz canónico
  */
 export function normalizarTipoIndicador(tipoRaw: string): TipoIndicadorMatriz {
-  if (!tipoRaw) return 'Accidente de Trabajo (AT)';
+  if (!tipoRaw) return 'Estructura - proceso - Resultado (E-P-R) del SG-SST';
   const t = tipoRaw.trim();
   if (t.includes('(AT)') || t.toLowerCase().includes('accidente')) return 'Accidente de Trabajo (AT)';
   if (t.includes('(EL)') || t.toLowerCase().includes('enfermedad') || t.toLowerCase().includes('enfermadad')) return 'Enfermedad Laboral (EL)';
   if (t.toLowerCase().includes('ausentismo')) return 'Ausentismo';
   if (t.includes('E-P-R') || t.toLowerCase().includes('estructura') || t.toLowerCase().includes('sg-sst')) return 'Estructura - proceso - Resultado (E-P-R) del SG-SST';
-  return 'Accidente de Trabajo (AT)';
+  return 'Estructura - proceso - Resultado (E-P-R) del SG-SST';
 }
 
 export function getTipoCorto(tipo: string): string {
