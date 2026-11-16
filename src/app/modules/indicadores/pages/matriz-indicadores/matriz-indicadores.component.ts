@@ -563,7 +563,7 @@ export class MatrizIndicadoresComponent implements OnInit {
   } {
     const esMensual = frecuencia === 'Mensual';
     return {
-      icono: esMensual ? 'pi-calendar' : 'pi-calendar',
+      icono: 'pi-calendar',
       clase: esMensual
         ? 'bg-sky-500/10 text-sky-400 border-sky-500/25 ring-1 ring-sky-500/10'
         : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/25 ring-1 ring-indigo-500/10',
