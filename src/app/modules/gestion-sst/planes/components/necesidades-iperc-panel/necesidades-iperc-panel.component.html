@@ -1,0 +1,34 @@
+<div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+  <h3 class="px-4 py-2.5 border-b border-dark-border text-sm font-semibold text-[rgb(var(--color-heading))]">Necesidades desde IPERC</h3>
+  <p *ngIf="necesidades.length === 0" class="p-8 text-center text-xs text-dark-text">Sin peligros de riesgo alto pendientes de capacitación</p>
+  <div *ngIf="necesidades.length > 0" class="overflow-x-auto">
+    <table class="w-full text-xs min-w-[640px]">
+      <thead>
+        <tr class="bg-dark-primary/60 border-b border-dark-border text-left text-dark-text uppercase tracking-wide">
+          <th class="px-3 py-2.5">Proceso</th>
+          <th class="px-3 py-2.5">Zona / lugar</th>
+          <th class="px-3 py-2.5">Cargo</th>
+          <th class="px-3 py-2.5">Peligro</th>
+          <th class="px-3 py-2.5">Nivel</th>
+          <th class="px-3 py-2.5">Interpretación</th>
+          <th class="px-3 py-2.5"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let n of necesidades; trackBy: trackByIperc" class="border-b border-dark-border/50 h-10">
+          <td class="px-3 py-2 text-[rgb(var(--color-heading))] font-medium">{{ n.proceso }}</td>
+          <td class="px-3 py-2 text-dark-text">{{ n.zona_lugar || '—' }}</td>
+          <td class="px-3 py-2 text-dark-text">{{ n.cargo || '—' }}</td>
+          <td class="px-3 py-2 text-dark-text">{{ n.peligro_descripcion || '—' }}</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/20 text-red-300 border border-red-500/30">{{ n.nivel_riesgo ?? '—' }}</span>
+          </td>
+          <td class="px-3 py-2 text-dark-text">{{ n.interpretacion_np || '—' }}</td>
+          <td class="px-3 py-1 whitespace-nowrap text-right">
+            <button type="button" (click)="crearTema.emit(n)" class="px-3 py-2 min-h-10 text-xs rounded-lg border border-brand-primary text-brand-primary">Crear tema</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

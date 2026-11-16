@@ -1,0 +1,55 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+  <div class="w-full max-w-3xl max-h-[90vh] flex flex-col bg-dark-secondary border border-dark-border rounded-xl">
+    <div class="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-dark-border">
+      <h3 class="flex-1 text-sm font-bold text-[rgb(var(--color-heading))]">Eficacia · {{ tema.nombre }}</h3>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" [ngClass]="badge(resumen.semaforo)">{{ etiqueta(resumen.semaforo) }}</span>
+      <span class="text-xs text-dark-text">Mejora: <strong class="text-[rgb(var(--color-heading))]">{{ resumen.mejoraPct === null ? '—' : resumen.mejoraPct + '%' }}</strong></span>
+      <select [value]="ventanaDias" (change)="cambiarVentana($any($event.target).value)" [disabled]="cargando" aria-label="Ventana en días"
+              class="px-2 py-1 min-h-10 text-xs rounded bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+        <option *ngFor="let v of ventanas" [value]="v">{{ v }} días</option>
+      </select>
+      <button type="button" (click)="cerrado.emit()" class="p-2 min-h-10 min-w-10 text-dark-text"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div *ngIf="errorMsg" class="mx-4 mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-300">{{ errorMsg }}</div>
+
+    <div class="flex-1 overflow-auto px-4 py-4">
+      <p *ngIf="cargando" class="text-xs text-dark-text text-center">Cargando…</p>
+      <p *ngIf="!cargando && !errorMsg && sesiones.length === 0" class="text-xs text-dark-text text-center">Sin sesiones dictadas con este tema en la ventana.</p>
+      <table *ngIf="!cargando && sesiones.length > 0" class="w-full text-xs min-w-[520px]">
+        <thead>
+          <tr class="text-left text-dark-text uppercase tracking-wide border-b border-dark-border">
+            <th class="px-2 py-2">Fecha</th>
+            <th class="px-2 py-2">Antes</th>
+            <th class="px-2 py-2">Después</th>
+            <th class="px-2 py-2">Δ</th>
+            <th class="px-2 py-2">Mejora</th>
+            <th class="px-2 py-2 w-40">Comparación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of sesiones; trackBy: trackSesion" class="border-b border-dark-border/50 h-10">
+            <td class="px-2 py-1 text-dark-text">{{ s.fecha }}</td>
+            <td class="px-2 py-1 text-[rgb(var(--color-heading))]">{{ s.antes }}</td>
+            <td class="px-2 py-1 text-[rgb(var(--color-heading))]">{{ s.despues }}</td>
+            <td class="px-2 py-1 text-[rgb(var(--color-heading))]">{{ s.delta }}</td>
+            <td class="px-2 py-1">
+              <span *ngIf="s.mejora_pct === null" class="text-dark-text">—</span>
+              <span *ngIf="s.mejora_pct !== null" class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                    [ngClass]="s.mejora_pct > 0 ? badge('mejora') : s.mejora_pct < 0 ? badge('empeora') : badge('neutro')">{{ s.mejora_pct }}%</span>
+            </td>
+            <td class="px-2 py-1">
+              <div class="h-1.5 mb-1 rounded bg-gray-400/70" [style.width]="ancho(s.antes)"></div>
+              <div class="h-1.5 rounded bg-brand-primary" [style.width]="ancho(s.despues)"></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="!cargando && sesiones.length > 0" class="mt-3 text-[11px] text-dark-text">
+        Total: {{ resumen.totalAntes }} antes → {{ resumen.totalDespues }} después. Barras: gris = antes, color = después.
+      </p>
+    </div>
+
+    <p class="px-4 py-2 border-t border-dark-border text-[11px] text-dark-text">Correlación por sede en la ventana, no causa.</p>
+  </div>
+</div>

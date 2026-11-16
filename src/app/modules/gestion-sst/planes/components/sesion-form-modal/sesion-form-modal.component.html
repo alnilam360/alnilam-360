@@ -1,0 +1,59 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+  <form [formGroup]="form" (ngSubmit)="guardar()"
+        class="w-full max-w-lg max-h-[90vh] flex flex-col bg-dark-secondary border border-dark-border rounded-xl">
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-dark-border">
+      <h3 class="flex-1 text-sm font-bold text-[rgb(var(--color-heading))]">{{ sesion ? 'Editar sesión' : 'Nueva sesión' }}</h3>
+      <button type="button" (click)="cancelado.emit()" class="p-1.5 text-dark-text"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div *ngIf="errorMsg" class="mx-4 mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-300">{{ errorMsg }}</div>
+
+    <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3 text-xs text-dark-text">
+      <label class="block">Tema *
+        <select formControlName="tema_id" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+          <option value="">— Seleccionar tema —</option>
+          <option *ngFor="let t of temas" [value]="t.id">{{ t.nombre }}</option>
+        </select>
+      </label>
+      <label class="block">Fecha *
+        <input formControlName="fecha" type="date" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">Facilitador
+        <input formControlName="facilitador" type="text" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">Modalidad
+        <input formControlName="modalidad" type="text" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">Horas
+        <input formControlName="horas" type="number" min="0" step="0.5" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+        <span *ngIf="form.controls.horas.invalid" class="text-red-300">Debe ser 0 o mayor.</span>
+      </label>
+      <label class="block">Sede
+        <select formControlName="sede_id" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+          <option value="">— Sin sede —</option>
+          <option *ngFor="let s of sedes" [value]="s.id">{{ s.nombre }}</option>
+        </select>
+      </label>
+      <label class="block">Área de trabajo
+        <input formControlName="area_trabajo" type="text" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">URL de evidencia
+        <input formControlName="evidencia_url" type="text" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">Estado
+        <select formControlName="estado" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+          <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="flex justify-end gap-2 px-4 py-3 border-t border-dark-border">
+      <button type="button" (click)="cancelado.emit()" [disabled]="guardando"
+              class="px-3 py-2 min-h-10 text-xs rounded-lg border border-dark-border text-dark-text">Cancelar</button>
+      <button type="submit" [disabled]="guardando || form.invalid"
+              class="px-3 py-2 min-h-10 text-xs rounded-lg bg-brand-primary text-white disabled:opacity-50">
+        {{ guardando ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>

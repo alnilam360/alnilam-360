@@ -1,0 +1,113 @@
+<div class="space-y-4">
+  <div>
+    <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">Programa de Capacitación · {{ anio }}</h2>
+    <p class="text-xs text-dark-text mt-0.5">SG-SST</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <button type="button" (click)="abrirTema(null)" class="px-3 py-2 min-h-10 text-xs rounded-lg bg-brand-primary text-white">Nuevo tema</button>
+    <button type="button" (click)="abrirSesion(null)" class="px-3 py-2 min-h-10 text-xs rounded-lg border border-brand-primary text-brand-primary">Nueva sesión</button>
+  </div>
+
+  <div *ngIf="loading" class="flex items-center justify-center py-16">
+    <span class="inline-block text-brand-primary w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+  </div>
+
+  <div *ngIf="!loading && errorMsg" class="flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
+    <i class="pi pi-exclamation-circle text-red-400 text-xl shrink-0 mt-0.5"></i>
+    <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading && !errorMsg">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-dark-secondary border border-dark-border rounded-xl text-center">
+        <p class="text-3xl font-bold text-brand-primary">{{ temas.length }}</p>
+        <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Temas</p>
+      </div>
+      <div class="p-4 bg-dark-secondary border border-dark-border rounded-xl text-center">
+        <p class="text-3xl font-bold text-brand-primary">{{ cumplimiento.programadas }}</p>
+        <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Sesiones programadas</p>
+      </div>
+      <div class="p-4 bg-dark-secondary border border-dark-border rounded-xl text-center">
+        <p class="text-3xl font-bold text-brand-success">{{ cumplimiento.dictadas }}</p>
+        <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Dictadas</p>
+      </div>
+      <div class="p-4 bg-brand-primary/10 border border-brand-primary/30 rounded-xl text-center">
+        <p class="text-3xl font-bold text-brand-primary">{{ cumplimiento.pct }}%</p>
+        <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Cumplimiento</p>
+      </div>
+    </div>
+
+    <app-necesidades-iperc-panel [necesidades]="necesidades" (crearTema)="onCrearTemaDesdeIperc($event)"></app-necesidades-iperc-panel>
+
+    <div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+      <h3 class="px-4 py-2.5 border-b border-dark-border text-sm font-semibold text-[rgb(var(--color-heading))]">Temas</h3>
+      <p *ngIf="temas.length === 0" class="p-8 text-center text-xs text-dark-text">Sin temas registrados.</p>
+      <div *ngIf="temas.length > 0" class="overflow-x-auto">
+        <table class="w-full text-xs min-w-[480px]">
+          <thead>
+            <tr class="bg-dark-primary/60 border-b border-dark-border text-left text-dark-text uppercase tracking-wide">
+              <th class="px-3 py-2.5">Nombre</th>
+              <th class="px-3 py-2.5">Fuente</th>
+              <th class="px-3 py-2.5">Obligatorio</th>
+              <th class="px-3 py-2.5">Horas mín.</th>
+              <th class="px-3 py-2.5"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of temas; trackBy: trackById" class="border-b border-dark-border/50 h-10">
+              <td class="px-3 py-2 text-[rgb(var(--color-heading))] font-medium">{{ t.nombre }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ t.fuente }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ t.obligatorio ? 'Sí' : 'No' }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ t.horas_min ?? '—' }}</td>
+              <td class="px-3 py-1 whitespace-nowrap text-right">
+                <button type="button" (click)="eficaciaTema = t" title="Eficacia" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-chart-bar"></i></button>
+                <button type="button" (click)="abrirTema(t)" title="Editar" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-pencil"></i></button>
+                <button type="button" (click)="pedirEliminar('tema', t.id)" title="Eliminar" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-red-400"><i class="pi pi-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+      <h3 class="px-4 py-2.5 border-b border-dark-border text-sm font-semibold text-[rgb(var(--color-heading))]">Cronograma de sesiones</h3>
+      <p *ngIf="sesiones.length === 0" class="p-8 text-center text-xs text-dark-text">Sin sesiones en {{ anio }}.</p>
+      <div *ngIf="sesiones.length > 0" class="overflow-x-auto">
+        <table class="w-full text-xs min-w-[480px]">
+          <thead>
+            <tr class="bg-dark-primary/60 border-b border-dark-border text-left text-dark-text uppercase tracking-wide">
+              <th class="px-3 py-2.5">Fecha</th>
+              <th class="px-3 py-2.5">Tema</th>
+              <th class="px-3 py-2.5">Modalidad</th>
+              <th class="px-3 py-2.5">Estado</th>
+              <th class="px-3 py-2.5"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of sesiones; trackBy: trackById" class="border-b border-dark-border/50 h-10">
+              <td class="px-3 py-2 text-dark-text">{{ s.fecha }}</td>
+              <td class="px-3 py-2 text-[rgb(var(--color-heading))] font-medium">{{ nombreTema[s.tema_id] || '—' }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ s.modalidad || '—' }}</td>
+              <td class="px-3 py-2">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" [ngClass]="badgeEstado(s.estado)">{{ s.estado }}</span>
+              </td>
+              <td class="px-3 py-1 whitespace-nowrap text-right">
+                <button type="button" (click)="asistenciaSesion = s" title="Asistencia" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-users"></i></button>
+                <button type="button" (click)="abrirSesion(s)" title="Editar" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-pencil"></i></button>
+                <button type="button" (click)="pedirEliminar('sesion', s.id)" title="Eliminar" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-red-400"><i class="pi pi-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <app-tema-form-modal *ngIf="modal === 'tema'" [tema]="temaModal" (guardado)="alGuardar()" (cancelado)="cerrarModal()"></app-tema-form-modal>
+  <app-sesion-form-modal *ngIf="modal === 'sesion'" [sesion]="sesionModal" [temas]="temas" (guardado)="alGuardar()" (cancelado)="cerrarModal()"></app-sesion-form-modal>
+  <app-asistencia-panel *ngIf="asistenciaSesion" [sesion]="asistenciaSesion" (cerrado)="asistenciaSesion = null"></app-asistencia-panel>
+  <app-eficacia-panel *ngIf="eficaciaTema" [tema]="eficaciaTema" (cerrado)="eficaciaTema = null"></app-eficacia-panel>
+  <app-confirmar-eliminar *ngIf="porEliminar" [etiqueta]="porEliminar.tipo" [eliminando]="eliminando" [error]="errorEliminar"
+                          (confirmado)="confirmarEliminar()" (cancelado)="porEliminar = null"></app-confirmar-eliminar>
+</div>
