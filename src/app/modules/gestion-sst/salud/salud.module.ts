@@ -8,6 +8,7 @@ import { ExamenesTrabajadorComponent } from './components/examenes-trabajador/ex
 import { ExamenFormModalComponent } from './components/examen-form-modal/examen-form-modal.component';
 import { RestriccionesPanelComponent } from './components/restricciones-panel/restricciones-panel.component';
 import { PerfilCargoPanelComponent } from './components/perfil-cargo-panel/perfil-cargo-panel.component';
+import { DiagnosticoPanelComponent } from './components/diagnostico-panel/diagnostico-panel.component';
 
 const routes: Routes = [
   { path: '', component: SaludDashboardComponent }
@@ -17,6 +18,7 @@ const routes: Routes = [
   declarations: [
     SaludDashboardComponent, ExamenesTrabajadorComponent, ExamenFormModalComponent,
     RestriccionesPanelComponent, PerfilCargoPanelComponent,
+    DiagnosticoPanelComponent,
   ],
   imports: [CommonModule, ReactiveFormsModule, RouterModule.forChild(routes)],
   providers: [SaludService]

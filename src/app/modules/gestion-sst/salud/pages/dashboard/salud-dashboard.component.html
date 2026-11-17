@@ -82,6 +82,8 @@
       </div>
     </div>
 
+    <app-diagnostico-panel [filas]="diagnostico"></app-diagnostico-panel>
+
     <app-examenes-trabajador *ngIf="seleccionado" [trabajadorId]="seleccionado.trabajador_id" [nombre]="seleccionado.nombre"
                              (cambio)="cargar()" (cerrado)="seleccionado = null"></app-examenes-trabajador>
 

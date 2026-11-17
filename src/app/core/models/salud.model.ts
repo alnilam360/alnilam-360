@@ -62,6 +62,13 @@ export interface SaludCoberturaRow {
   pendientes: SaludPendiente[];
 }
 
+/** Fila de rpc salud_diagnostico_general(p_anio): conteo agregado anonimizado (Art. 20 Res. 1843/2025). */
+export interface SaludDiagnosticoRow {
+  categoria: string;
+  subcategoria: string;
+  n: number;
+}
+
 /** Fila de rpc salud_perfil_cargo(p_cargo). */
 export interface SaludPerfilCargoRow {
   peligro_id: string | null;

@@ -9,13 +9,13 @@
 - [x] A2 verificado (build 0, tests 1 base+199, lint 0; revisión Opus anti-getter) + commit 2026-11-17
 
 ## Track B — Diagnóstico anonimizado anual (Art.20)
-- [ ] B0 contrato: RPC `salud_diagnostico_general(p_anio)` agregado, SIN datos individuales
-- [ ] B1 capa-datos: RPC + modelo TS (Opus aplica migración tras OK)
-- [ ] B2 cliente-web: panel en dashboard
-- [ ] B3 verificación + commit
+- [x] B0 contrato: RPC `salud_diagnostico_general(p_anio)` → 12 conteos agregados, SIN datos individuales
+- [x] B1 capa-datos: `2026_11_17_02_salud_diagnostico_general.sql` **APLICADA en prod** (SECURITY INVOKER, consistente con salud_cobertura) + `SaludDiagnosticoRow`. Advisors: función INVOKER, sin hallazgos nuevos
+- [x] B2 cliente-web: `getDiagnostico(anio)` + `DiagnosticoPanelComponent` (OnPush, grupos precomputados en ngOnChanges) en el dashboard; año recarga, falla no rompe
+- [x] B3 verificado (build 0, tests 1 base+199, lint 0; revisión Opus SQL+panel) + commit 2026-11-17
 
 ## Track C — Catálogo de cargos
-- [ ] C0 contrato + decisión de alcance (tabla `cargos`, `cargo_id` en trabajadores/IPERC, backfill, impacto en forms)
+- [x] C0 contrato + alcance **Fundación** (usuario): tabla `cargos` (nombre_norm generado, UNIQUE empresa+norm), `cargo_id` NULLABLE en trabajadores/IPERC, backfill desde trabajadores (IPERC basura queda NULL), `salud_perfil_cargo` por cargo_id con fallback a texto. Columna texto NO se borra (no-breaking)
 - [ ] C1 capa-datos: migración (Opus aplica tras OK)
 - [ ] C2 cliente-web: admin de cargos + wiring en trabajadores/IPERC + `salud_perfil_cargo` por cargo_id
 - [ ] C3 verificación + commit

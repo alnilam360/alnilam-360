@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseClientService } from '../../../../core/services/supabase-client.service';
 import { TenantService } from '../../../../core/services/tenant.service';
 import {
-  SaludCoberturaRow, SaludExamen, SaludPerfilCargoRow, SaludRestriccion,
+  SaludCoberturaRow, SaludDiagnosticoRow, SaludExamen, SaludPerfilCargoRow, SaludRestriccion,
 } from '../../../../core/models/salud.model';
 
 const COLS_EXAMEN = 'id, empresa_id, trabajador_id, tipo, fecha, fecha_proximo, aptitud, requiere_seguimiento, ips_nombre, medico_licencia, concepto_path, observaciones, created_at, updated_at';
@@ -36,6 +36,12 @@ export class SaludService {
     const { data, error } = await this.sb.client.rpc('salud_cobertura', { p_anio: anio });
     if (error) throw error;
     return (data ?? []) as SaludCoberturaRow[];
+  }
+
+  async getDiagnostico(anio: number): Promise<SaludDiagnosticoRow[]> {
+    const { data, error } = await this.sb.client.rpc('salud_diagnostico_general', { p_anio: anio });
+    if (error) throw error;
+    return (data ?? []) as SaludDiagnosticoRow[];
   }
 
   async getPerfilCargo(cargo: string): Promise<SaludPerfilCargoRow[]> {

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject }
 import { SaludService } from '../../services/salud.service';
 import { AlertaVencimientoService } from '../../../../../core/services/alerta-vencimiento.service';
 import { EstadoVencimientoInfo } from '../../../../../core/models/politica-sst.model';
-import { SaludCoberturaRow } from '../../../../../core/models/salud.model';
+import { SaludCoberturaRow, SaludDiagnosticoRow } from '../../../../../core/models/salud.model';
 import { SedesService } from '../../../../../core/services/sedes.service';
 import { TenantService } from '../../../../../core/services/tenant.service';
 import { Sede } from '../../../../../core/models/models';
@@ -40,6 +40,7 @@ export class SaludDashboardComponent implements OnInit {
   vencidos = 0;
   pendientes = 0;
   seleccionado: SaludCoberturaRow | null = null;
+  diagnostico: SaludDiagnosticoRow[] = [];
 
   async ngOnInit(): Promise<void> {
     await Promise.all([this.cargar(), this.cargarSedes()]);
@@ -73,7 +74,12 @@ export class SaludDashboardComponent implements OnInit {
 
   async cargar(): Promise<void> {
     try {
-      const rows = await this.svc.getCobertura(this.anio);
+      // el diagnóstico es complementario: si falla, queda [] y no rompe el dashboard
+      const [rows, diag] = await Promise.all([
+        this.svc.getCobertura(this.anio),
+        this.svc.getDiagnostico(this.anio).catch((): SaludDiagnosticoRow[] => []),
+      ]);
+      this.diagnostico = diag;
       this.filas = rows.map(row => ({ row, alerta: this.alertas.calcularAlerta(row.proximo) }));
       this.aplicarFiltros();
       this.errorMsg = null;
