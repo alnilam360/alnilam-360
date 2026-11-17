@@ -4,6 +4,24 @@
     <p class="text-xs text-dark-text mt-0.5">Res. 1843/2025 · solo conceptos, sin historia clínica</p>
   </div>
 
+  <div class="flex flex-col sm:flex-row gap-2">
+    <select class="min-h-[40px] px-3 rounded-lg bg-dark-secondary border border-dark-border text-sm text-[rgb(var(--color-heading))]"
+            aria-label="Año" (change)="onAnio($any($event.target).value)">
+      <option *ngFor="let a of anios" [value]="a" [selected]="a === anio">{{ a }}</option>
+    </select>
+    <select class="min-h-[40px] px-3 rounded-lg bg-dark-secondary border border-dark-border text-sm text-[rgb(var(--color-heading))]"
+            aria-label="Sede" (change)="onSede($any($event.target).value)">
+      <option value="">Todas las sedes</option>
+      <option *ngFor="let s of sedes" [value]="s.id">{{ s.nombre }}</option>
+    </select>
+    <div class="relative flex-1">
+      <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-dark-text text-xs"></i>
+      <input type="search" placeholder="Buscar por nombre o cargo" aria-label="Buscar"
+             class="w-full min-h-[40px] pl-8 pr-3 rounded-lg bg-dark-secondary border border-dark-border text-sm text-[rgb(var(--color-heading))]"
+             (input)="onBusqueda($any($event.target).value)">
+    </div>
+  </div>
+
   <div *ngIf="loading" class="flex items-center justify-center py-16">
     <span class="inline-block text-brand-primary w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
   </div>
@@ -31,8 +49,8 @@
 
     <div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
       <h3 class="px-4 py-2.5 border-b border-dark-border text-sm font-semibold text-[rgb(var(--color-heading))]">Trabajadores</h3>
-      <p *ngIf="filas.length === 0" class="p-8 text-center text-xs text-dark-text">Sin trabajadores registrados.</p>
-      <div *ngIf="filas.length > 0" class="overflow-x-auto">
+      <p *ngIf="filasVisibles.length === 0" class="p-8 text-center text-xs text-dark-text">{{ filas.length === 0 ? 'Sin trabajadores registrados.' : 'Ningún trabajador coincide con los filtros.' }}</p>
+      <div *ngIf="filasVisibles.length > 0" class="overflow-x-auto">
         <table class="w-full text-xs min-w-[640px]">
           <thead>
             <tr class="bg-dark-primary/60 border-b border-dark-border text-left text-dark-text uppercase tracking-wide">
@@ -44,7 +62,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let f of filas; trackBy: trackByTrabajador" (click)="seleccionado = f.row"
+            <tr *ngFor="let f of filasVisibles; trackBy: trackByTrabajador" (click)="seleccionado = f.row"
                 class="border-b border-dark-border/50 h-10 cursor-pointer hover:bg-dark-primary/40">
               <td class="px-3 py-2 text-[rgb(var(--color-heading))] font-medium">{{ f.row.nombre }}</td>
               <td class="px-3 py-2 text-dark-text">{{ f.row.cargo || '—' }}</td>
