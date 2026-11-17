@@ -98,6 +98,8 @@ export class CapacitacionDashboardComponent implements OnInit {
     }
   }
 
+  vistaCronograma: 'lista' | 'calendario' = 'lista';
+
   badgeEstado(estado: CapEstadoSesion): string {
     return BADGE_ESTADO[estado];
   }

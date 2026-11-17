@@ -11,6 +11,7 @@ import { AsistenciaPanelComponent } from './components/asistencia-panel/asistenc
 import { ConfirmarEliminarComponent } from './components/confirmar-eliminar/confirmar-eliminar.component';
 import { NecesidadesIpercPanelComponent } from './components/necesidades-iperc-panel/necesidades-iperc-panel.component';
 import { EficaciaPanelComponent } from './components/eficacia-panel/eficacia-panel.component';
+import { CronogramaCalendarioComponent } from './components/cronograma-calendario/cronograma-calendario.component';
 import { PlanesHostComponent } from './pages/planes-host.component';
 
 const routes: Routes = [
@@ -21,7 +22,7 @@ const routes: Routes = [
   declarations: [
     PlanesHostComponent, CapacitacionDashboardComponent, TemaFormModalComponent,
     SesionFormModalComponent, AsistenciaPanelComponent, ConfirmarEliminarComponent,
-    NecesidadesIpercPanelComponent, EficaciaPanelComponent,
+    NecesidadesIpercPanelComponent, EficaciaPanelComponent, CronogramaCalendarioComponent,
   ],
   imports: [
     CommonModule,

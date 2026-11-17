@@ -71,9 +71,20 @@
     </div>
 
     <div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
-      <h3 class="px-4 py-2.5 border-b border-dark-border text-sm font-semibold text-[rgb(var(--color-heading))]">Cronograma de sesiones</h3>
-      <p *ngIf="sesiones.length === 0" class="p-8 text-center text-xs text-dark-text">Sin sesiones en {{ anio }}.</p>
-      <div *ngIf="sesiones.length > 0" class="overflow-x-auto">
+      <div class="px-4 py-2 border-b border-dark-border flex items-center justify-between gap-2">
+        <h3 class="text-sm font-semibold text-[rgb(var(--color-heading))]">Cronograma de sesiones</h3>
+        <div class="flex gap-1">
+          <button type="button" (click)="vistaCronograma = 'lista'" title="Lista"
+                  class="min-h-10 min-w-10 rounded-lg border text-xs"
+                  [ngClass]="vistaCronograma === 'lista' ? 'bg-brand-primary text-white border-brand-primary' : 'border-dark-border text-dark-text'"><i class="pi pi-list"></i></button>
+          <button type="button" (click)="vistaCronograma = 'calendario'" title="Calendario"
+                  class="min-h-10 min-w-10 rounded-lg border text-xs"
+                  [ngClass]="vistaCronograma === 'calendario' ? 'bg-brand-primary text-white border-brand-primary' : 'border-dark-border text-dark-text'"><i class="pi pi-calendar"></i></button>
+        </div>
+      </div>
+      <app-cronograma-calendario *ngIf="vistaCronograma === 'calendario'" [anio]="anio" [sesiones]="sesiones" [nombreTema]="nombreTema" (editar)="abrirSesion($event)"></app-cronograma-calendario>
+      <p *ngIf="vistaCronograma === 'lista' && sesiones.length === 0" class="p-8 text-center text-xs text-dark-text">Sin sesiones en {{ anio }}.</p>
+      <div *ngIf="vistaCronograma === 'lista' && sesiones.length > 0" class="overflow-x-auto">
         <table class="w-full text-xs min-w-[480px]">
           <thead>
             <tr class="bg-dark-primary/60 border-b border-dark-border text-left text-dark-text uppercase tracking-wide">
