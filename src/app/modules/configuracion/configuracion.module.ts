@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CargosComponent } from './pages/cargos/cargos.component';
 import { SharedModule } from '../../shared/shared.module';
 import { EmpresasComponent } from './pages/empresas/empresas.component';
 import { RolesComponent } from './pages/roles/roles.component';
@@ -24,7 +25,8 @@ const routes: Routes = [
   { path: '', redirectTo: 'empresas', pathMatch: 'full' },
   { path: 'empresas', component: EmpresasComponent },
   { path: 'roles', component: RolesComponent },
-  { path: 'trabajadores', component: TrabajadoresComponent }
+  { path: 'trabajadores', component: TrabajadoresComponent },
+  { path: 'cargos', component: CargosComponent }
 ];
 
 @NgModule({
@@ -32,11 +34,13 @@ const routes: Routes = [
     EmpresasComponent,
     RolesComponent,
     TrabajadoresComponent,
+    CargosComponent,
     CargueMasivoModalComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     SharedModule,
     RouterModule.forChild(routes),
     // PrimeNG

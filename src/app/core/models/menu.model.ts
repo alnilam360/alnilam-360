@@ -108,7 +108,8 @@ export const MENU_ITEMS: MenuItem[] = [
       { id: 'conf-empresas', label: 'Empresas', icon: 'pi-building', route: '/configuracion/empresas' },
       { id: 'conf-roles', label: 'Roles', icon: 'pi-shield', route: '/configuracion/roles' },
       { id: 'conf-usuarios', label: 'Usuarios', icon: 'pi-users', route: '/configuracion/usuarios' },
-      { id: 'conf-trabajadores', label: 'Trabajadores', icon: 'pi-users', route: '/configuracion/trabajadores' }
+      { id: 'conf-trabajadores', label: 'Trabajadores', icon: 'pi-users', route: '/configuracion/trabajadores' },
+      { id: 'conf-cargos', label: 'Cargos', icon: 'pi-briefcase', route: '/configuracion/cargos' }
     ]
   },
   {

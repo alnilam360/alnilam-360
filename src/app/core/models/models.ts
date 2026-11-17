@@ -62,6 +62,13 @@ export interface Empresa {
 
 export type NivelRiesgo = 'I' | 'II' | 'III' | 'IV' | 'V';
 
+export interface Cargo {
+    id: string;
+    empresa_id: string;
+    nombre: string;
+    activo: boolean;
+}
+
 export interface Sede {
     id?: string;
     empresa_id: string;

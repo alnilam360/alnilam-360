@@ -1,0 +1,64 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold">Cargos</h1>
+    <p class="text-sm opacity-70">Catálogo de cargos de la empresa, usado en trabajadores e IPERC.</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="guardar()" class="flex flex-col sm:flex-row gap-3 sm:items-start">
+    <div class="flex-1">
+      <input pInputText type="text" formControlName="nombre" maxlength="120" class="w-full min-h-[40px]"
+             [placeholder]="editando ? 'Nuevo nombre del cargo' : 'Nombre del cargo'" aria-label="Nombre del cargo" />
+      <small *ngIf="errorForm" class="text-red-500 block mt-1">{{ errorForm }}</small>
+    </div>
+    <div class="flex gap-2">
+      <button type="submit" class="min-h-[40px] px-4 rounded-lg bg-primary text-white disabled:opacity-50"
+              [disabled]="form.invalid || guardando">
+        <i class="pi" [ngClass]="guardando ? 'pi-spin pi-spinner' : 'pi-check'"></i>
+        {{ editando ? 'Guardar' : 'Agregar' }}
+      </button>
+      <button *ngIf="editando" type="button" class="min-h-[40px] px-4 rounded-lg border" (click)="cancelarEdicion()">
+        Cancelar
+      </button>
+    </div>
+  </form>
+
+  <div *ngIf="cargando" class="opacity-70"><i class="pi pi-spin pi-spinner"></i> Cargando...</div>
+
+  <div *ngIf="!cargando && errorCarga" class="p-4 rounded-lg border border-red-500 text-red-500">
+    No se pudieron cargar los cargos: {{ errorCarga }}
+    <button type="button" class="underline ml-2" (click)="cargar()">Reintentar</button>
+  </div>
+
+  <p *ngIf="!cargando && !errorCarga && cargos.length === 0" class="opacity-70">Aún no hay cargos registrados.</p>
+
+  <ul *ngIf="!cargando && !errorCarga && cargos.length" class="divide-y rounded-lg border">
+    <li *ngFor="let c of cargos; trackBy: trackById" class="flex flex-wrap items-center gap-2 p-3">
+      <span class="flex-1 min-w-[10rem]" [class.opacity-50]="!c.activo">{{ c.nombre }}</span>
+      <span *ngIf="!c.activo" class="text-xs px-2 py-1 rounded border">Inactivo</span>
+      <button type="button" class="min-h-[40px] min-w-[40px] px-2" pTooltip="Renombrar" (click)="editar(c)" [disabled]="guardando">
+        <i class="pi pi-pencil"></i>
+      </button>
+      <button type="button" class="min-h-[40px] px-2" (click)="alternarActivo(c)" [disabled]="guardando">
+        <i class="pi" [ngClass]="c.activo ? 'pi-eye-slash' : 'pi-eye'"></i>
+        {{ c.activo ? 'Desactivar' : 'Activar' }}
+      </button>
+      <button type="button" class="min-h-[40px] min-w-[40px] px-2 text-red-500" pTooltip="Eliminar" (click)="porEliminar = c" [disabled]="guardando">
+        <i class="pi pi-trash"></i>
+      </button>
+    </li>
+  </ul>
+
+  <div *ngIf="porEliminar" class="p-4 rounded-lg border border-red-500 space-y-3" role="alertdialog">
+    <p>
+      ¿Eliminar el cargo <strong>{{ porEliminar.nombre }}</strong>? Los trabajadores con este cargo quedarán sin cargo
+      asignado. Recomendado: <strong>desactivarlo</strong>, que conserva el historial.
+    </p>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" class="min-h-[40px] px-4 rounded-lg border" (click)="porEliminar = null">Cancelar</button>
+      <button type="button" class="min-h-[40px] px-4 rounded-lg border" [disabled]="guardando || !porEliminar.activo"
+              (click)="alternarActivo(porEliminar); porEliminar = null">Desactivar</button>
+      <button type="button" class="min-h-[40px] px-4 rounded-lg bg-red-500 text-white disabled:opacity-50"
+              [disabled]="guardando" (click)="confirmarEliminar()">Eliminar</button>
+    </div>
+  </div>
+</div>
