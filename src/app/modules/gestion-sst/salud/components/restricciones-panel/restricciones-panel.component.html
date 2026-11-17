@@ -1,0 +1,68 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+  <div class="w-full max-w-2xl max-h-[90vh] flex flex-col bg-dark-secondary border border-dark-border rounded-xl">
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-dark-border">
+      <h3 class="flex-1 text-sm font-bold text-[rgb(var(--color-heading))]">Restricciones y recomendaciones · {{ examen.fecha }}</h3>
+      <button type="button" (click)="cerrado.emit()" class="p-1.5 text-dark-text"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div *ngIf="errorMsg" class="mx-4 mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-300">{{ errorMsg }}</div>
+
+    <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4 text-xs text-dark-text">
+      <p *ngIf="loading">Cargando…</p>
+      <p *ngIf="!loading && items.length === 0">Sin restricciones ni recomendaciones.</p>
+      <ul class="space-y-2">
+        <li *ngFor="let r of items; trackBy: trackById" class="p-3 border border-dark-border rounded-lg space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                  [ngClass]="r.clase === 'restriccion' ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300'">{{ r.clase }}</span>
+            <span class="flex-1 text-[rgb(var(--color-heading))]">{{ r.descripcion }}</span>
+            <button type="button" (click)="eliminar(r)" [disabled]="guardando" title="Eliminar" class="p-2 min-h-10 min-w-10 hover:text-red-400"><i class="pi pi-trash"></i></button>
+          </div>
+          <p>{{ r.temporalidad || '—' }}<ng-container *ngIf="r.fecha_fin"> hasta {{ r.fecha_fin }}</ng-container>
+            · Resp.: {{ r.responsable || '—' }} · Límite acción: {{ r.fecha_limite_accion || '—' }}</p>
+          <select [value]="r.estado" (change)="cambiarEstado(r, $any($event.target).value)" [disabled]="guardando"
+                  class="px-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+            <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
+          </select>
+        </li>
+      </ul>
+
+      <form [formGroup]="form" (ngSubmit)="agregar()" class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-dark-border pt-3">
+        <label>Clase
+          <select formControlName="clase" class="mt-1 w-full px-3 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+            <option value="recomendacion">Recomendación</option>
+            <option value="restriccion">Restricción</option>
+          </select>
+        </label>
+        <label>Temporalidad
+          <select formControlName="temporalidad" class="mt-1 w-full px-3 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+            <option value="">—</option>
+            <option value="temporal">Temporal</option>
+            <option value="permanente">Permanente</option>
+          </select>
+        </label>
+        <label class="sm:col-span-2">Descripción *
+          <input formControlName="descripcion" type="text" class="mt-1 w-full px-3 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+        </label>
+        <label>Fecha fin
+          <input formControlName="fecha_fin" type="date" class="mt-1 w-full px-3 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+        </label>
+        <label>Responsable
+          <input formControlName="responsable" type="text" class="mt-1 w-full px-3 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+        </label>
+        <label>Fecha límite de acción (+20 hábiles sugerido)
+          <input formControlName="fecha_limite_accion" type="date" class="mt-1 w-full px-3 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+        </label>
+        <label>Estado
+          <select formControlName="estado" class="mt-1 w-full px-3 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+            <option *ngFor="let e of estados" [value]="e">{{ e }}</option>
+          </select>
+        </label>
+        <div class="sm:col-span-2 flex justify-end">
+          <button type="submit" [disabled]="guardando || form.invalid"
+                  class="px-3 py-2 min-h-10 text-xs rounded-lg bg-brand-primary text-white disabled:opacity-50">{{ guardando ? 'Guardando…' : 'Agregar' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

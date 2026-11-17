@@ -1,0 +1,30 @@
+<div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+  <h3 class="px-4 py-2.5 border-b border-dark-border text-sm font-semibold text-[rgb(var(--color-heading))]">Batería de exámenes por cargo (desde IPERC)</h3>
+  <div class="p-3 flex gap-2">
+    <input type="text" #inp [value]="texto" (input)="texto = inp.value" (keyup.enter)="consultar()" placeholder="Cargo"
+           class="flex-1 px-3 min-h-10 text-xs rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+    <button type="button" (click)="consultar()" [disabled]="loading || !texto.trim()"
+            class="px-3 min-h-10 text-xs rounded-lg bg-brand-primary text-white disabled:opacity-50">{{ loading ? 'Consultando…' : 'Consultar' }}</button>
+  </div>
+  <p *ngIf="errorMsg" class="mx-3 mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-300">{{ errorMsg }}</p>
+  <p *ngIf="consultado && !errorMsg && filas.length === 0" class="p-4 text-center text-xs text-dark-text">Sin peligros IPERC para este cargo.</p>
+  <div *ngIf="filas.length > 0" class="overflow-x-auto">
+    <table class="w-full text-xs min-w-[480px]">
+      <thead>
+        <tr class="bg-dark-primary/60 border-b border-dark-border text-left text-dark-text uppercase tracking-wide">
+          <th class="px-3 py-2.5">Peligro</th>
+          <th class="px-3 py-2.5">Exámenes sugeridos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of filas; trackBy: trackByPeligro" class="border-b border-dark-border/50">
+          <td class="px-3 py-2 text-[rgb(var(--color-heading))]">{{ f.peligro_descripcion }}</td>
+          <td class="px-3 py-2 text-dark-text">
+            <span *ngFor="let ex of f.examenes_sugeridos" class="inline-block mr-1 mb-1 px-2 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary">{{ ex }}</span>
+            <span *ngIf="f.examenes_sugeridos.length === 0">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

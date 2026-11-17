@@ -1,0 +1,72 @@
+<div class="space-y-4">
+  <div>
+    <h2 class="text-lg sm:text-xl font-bold text-[rgb(var(--color-heading))]">Seguimiento de Exámenes Médicos · {{ anio }}</h2>
+    <p class="text-xs text-dark-text mt-0.5">Res. 1843/2025 · solo conceptos, sin historia clínica</p>
+  </div>
+
+  <div *ngIf="loading" class="flex items-center justify-center py-16">
+    <span class="inline-block text-brand-primary w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+  </div>
+
+  <div *ngIf="!loading && errorMsg" class="flex items-start gap-3 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl">
+    <i class="pi pi-exclamation-circle text-red-400 text-xl shrink-0 mt-0.5"></i>
+    <p class="text-sm text-red-300 flex-1">{{ errorMsg }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading && !errorMsg">
+    <div class="grid grid-cols-3 gap-3">
+      <div class="p-4 bg-brand-primary/10 border border-brand-primary/30 rounded-xl text-center">
+        <p class="text-3xl font-bold text-brand-primary">{{ pctVigente }}%</p>
+        <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Con examen vigente</p>
+      </div>
+      <div class="p-4 bg-dark-secondary border border-dark-border rounded-xl text-center">
+        <p class="text-3xl font-bold text-red-400">{{ vencidos }}</p>
+        <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Vencidos</p>
+      </div>
+      <div class="p-4 bg-dark-secondary border border-dark-border rounded-xl text-center">
+        <p class="text-3xl font-bold text-amber-400">{{ pendientes }}</p>
+        <p class="text-[10px] uppercase tracking-wider text-dark-text mt-1">Con pendientes</p>
+      </div>
+    </div>
+
+    <div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+      <h3 class="px-4 py-2.5 border-b border-dark-border text-sm font-semibold text-[rgb(var(--color-heading))]">Trabajadores</h3>
+      <p *ngIf="filas.length === 0" class="p-8 text-center text-xs text-dark-text">Sin trabajadores registrados.</p>
+      <div *ngIf="filas.length > 0" class="overflow-x-auto">
+        <table class="w-full text-xs min-w-[640px]">
+          <thead>
+            <tr class="bg-dark-primary/60 border-b border-dark-border text-left text-dark-text uppercase tracking-wide">
+              <th class="px-3 py-2.5">Trabajador</th>
+              <th class="px-3 py-2.5">Cargo</th>
+              <th class="px-3 py-2.5">Último examen</th>
+              <th class="px-3 py-2.5">Vigencia</th>
+              <th class="px-3 py-2.5">Pendientes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of filas; trackBy: trackByTrabajador" (click)="seleccionado = f.row"
+                class="border-b border-dark-border/50 h-10 cursor-pointer hover:bg-dark-primary/40">
+              <td class="px-3 py-2 text-[rgb(var(--color-heading))] font-medium">{{ f.row.nombre }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ f.row.cargo || '—' }}</td>
+              <td class="px-3 py-2 text-dark-text">{{ f.row.ultimo_examen || '—' }}<span *ngIf="f.row.tipo_ultimo"> · {{ tipoLabel[f.row.tipo_ultimo] }}</span></td>
+              <td class="px-3 py-2">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border" [ngClass]="f.alerta.claseColor">
+                  {{ f.row.estado_vigencia === 'sin_examen' ? 'Sin examen' : f.alerta.label }}
+                </span>
+              </td>
+              <td class="px-3 py-2">
+                <span *ngFor="let p of f.row.pendientes" class="inline-block mr-1 px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300">{{ pendienteLabel[p] }}</span>
+                <span *ngIf="f.row.pendientes.length === 0" class="text-dark-text">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <app-examenes-trabajador *ngIf="seleccionado" [trabajadorId]="seleccionado.trabajador_id" [nombre]="seleccionado.nombre"
+                             (cambio)="cargar()" (cerrado)="seleccionado = null"></app-examenes-trabajador>
+
+    <app-perfil-cargo-panel [cargo]="seleccionado?.cargo ?? ''"></app-perfil-cargo-panel>
+  </ng-container>
+</div>

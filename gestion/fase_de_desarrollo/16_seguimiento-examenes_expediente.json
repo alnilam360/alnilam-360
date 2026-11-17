@@ -1,0 +1,114 @@
+{
+  "plan": "16_seguimiento-examenes",
+  "version": 1,
+  "norma": "Resolucion 1843 de 2025 (deroga 2346/2007)",
+  "tablas": {
+    "salud_examen": {
+      "descripcion": "Una evaluacion medica ocupacional (EMO) de un trabajador. NO guarda historia clinica.",
+      "columnas": {
+        "id": "uuid pk default gen_random_uuid()",
+        "empresa_id": "uuid not null",
+        "trabajador_id": "uuid not null references trabajadores(id)",
+        "tipo": "text not null check in (pre_ingreso, periodica_programada, cambio_ocupacion, egreso, post_incapacidad, retorno, seguimiento)",
+        "fecha": "date not null",
+        "fecha_proximo": "date null",
+        "aptitud": "text null check in (apto, apto_con_restricciones, aplazado, remitido)",
+        "requiere_seguimiento": "boolean not null default false",
+        "ips_nombre": "text null",
+        "medico_licencia": "text null",
+        "concepto_path": "text null (ruta en bucket privado; es el concepto medico, NUNCA la HC)",
+        "observaciones": "text null",
+        "created_at": "timestamptz not null default now()",
+        "updated_at": "timestamptz not null default now()"
+      }
+    },
+    "salud_restriccion": {
+      "descripcion": "Restriccion o recomendacion de un concepto (Art 3.n / 3.o). Base del lazo restriccion->accion.",
+      "columnas": {
+        "id": "uuid pk default gen_random_uuid()",
+        "empresa_id": "uuid not null",
+        "examen_id": "uuid not null references salud_examen(id) on delete cascade",
+        "clase": "text not null check in (restriccion, recomendacion)",
+        "descripcion": "text not null",
+        "temporalidad": "text null check in (temporal, permanente)",
+        "fecha_fin": "date null (si temporal)",
+        "estado": "text not null default abierta check in (abierta, en_gestion, cerrada)",
+        "responsable": "text null",
+        "fecha_limite_accion": "date null (Art 5.f: <=20 dias habiles para adaptar puesto)",
+        "created_at": "timestamptz not null default now()",
+        "updated_at": "timestamptz not null default now()"
+      }
+    },
+    "salud_peligro_examen": {
+      "descripcion": "Catalogo peligro->examen sugerido, por PATRON de texto (no por UUID: no hardcodear ids generados). Global, sin empresa_id, select para authenticated, sin escritura cliente. Se cruza con sst_matriz_iperc.peligro_descripcion via ILIKE.",
+      "columnas": {
+        "id": "uuid pk default gen_random_uuid()",
+        "patron": "text not null (se matchea: peligro_descripcion ILIKE '%'||patron||'%')",
+        "examen_sugerido": "text not null"
+      },
+      "seed": {
+        "Ruido": ["Audiometria"],
+        "Vibracion segmento mano-brazo": ["Evaluacion osteomuscular miembro superior"],
+        "Vibracion de cuerpo entero": ["Evaluacion osteomuscular con enfasis en columna"],
+        "Radiacion ionizante": ["Cuadro hematico (hemograma)"],
+        "Radiacion ultravioleta": ["Valoracion dermatologica", "Valoracion oftalmologica"],
+        "Radiacion no ionizante": ["Valoracion oftalmologica"],
+        "Iluminacion": ["Optometria / visiometria"],
+        "Temperaturas extremas": ["Valoracion cardiovascular"],
+        "Presiones anormales": ["Audiometria", "Espirometria", "Valoracion ORL"],
+        "Trabajo en alturas": ["Examen medico con enfasis en trabajo en alturas (osteomuscular, visiometria, glicemia, perfil lipidico, cardiovascular, psicologico)"],
+        "Espacios confinados": ["Espirometria", "Visiometria", "Audiometria", "Valoracion cardiovascular", "Valoracion psicologica"],
+        "Trabajo en caliente": ["Espirometria", "Visiometria", "Audiometria"],
+        "alta tension": ["Examen para trabajo con energia electrica (cardiovascular, visiometria)"],
+        "Accidentes de transito": ["Examen psicosensometrico de conduccion (optometria, audiometria)"],
+        "Polvo inorganico": ["Espirometria", "RX de torax"],
+        "Polvo organico": ["Espirometria"],
+        "Humos metalicos": ["Espirometria", "Cuadro hematico (hemograma)"],
+        "Humos de combustion": ["Espirometria"],
+        "Fibras": ["Espirometria", "Valoracion dermatologica"],
+        "Hidrocarburos": ["Cuadro hematico (hemograma)", "Perfil hepatico"],
+        "No hidrocarburos": ["Espirometria"],
+        "Nieblas y rocios": ["Valoracion dermatologica", "Espirometria"],
+        "Bacterias": ["Valoracion de riesgo biologico (vacunacion, serologia)"],
+        "Virus": ["Valoracion de riesgo biologico (vacunacion, serologia)"],
+        "Hongos": ["Valoracion de riesgo biologico (vacunacion, serologia)"],
+        "fluidos": ["Valoracion de riesgo biologico (vacunacion, serologia)"],
+        "Parasitos": ["Valoracion de riesgo biologico (vacunacion, serologia)"],
+        "Picaduras": ["Valoracion de riesgo biologico (vacunacion, serologia)"],
+        "Mordeduras": ["Valoracion de riesgo biologico (vacunacion, serologia)"],
+        "Manipulacion manual de cargas": ["Evaluacion osteomuscular con enfasis en columna"],
+        "Esfuerzo fisico": ["Evaluacion osteomuscular"],
+        "Movimiento repetitivo": ["Evaluacion osteomuscular miembro superior"],
+        "Postura": ["Evaluacion osteomuscular"],
+        "Carga mental": ["Evaluacion de riesgo psicosocial"],
+        "Jornada de trabajo": ["Evaluacion de riesgo psicosocial"],
+        "Gestion organizacional": ["Evaluacion de riesgo psicosocial"]
+      },
+      "nota_seed": "una fila por (patron, examen_sugerido). El patron se escribe SIN tildes y el match debe ser insensible a tildes/mayusculas (unaccent si existe, o lower sobre ambos lados). capa-datos verifica que exista extension unaccent; si no, normaliza en SQL."
+    }
+  },
+  "rls": "fail-closed en salud_examen y salud_restriccion: using/with check (empresa_id = get_my_empresa_id() OR is_admin()), rol authenticated. salud_peligro_examen: select para authenticated, sin escritura cliente.",
+  "rpc": {
+    "salud_cobertura(p_anio int)": "SECURITY INVOKER. returns table(trabajador_id uuid, nombre text, cargo text, sede_id uuid, ultimo_examen date, tipo_ultimo text, aptitud text, proximo date, estado_vigencia text, pendientes text[]). Trabajadores de la empresa con su ultimo examen + pendientes AUTO que los datos permiten: pre_ingreso (activo, tiene fecha_ingreso, sin examen pre_ingreso); periodica_programada (fecha_proximo del ultimo < hoy, o sin examen y antiguedad > tope); egreso (activo=false y sin examen egreso). estado_vigencia: vigente|por_vencer(30d)|vencido|sin_examen.",
+    "salud_perfil_cargo(p_cargo text)": "SECURITY INVOKER. returns table(peligro_id uuid, peligro_descripcion text, examenes_sugeridos text[]). Deriva la bateria desde matriz_iperc del cargo (match por texto normalizado) cruzado con salud_peligro_examen."
+  },
+  "funcion_pura": {
+    "archivo": "src/app/modules/gestion-sst/salud/funciones/ventana-examen.funcion.ts",
+    "firma": "examenesExigidos(hoy: string, t: { fecha_ingreso: string|null, activo: boolean, fecha_egreso: string|null, dias_incapacidad: number|null, dias_ausencia: number|null, ultimo_periodico: string|null, tope_meses: number }): { tipo: string, fecha_limite: string|null, motivo: string }[]",
+    "regla_dias_habiles": "lunes-viernes, SIN festivos de Colombia (shortcut: no festivos, upgrade si se requiere exactitud legal)"
+  },
+  "golden_vectors": [
+    { "caso": "egreso", "in": "activo=false, fecha_egreso=2026-11-13(vie)", "out": "tipo=egreso, fecha_limite=2026-11-20(vie, +5 habiles)" },
+    { "caso": "retorno", "in": "dias_ausencia=95, activo=true", "out": "tipo=retorno exigido antes del retorno" },
+    { "caso": "post_incapacidad", "in": "dias_incapacidad=30", "out": "tipo=post_incapacidad exigido" },
+    { "caso": "post_incapacidad_no", "in": "dias_incapacidad=29", "out": "sin post_incapacidad" },
+    { "caso": "periodico_vencido", "in": "ultimo_periodico=2023-01-01, tope_meses=24, hoy=2026-11-17", "out": "periodica_programada vencida" },
+    { "caso": "pre_ingreso", "in": "fecha_ingreso=2026-11-10 sin examen pre_ingreso", "out": "pre_ingreso pendiente" }
+  ],
+  "decisiones": [
+    "aptitud NO incluye 'no_apto' como valor literal (Art 19 Par restringe la palabra).",
+    "cargo liga por texto normalizado (sin catalogo de cargos en v1).",
+    "concepto_path guarda el concepto medico ocupacional, nunca la historia clinica.",
+    "dias habiles sin festivos (shortcut documentado)."
+  ]
+}

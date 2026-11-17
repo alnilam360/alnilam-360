@@ -1,0 +1,56 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+  <form [formGroup]="form" (ngSubmit)="guardar()"
+        class="w-full max-w-lg max-h-[90vh] flex flex-col bg-dark-secondary border border-dark-border rounded-xl">
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-dark-border">
+      <h3 class="flex-1 text-sm font-bold text-[rgb(var(--color-heading))]">{{ examen ? 'Editar examen' : 'Nuevo examen' }}</h3>
+      <button type="button" (click)="cancelado.emit()" class="p-1.5 text-dark-text"><i class="pi pi-times"></i></button>
+    </div>
+
+    <div *ngIf="errorMsg" class="mx-4 mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-300">{{ errorMsg }}</div>
+
+    <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3 text-xs text-dark-text">
+      <label class="block">Tipo *
+        <select formControlName="tipo" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+          <option *ngFor="let t of tipos" [value]="t">{{ tipoLabel[t] }}</option>
+        </select>
+      </label>
+      <label class="block">Fecha del examen *
+        <input formControlName="fecha" type="date" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">Próximo examen
+        <input formControlName="fecha_proximo" type="date" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">Aptitud
+        <select formControlName="aptitud" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]">
+          <option value="">— Sin definir —</option>
+          <option *ngFor="let a of aptitudes" [value]="a">{{ aptitudLabel[a] }}</option>
+        </select>
+      </label>
+      <label class="flex items-center gap-2 min-h-10">
+        <input formControlName="requiere_seguimiento" type="checkbox" /> Requiere seguimiento
+      </label>
+      <label class="block">IPS
+        <input formControlName="ips_nombre" type="text" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">Licencia del médico
+        <input formControlName="medico_licencia" type="text" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
+      </label>
+      <label class="block">Observaciones (sin historia clínica)
+        <textarea formControlName="observaciones" rows="2" class="mt-1 w-full px-3 py-2 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]"></textarea>
+      </label>
+      <label class="block">Concepto médico (PDF, máx. 10 MB)
+        <input type="file" accept="application/pdf,.pdf" (change)="onArchivo($event)" class="mt-1 w-full" />
+        <span *ngIf="examen?.concepto_path && !archivo" class="text-brand-primary">Ya tiene concepto adjunto; subir otro lo reemplaza.</span>
+      </label>
+    </div>
+
+    <div class="flex justify-end gap-2 px-4 py-3 border-t border-dark-border">
+      <button type="button" (click)="cancelado.emit()" [disabled]="guardando"
+              class="px-3 py-2 min-h-10 text-xs rounded-lg border border-dark-border text-dark-text">Cancelar</button>
+      <button type="submit" [disabled]="guardando || form.invalid"
+              class="px-3 py-2 min-h-10 text-xs rounded-lg bg-brand-primary text-white disabled:opacity-50">
+        {{ guardando ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>

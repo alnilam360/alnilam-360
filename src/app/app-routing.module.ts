@@ -145,7 +145,7 @@ const routes: Routes = [
           { path: 'entrega-dotacion', loadChildren: () => import('./modules/formatos/formatos.module').then(m => m.FormatosModule), data: { tipo: 'entrega-dotacion' } },
           { path: 'encuesta-sociodemografico', loadChildren: () => import('./modules/formatos/formatos.module').then(m => m.FormatosModule), data: { tipo: 'encuesta-sociodemografico' } },
           { path: 'tabulacion-encuesta', loadChildren: () => import('./modules/formatos/formatos.module').then(m => m.FormatosModule), data: { tipo: 'tabulacion-encuesta' } },
-          { path: 'seguimiento-examenes', loadChildren: () => import('./modules/formatos/formatos.module').then(m => m.FormatosModule), data: { tipo: 'seguimiento-examenes' } },
+          { path: 'seguimiento-examenes', loadChildren: () => import('./modules/gestion-sst/salud/salud.module').then(m => m.SaludModule) },
           { path: 'reporte-actos', loadChildren: () => import('./modules/formatos/formatos.module').then(m => m.FormatosModule), data: { tipo: 'reporte-actos' } },
           { path: 'otros', loadChildren: () => import('./modules/formatos/formatos.module').then(m => m.FormatosModule), data: { tipo: 'otros' } },
           { path: '', redirectTo: 'planes-accion', pathMatch: 'full' }

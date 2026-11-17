@@ -1,0 +1,50 @@
+<div class="bg-dark-secondary border border-dark-border rounded-xl overflow-hidden">
+  <div class="px-4 py-2 border-b border-dark-border flex items-center gap-2">
+    <h3 class="flex-1 text-sm font-semibold text-[rgb(var(--color-heading))]">Exámenes · {{ nombre }}</h3>
+    <button type="button" (click)="abrirForm(null)" class="px-3 py-2 min-h-10 text-xs rounded-lg bg-brand-primary text-white">Nuevo examen</button>
+    <button type="button" (click)="cerrado.emit()" title="Cerrar" class="p-2 min-h-10 min-w-10 text-dark-text"><i class="pi pi-times"></i></button>
+  </div>
+
+  <div *ngIf="errorMsg" class="m-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-300">{{ errorMsg }}</div>
+  <p *ngIf="loading" class="p-6 text-center text-xs text-dark-text">Cargando…</p>
+  <p *ngIf="!loading && !errorMsg && examenes.length === 0" class="p-6 text-center text-xs text-dark-text">Sin exámenes registrados.</p>
+
+  <div *ngIf="!loading && examenes.length > 0" class="overflow-x-auto">
+    <table class="w-full text-xs min-w-[560px]">
+      <thead>
+        <tr class="bg-dark-primary/60 border-b border-dark-border text-left text-dark-text uppercase tracking-wide">
+          <th class="px-3 py-2.5">Fecha</th>
+          <th class="px-3 py-2.5">Tipo</th>
+          <th class="px-3 py-2.5">Aptitud</th>
+          <th class="px-3 py-2.5">Próximo</th>
+          <th class="px-3 py-2.5"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of examenes; trackBy: trackById" class="border-b border-dark-border/50 h-10">
+          <td class="px-3 py-2 text-[rgb(var(--color-heading))]">{{ e.fecha }}</td>
+          <td class="px-3 py-2 text-dark-text">{{ tipoLabel[e.tipo] }}</td>
+          <td class="px-3 py-2 text-dark-text">{{ e.aptitud ? aptitudLabel[e.aptitud] : '—' }}</td>
+          <td class="px-3 py-2 text-dark-text">{{ e.fecha_proximo || '—' }}</td>
+          <td class="px-3 py-1 whitespace-nowrap text-right">
+            <ng-container *ngIf="confirmandoId !== e.id">
+              <button type="button" *ngIf="e.concepto_path" (click)="verConcepto(e)" title="Ver concepto" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-file-pdf"></i></button>
+              <button type="button" (click)="restriccionesDe = e" title="Restricciones" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-exclamation-triangle"></i></button>
+              <button type="button" (click)="abrirForm(e)" title="Editar" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-pencil"></i></button>
+              <button type="button" (click)="confirmandoId = e.id" title="Eliminar" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-red-400"><i class="pi pi-trash"></i></button>
+            </ng-container>
+            <ng-container *ngIf="confirmandoId === e.id">
+              <span class="text-red-300 mr-2">¿Eliminar?</span>
+              <button type="button" (click)="eliminar(e)" [disabled]="ocupado" class="px-3 min-h-10 rounded-lg bg-red-500 text-white disabled:opacity-50">{{ ocupado ? '…' : 'Sí' }}</button>
+              <button type="button" (click)="confirmandoId = null" [disabled]="ocupado" class="px-3 min-h-10 rounded-lg border border-dark-border text-dark-text">No</button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <app-examen-form-modal *ngIf="formAbierto" [trabajadorId]="trabajadorId" [examen]="editando"
+                         (guardado)="alGuardar()" (cancelado)="formAbierto = false"></app-examen-form-modal>
+  <app-restricciones-panel *ngIf="restriccionesDe" [examen]="restriccionesDe" (cerrado)="restriccionesDe = null"></app-restricciones-panel>
+</div>
