@@ -35,13 +35,19 @@
       <label class="block">Licencia del médico
         <input formControlName="medico_licencia" type="text" class="mt-1 w-full px-3 py-2 min-h-10 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]" />
       </label>
-      <label class="block">Observaciones (sin historia clínica)
-        <textarea formControlName="observaciones" rows="2" class="mt-1 w-full px-3 py-2 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]"></textarea>
-      </label>
-      <label class="block">Concepto médico (PDF, máx. 10 MB)
-        <input type="file" accept="application/pdf,.pdf" (change)="onArchivo($event)" class="mt-1 w-full" />
-        <span *ngIf="examen?.concepto_path && !archivo" class="text-brand-primary">Ya tiene concepto adjunto; subir otro lo reemplaza.</span>
-      </label>
+      <ng-container *ngIf="esMedico">
+        <label class="block">Observaciones clínicas (solo médico)
+          <textarea formControlName="observaciones" rows="2" class="mt-1 w-full px-3 py-2 rounded-lg bg-dark-primary border border-dark-border text-[rgb(var(--color-heading))]"></textarea>
+        </label>
+        <label class="block">Concepto médico (PDF, máx. 10 MB)
+          <input type="file" accept="application/pdf,.pdf" (change)="onArchivo($event)" class="mt-1 w-full" />
+          <span *ngIf="clinico?.concepto_path && !archivo" class="text-brand-primary">Ya tiene concepto adjunto; subir otro lo reemplaza.</span>
+        </label>
+        <button type="button" *ngIf="clinico?.concepto_path" (click)="verConcepto()"
+                class="px-3 py-2 min-h-10 text-xs rounded-lg border border-dark-border text-dark-text hover:text-brand-primary">
+          <i class="pi pi-file-pdf"></i> Ver concepto
+        </button>
+      </ng-container>
     </div>
 
     <div class="flex justify-end gap-2 px-4 py-3 border-t border-dark-border">

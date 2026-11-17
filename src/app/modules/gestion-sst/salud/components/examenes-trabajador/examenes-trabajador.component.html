@@ -28,7 +28,6 @@
           <td class="px-3 py-2 text-dark-text">{{ e.fecha_proximo || '—' }}</td>
           <td class="px-3 py-1 whitespace-nowrap text-right">
             <ng-container *ngIf="confirmandoId !== e.id">
-              <button type="button" *ngIf="e.concepto_path" (click)="verConcepto(e)" title="Ver concepto" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-file-pdf"></i></button>
               <button type="button" (click)="restriccionesDe = e" title="Restricciones" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-exclamation-triangle"></i></button>
               <button type="button" (click)="abrirForm(e)" title="Editar" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-brand-primary"><i class="pi pi-pencil"></i></button>
               <button type="button" (click)="confirmandoId = e.id" title="Eliminar" class="p-2 min-h-10 min-w-10 text-dark-text hover:text-red-400"><i class="pi pi-trash"></i></button>

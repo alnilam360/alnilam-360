@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { FormControl, FormGroup, NonNullableFormBuilder, Validators } from '@angular/forms';
 import { NuevoExamen, SaludService } from '../../services/salud.service';
-import { SaludAptitud, SaludExamen, SaludExamenTipo } from '../../../../../core/models/salud.model';
+import { SaludAptitud, SaludExamen, SaludExamenClinico, SaludExamenTipo } from '../../../../../core/models/salud.model';
 import { APTITUDES, APTITUD_LABEL, TIPOS_EXAMEN, TIPO_EXAMEN_LABEL } from '../../funciones/etiquetas.funcion';
 
 type ExamenForm = FormGroup<{
@@ -29,6 +29,7 @@ export class ExamenFormModalComponent implements OnInit {
 
   private svc = inject(SaludService);
   private fb = inject(NonNullableFormBuilder);
+  private cdr = inject(ChangeDetectorRef);
 
   readonly tipos = TIPOS_EXAMEN;
   readonly aptitudes = APTITUDES;
@@ -37,6 +38,8 @@ export class ExamenFormModalComponent implements OnInit {
   guardando = false;
   errorMsg: string | null = null;
   archivo: File | null = null;
+  esMedico = false;
+  clinico: SaludExamenClinico | null = null;
 
   form: ExamenForm = this.fb.group({
     tipo: this.fb.control<SaludExamenTipo>('periodica_programada'),
@@ -49,14 +52,33 @@ export class ExamenFormModalComponent implements OnInit {
     observaciones: this.fb.control(''),
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const e = this.examen;
-    if (!e) return;
-    this.form.patchValue({
-      tipo: e.tipo, fecha: e.fecha, fecha_proximo: e.fecha_proximo ?? '', aptitud: e.aptitud ?? '',
-      requiere_seguimiento: e.requiere_seguimiento, ips_nombre: e.ips_nombre ?? '',
-      medico_licencia: e.medico_licencia ?? '', observaciones: e.observaciones ?? '',
-    });
+    if (e) {
+      this.form.patchValue({
+        tipo: e.tipo, fecha: e.fecha, fecha_proximo: e.fecha_proximo ?? '', aptitud: e.aptitud ?? '',
+        requiere_seguimiento: e.requiere_seguimiento, ips_nombre: e.ips_nombre ?? '',
+        medico_licencia: e.medico_licencia ?? '',
+      });
+    }
+    this.esMedico = await this.svc.esMedico();
+    if (this.esMedico && e) {
+      try {
+        this.clinico = await this.svc.getClinico(e.id);
+        this.form.patchValue({ observaciones: this.clinico?.observaciones ?? '' });
+      } catch (err) { this.errorMsg = this.msg(err); }
+    }
+    this.cdr.detectChanges();
+  }
+
+  async verConcepto(): Promise<void> {
+    if (!this.clinico?.concepto_path) return;
+    try { window.open(await this.svc.urlConcepto(this.clinico.concepto_path), '_blank', 'noopener'); }
+    catch (err) { this.errorMsg = this.msg(err); this.cdr.detectChanges(); }
+  }
+
+  private msg(e: unknown): string {
+    return e instanceof Error ? e.message : (e as { message?: string })?.message ?? 'Error al guardar el examen.';
   }
 
   onArchivo(ev: Event): void {
@@ -70,8 +92,7 @@ export class ExamenFormModalComponent implements OnInit {
     return {
       tipo: v.tipo, fecha: v.fecha, fecha_proximo: v.fecha_proximo || null, aptitud: v.aptitud || null,
       requiere_seguimiento: v.requiere_seguimiento, ips_nombre: v.ips_nombre.trim() || null,
-      medico_licencia: v.medico_licencia.trim() || null, observaciones: v.observaciones.trim() || null,
-      concepto_path: this.examen?.concepto_path ?? null,
+      medico_licencia: v.medico_licencia.trim() || null,
     };
   }
 
@@ -79,12 +100,17 @@ export class ExamenFormModalComponent implements OnInit {
     if (this.form.invalid || this.guardando) { this.form.markAllAsTouched(); return; }
     this.guardando = true; this.errorMsg = null;
     try {
-      await this.svc.guardarExamen(this.trabajadorId, this.payload(), this.archivo, this.examen?.id ?? null);
+      const ex = await this.svc.guardarExamen(this.trabajadorId, this.payload(), this.examen?.id ?? null);
+      if (this.esMedico) {
+        const obs = this.form.getRawValue().observaciones.trim() || null;
+        await this.svc.guardarClinico(ex.id, ex.empresa_id, obs, this.archivo, this.clinico?.concepto_path ?? null);
+      }
       this.guardado.emit();
     } catch (e) {
-      this.errorMsg = e instanceof Error ? e.message : (e as { message?: string })?.message ?? 'Error al guardar el examen.';
+      this.errorMsg = this.msg(e);
     } finally {
       this.guardando = false;
+      this.cdr.detectChanges();
     }
   }
 }

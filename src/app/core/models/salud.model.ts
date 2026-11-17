@@ -27,10 +27,16 @@ export interface SaludExamen {
   requiere_seguimiento: boolean;
   ips_nombre: string | null;
   medico_licencia: string | null;
-  concepto_path: string | null;
-  observaciones: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** Boveda clinica: solo medico + super-admin (RLS). */
+export interface SaludExamenClinico {
+  examen_id: string;
+  empresa_id: string;
+  concepto_path: string | null;
+  observaciones: string | null;
 }
 
 export interface SaludRestriccion {

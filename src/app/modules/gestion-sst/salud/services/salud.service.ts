@@ -2,10 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseClientService } from '../../../../core/services/supabase-client.service';
 import { TenantService } from '../../../../core/services/tenant.service';
 import {
-  SaludCoberturaRow, SaludDiagnosticoRow, SaludExamen, SaludPerfilCargoRow, SaludRestriccion,
+  SaludCoberturaRow, SaludDiagnosticoRow, SaludExamen, SaludExamenClinico, SaludPerfilCargoRow, SaludRestriccion,
 } from '../../../../core/models/salud.model';
 
-const COLS_EXAMEN = 'id, empresa_id, trabajador_id, tipo, fecha, fecha_proximo, aptitud, requiere_seguimiento, ips_nombre, medico_licencia, concepto_path, observaciones, created_at, updated_at';
+const COLS_EXAMEN = 'id, empresa_id, trabajador_id, tipo, fecha, fecha_proximo, aptitud, requiere_seguimiento, ips_nombre, medico_licencia, created_at, updated_at';
+const COLS_CLINICO = 'examen_id, empresa_id, concepto_path, observaciones';
 const COLS_REST = 'id, empresa_id, examen_id, clase, descripcion, temporalidad, fecha_fin, estado, responsable, fecha_limite_accion, created_at, updated_at';
 
 export type NuevoExamen = Omit<SaludExamen, 'id' | 'empresa_id' | 'trabajador_id' | 'created_at' | 'updated_at'>;
@@ -16,8 +17,8 @@ export class SaludService {
   private sb = inject(SupabaseClientService);
   private tenant = inject(TenantService);
 
-  // Reusa el bucket privado existente (policies por carpeta raíz = empresa_id); el concepto va en <empresa>/salud/.
-  private readonly BUCKET = 'matriz-legal-docs';
+  // Bucket privado solo médico/super-admin (storage policies); ruta <empresa_id>/<archivo>.
+  private readonly BUCKET = 'salud-conceptos';
   readonly MAX_CONCEPTO_BYTES = 10 * 1024 * 1024;
 
   validarConcepto(file: File): string | null {
@@ -57,32 +58,59 @@ export class SaludService {
     return (data ?? []) as SaludExamen[];
   }
 
-  /** Sube el PDF (si hay), guarda el examen y limpia el archivo si la BD falla. */
-  async guardarExamen(trabajadorId: string, payload: NuevoExamen, file: File | null, id: string | null): Promise<void> {
+  async esMedico(): Promise<boolean> {
+    const { data, error } = await this.sb.client.rpc('is_medico');
+    return !error && data === true;
+  }
+
+  /** Guarda solo los campos no clínicos y devuelve el examen (con id). */
+  async guardarExamen(trabajadorId: string, payload: NuevoExamen, id: string | null): Promise<SaludExamen> {
     const empresa_id = await this.empresaId();
+    const q = id
+      ? this.sb.client.from('salud_examen').update(payload).eq('id', id)
+      : this.sb.client.from('salud_examen').insert({ ...payload, empresa_id, trabajador_id: trabajadorId });
+    const { data, error } = await q.select(COLS_EXAMEN).single();
+    if (error) throw error;
+    return data as SaludExamen;
+  }
+
+  /** Para no-médicos RLS devuelve 0 filas: es null, no error. */
+  async getClinico(examenId: string): Promise<SaludExamenClinico | null> {
+    const { data, error } = await this.sb.client.from('salud_examen_clinico').select(COLS_CLINICO)
+      .eq('examen_id', examenId).maybeSingle();
+    if (error) throw error;
+    return (data as SaludExamenClinico | null) ?? null;
+  }
+
+  /** Sube el PDF (si hay) a salud-conceptos, hace upsert y borra el archivo nuevo si la BD falla. */
+  async guardarClinico(examenId: string, empresaId: string, observaciones: string | null, file?: File | null,
+                       pathActual: string | null = null): Promise<void> {
     let nuevoPath: string | null = null;
     if (file) {
       const invalido = this.validarConcepto(file);
       if (invalido) throw new Error(invalido);
-      nuevoPath = `${empresa_id}/salud/${Date.now()}_${file.name.replace(/[^A-Za-z0-9._-]+/g, '_')}`;
+      nuevoPath = `${empresaId}/${examenId}_${Date.now()}.pdf`;
       const { error: upErr } = await this.sb.client.storage.from(this.BUCKET)
         .upload(nuevoPath, file, { contentType: 'application/pdf', upsert: false });
       if (upErr) throw upErr;
     }
-    const fila = { ...payload, ...(nuevoPath ? { concepto_path: nuevoPath } : {}) };
-    const { error } = id
-      ? await this.sb.client.from('salud_examen').update(fila).eq('id', id)
-      : await this.sb.client.from('salud_examen').insert({ ...fila, empresa_id, trabajador_id: trabajadorId });
+    const { error } = await this.sb.client.from('salud_examen_clinico').upsert({
+      examen_id: examenId, empresa_id: empresaId, concepto_path: nuevoPath ?? pathActual, observaciones,
+    });
     if (error) {
       if (nuevoPath) await this.sb.client.storage.from(this.BUCKET).remove([nuevoPath]);
       throw error;
     }
+    if (nuevoPath && pathActual) await this.sb.client.storage.from(this.BUCKET).remove([pathActual]);
   }
 
-  async eliminarExamen(ex: Pick<SaludExamen, 'id' | 'concepto_path'>): Promise<void> {
-    const { error } = await this.sb.client.from('salud_examen').delete().eq('id', ex.id);
+  /** El archivo de bóveda solo lo lee/borra el médico; si no lo es, se omite sin romper el borrado. */
+  async eliminarExamen(id: string): Promise<void> {
+    let path: string | null = null;
+    try { path = (await this.getClinico(id))?.concepto_path ?? null; } catch { path = null; }
+    const { error } = await this.sb.client.from('salud_examen').delete().eq('id', id);
     if (error) throw error;
-    if (ex.concepto_path) await this.sb.client.storage.from(this.BUCKET).remove([ex.concepto_path]);
+    if (path) await this.sb.client.storage.from(this.BUCKET).remove([path]);
   }
 
   async urlConcepto(path: string): Promise<string> {

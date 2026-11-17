@@ -49,17 +49,11 @@ export class ExamenesTrabajadorComponent implements OnChanges {
     await this.cargar();
   }
 
-  async verConcepto(e: SaludExamen): Promise<void> {
-    if (!e.concepto_path) return;
-    try { window.open(await this.svc.urlConcepto(e.concepto_path), '_blank', 'noopener'); }
-    catch (err) { this.errorMsg = this.msg(err); this.cdr.detectChanges(); }
-  }
-
   async eliminar(e: SaludExamen): Promise<void> {
     if (this.ocupado) return;
     this.ocupado = true;
     try {
-      await this.svc.eliminarExamen(e);
+      await this.svc.eliminarExamen(e.id);
       this.confirmandoId = null;
       this.cambio.emit();
       await this.cargar();
