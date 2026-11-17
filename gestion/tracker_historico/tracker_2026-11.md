@@ -1,3 +1,5 @@
+# Tracker histórico — 2026-11
+
 # Tracker 17 — Fase 2 seguimiento-examenes
 
 > Plan: [gestion/fase_de_desarrollo/17_salud-fase2_plan.md](../fase_de_desarrollo/17_salud-fase2_plan.md) · Iniciado: 2026-11-17
@@ -26,8 +28,8 @@
 - [x] D2 cliente-web: `esMedico` vía rpc is_medico; bloque clínico (concepto PDF + observaciones) bajo `*ngIf="esMedico"`, al bucket `salud-conceptos`; service repartido (guardarExamen sin clínico, getClinico/guardarClinico). Build verde
 - [x] D3 verificador N2: **sin bloqueo**; build/lint/tests verdes; confidencialidad por RLS+storage (no solo *ngIf); is_admin=super-admin confirmado. Hallazgos: (1) menor integridad within-tenant sin fuga [FK compuesta pendiente/opcional], (2) PDF huérfano informativo. Commit 2026-11-17
 
-## Hallazgos abiertos (no bloqueantes)
-- [ ] Harden opcional: FK compuesta `salud_examen_clinico(examen_id,empresa_id)→salud_examen(id,empresa_id)` para cerrar integridad within-tenant (requiere UNIQUE(id,empresa_id) en salud_examen). Migración 05, pide OK.
+## Hallazgos (no bloqueantes, residuales — usuario decidió no cerrar)
+- Residual: integridad within-tenant de la bóveda (clinico.empresa_id no atado al examen). Sin fuga cross-tenant. Cierre opcional = FK compuesta `salud_examen_clinico(examen_id,empresa_id)→salud_examen(id,empresa_id)` + UNIQUE(id,empresa_id) en salud_examen. **Usuario: dejar como residual (2026-11-17).**
 - Pendiente fase 3: picker cargo_id en forms trabajadores/IPERC; festivos CO en días hábiles; icono "Ver concepto" por fila (hoy en modal médico).
 
 ## Notas
